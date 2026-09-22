@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
-import { MdSchool, MdHome, MdMenuBook, MdAssignment, MdSportsEsports, MdGroup, MdLogout, MdWavingHand } from 'react-icons/md';
+import { MdSchool, MdHome, MdMenuBook, MdAssignment, MdSportsEsports, MdGroup, MdLogout, MdWavingHand, MdMenu, MdClose } from 'react-icons/md';
 import ThemeToggle from '../../components/layout/ThemeToggle';
 import './DashboardDocente.css';
 
@@ -9,6 +9,8 @@ const DocenteDashboard = () => {
   const [data, setData] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Se permite abrir el menú con el parámetro ?drawer=1 (útil en pruebas/responsive).
+  const [menuOpen, setMenuOpen] = useState(() => new URLSearchParams(window.location.search).get('drawer') === '1');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,7 +57,14 @@ const DocenteDashboard = () => {
 
   return (
     <div className="dashboard-container cartoon-area">
-      <aside className="sidebar">
+      {/* Overlay del menú móvil: cierra el drawer al tocar fuera de él */}
+      <div
+        className={`sidebar-overlay ${menuOpen ? 'open' : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-icon-small">
             <MdSchool />
@@ -64,15 +73,19 @@ const DocenteDashboard = () => {
         </div>
 
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item active">
+          <a
+            href="#"
+            className="nav-item active"
+            onClick={() => setMenuOpen(false)}
+          >
             <span><MdHome /></span> Inicio
           </a>
 
-          <Link to="/contenidos" className="nav-item"><span><MdMenuBook /></span> Mis Contenidos</Link>
-          <Link to="/evaluaciones" className="nav-item"><span><MdAssignment /></span> Mis Evaluaciones</Link>
-          <Link to="/juegos" className="nav-item"><span><MdSportsEsports /></span> Mis Juegos</Link>
-          <Link to="/gestion-alumnos" className="nav-item"><span><MdGroup /></span> Gestión de Alumnos</Link>
-          <Link to="/gestion-alumnos/grupos" className="nav-item"><span><MdGroup /></span> Grupos</Link>
+          <Link to="/contenidos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdMenuBook /></span> Mis Contenidos</Link>
+          <Link to="/evaluaciones" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdAssignment /></span> Mis Evaluaciones</Link>
+          <Link to="/juegos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdSportsEsports /></span> Mis Juegos</Link>
+          <Link to="/gestion-alumnos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdGroup /></span> Gestión de Alumnos</Link>
+          <Link to="/gestion-alumnos/grupos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdGroup /></span> Grupos</Link>
         </nav>
 
         <div className="sidebar-footer">
@@ -84,6 +97,15 @@ const DocenteDashboard = () => {
 
       <main className="dashboard-main">
         <header className="main-header">
+          {/* Botón de menú: visible solo en móvil para abrir el drawer */}
+          <button
+            className="mobile-nav-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <MdClose /> : <MdMenu />}
+          </button>
           <h1>Panel Principal</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <ThemeToggle />

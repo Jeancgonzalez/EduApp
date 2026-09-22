@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import {
   MdSchool, MdHome, MdMenuBook, MdAssignment, MdSportsEsports, MdEmojiEvents,
-  MdLogout, MdWavingHand, MdInsights, MdCheckCircle, MdStar, MdFlag
+  MdLogout, MdWavingHand, MdInsights, MdCheckCircle, MdStar, MdFlag,
+  MdMenu, MdClose
 } from 'react-icons/md';
 import { MEDAL_ICONS } from '../../utils/medalIcons';
 import ThemeToggle from '../../components/layout/ThemeToggle';
@@ -18,6 +19,8 @@ const StudentDashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [diagnostico, setDiagnostico] = useState(null);
+  // Se permite abrir el menú con el parámetro ?drawer=1 (útil en pruebas/responsive).
+  const [menuOpen, setMenuOpen] = useState(() => new URLSearchParams(window.location.search).get('drawer') === '1');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -79,18 +82,25 @@ const StudentDashboard = () => {
 
   return (
     <div className="dashboard-container student-area">
-      <aside className="sidebar">
+      {/* Overlay del menú móvil: cierra el drawer al tocar fuera de él */}
+      <div
+        className={`sidebar-overlay ${menuOpen ? 'open' : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-icon-small"><MdSchool /></div>
           <h2>EduApp</h2>
         </div>
         
         <nav className="sidebar-nav">
-          <a className="nav-item active"><span><MdHome /></span> Inicio</a>
-          <Link to="/student/contenidos" className="nav-item"><span><MdMenuBook /></span> Mis Clases</Link>
-          <Link to="/student/evaluaciones" className="nav-item"><span><MdAssignment /></span> Mis Evaluaciones</Link>
-          <Link to="/student/juegos" className="nav-item"><span><MdSportsEsports /></span> Zona de Juegos</Link>
-          <Link to="/student/progreso" className="nav-item"><span><MdEmojiEvents /></span> Mi Progreso</Link>
+          <a className="nav-item active" onClick={() => setMenuOpen(false)}><span><MdHome /></span> Inicio</a>
+          <Link to="/student/contenidos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdMenuBook /></span> Mis Clases</Link>
+          <Link to="/student/evaluaciones" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdAssignment /></span> Mis Evaluaciones</Link>
+          <Link to="/student/juegos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdSportsEsports /></span> Zona de Juegos</Link>
+          <Link to="/student/progreso" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdEmojiEvents /></span> Mi Progreso</Link>
           
         </nav>
         <div className="sidebar-footer">
@@ -100,6 +110,15 @@ const StudentDashboard = () => {
 
       <main className="dashboard-main">
         <header className="main-header">
+          {/* Botón de menú: visible solo en móvil para abrir el drawer */}
+          <button
+            className="mobile-nav-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <MdClose /> : <MdMenu />}
+          </button>
           <h1>Panel de Estudiante</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <ThemeToggle />
