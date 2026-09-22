@@ -4,3 +4,6 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+AppData/
+backend/uploads/
+*.zip

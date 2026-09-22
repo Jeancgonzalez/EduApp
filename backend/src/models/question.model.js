@@ -37,9 +37,13 @@ const Question = sequelize.define('Question', {
     allowNull: false,
   },
   respuesta_correcta: {
-    type: DataTypes.STRING(1), // Generalmente 'a', 'b', 'c' o 'd'
+    type: DataTypes.STRING(1),
     allowNull: false,
     comment: 'Almacena la letra de la opción correcta (ej: a)'
+  },
+  retroalimentacion: {
+    type: DataTypes.TEXT,
+    allowNull: true
   }
 }, {
   timestamps: true, // Agrega createdAt y updatedAt

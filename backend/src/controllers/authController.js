@@ -18,12 +18,13 @@ const register = async (req, res, next) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
+        emailVerified: false
       }
     });
   } catch (error) {
     // Pasar al middleware de manejo de errores
-    if (error.message === 'El correo ya está registrado') {
+    if (error.message === 'El correo ya está registrado' || error.message === 'La contraseña debe tener al menos 8 caracteres.') {
       return res.status(400).json({ status: 'error', message: error.message });
     }
     next(error);
@@ -49,19 +50,78 @@ const login = async (req, res, next) => {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
+          iadObligatorio: user.iad_obligatorio === true
         }
       }
     });
   } catch (error) {
-    if (error.message === 'Credenciales inválidas') {
+    if (error.message === 'Datos inválidos') {
       return res.status(401).json({ status: 'error', message: error.message });
+    }
+    if (error.code === 'EMAIL_NOT_VERIFIED') {
+      return res.status(403).json({
+        status: 'error',
+        code: 'EMAIL_NOT_VERIFIED',
+        message: error.message
+      });
     }
     next(error);
   }
 };
 
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ status: 'error', message: 'Faltan correo o código de verificación' });
+    }
+
+    const { alreadyVerified } = await authService.verifyEmail(email, code);
+
+    res.status(200).json({
+      status: 'success',
+      message: alreadyVerified
+        ? 'Este correo ya había sido verificado.'
+        : '¡Correo verificado correctamente!'
+    });
+  } catch (error) {
+    const statusMap = {
+      'Correo no encontrado.': 404,
+      'El código ha expirado. Solicita un nuevo código.': 400,
+    };
+    const status = statusMap[error.message] || (error.message.includes('no es correcto') ? 400 : 500);
+    res.status(status).json({ status: 'error', message: error.message });
+  }
+};
+
+const resendCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ status: 'error', message: 'Falta el correo' });
+    }
+
+    await authService.resendVerificationCode(email);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Se envió un nuevo código de verificación a tu correo.'
+    });
+  } catch (error) {
+    const status = error.message === 'Correo no encontrado.' ? 404
+      : error.message === 'Este correo ya ha sido verificado.' ? 400
+      : error.status === 429 ? 429
+      : 500;
+    res.status(status).json({ status: 'error', message: error.message });
+  }
+};
+
 module.exports = {
   register,
-  login
+  login,
+  verifyEmail,
+  resendCode
 };

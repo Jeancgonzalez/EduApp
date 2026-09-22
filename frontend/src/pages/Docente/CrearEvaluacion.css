@@ -2,11 +2,8 @@
 padding: 2rem;
   max-width: 900px;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, sans-serif;
+
 }
-
-
-
 
 
 .volver-btn {
@@ -233,4 +230,29 @@ padding: 2rem;
 
 .submit-btn:hover:not(:disabled) {
   background: #1d4ed8;
+}
+
+.contenido-apoyo-block {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.alerta-info {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #92400e;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.texto-ayuda {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
 }

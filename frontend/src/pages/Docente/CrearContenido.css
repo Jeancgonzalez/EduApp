@@ -2,7 +2,7 @@
   padding: 2rem;
   max-width: 700px;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, sans-serif;
+
 }
 
 .crear-contenido-card {
@@ -82,4 +82,71 @@
 
 .submit-btn:hover:not(:disabled) {
   background: #1d4ed8;
+}
+
+.tipo-fields {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.tipo-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.file-label {
+  cursor: pointer;
+}
+
+.file-label .file-input {
+  display: none;
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  color: #475569;
+  transition: all 0.2s;
+  background: #f1f5f9;
+}
+
+.file-label:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+.file-label.file-selected {
+  border-color: #10b981;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #065f46;
+  word-break: break-all;
+}
+
+.rte-field {
+  margin-bottom: 1rem;
+}
+.rte-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
 }

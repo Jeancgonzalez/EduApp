@@ -1,0 +1,59 @@
+name: Deploy EduApp a Azure
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Construir frontend (frontend/dist)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Empaquetar app (backend + frontend/dist)
+        run: |
+          mkdir -p deploy/frontend
+          cp -R backend deploy/backend
+          cp -R frontend/dist deploy/frontend
+
+      - name: Desplegar en App Service (EduApp)
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: EduApp
+          slot-name: production
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./deploy
+
+      - name: Verificar que la app arranque (health check)
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://eduapp-hdecd2hmc4asayb9.mexicocentral-01.azurewebsites.net/api/health || true)
+            echo "Intento $i: HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "OK: la API responde 200."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "La app no respondio 200 (posible cold start lento con npm install)."
+          exit 1

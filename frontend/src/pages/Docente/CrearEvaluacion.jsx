@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import GrupoSelect from '../../components/GrupoSelect';
 import './CrearEvaluacion.css';
 
 const CrearEvaluacion = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isTeacher } = useAuth();
   const [modulos, setModulos] = useState([]);
+  const [contenidoApoyoError, setContenidoApoyoError] = useState('');
+  const [warningSinModulo, setWarningSinModulo] = useState('');
   const [formValues, setFormValues] = useState({
     titulo: '',
     descripcion: '',
     modulo: '',
+    modulo_content_id: '',
     tiempoLimitado: false,
-    tiempoMinutos: 5
+    tiempoMinutos: 5,
+    requiere_contenido_apoyo: false,
+    contenido_apoyo_id: '',
+    limitarIntentos: false,
+    max_intentos: '',
+    grupo_id: ''
   });
 
   const [preguntas, setPreguntas] = useState([
@@ -21,7 +30,8 @@ const CrearEvaluacion = () => {
       id: 1,
       enunciado: '',
       opciones: { A: '', B: '', C: '', D: '' },
-      respuestaCorrecta: ''
+      respuestaCorrecta: '',
+      retroalimentacion: ''
     }
   ]);
 
@@ -40,14 +50,102 @@ const CrearEvaluacion = () => {
       return;
     }
 
-    // Cargar módulos para mostrar en las tarjetas
     api.get('/contenidos/modulos')
       .then(res => setModulos(res.data?.data || []))
       .catch(() => setModulos([]));
   }, [isAuthenticated, isTeacher, navigate]);
 
+  const validarContenidoApoyo = async (contentId) => {
+    if (!contentId) {
+      setFormValues((prev) => ({ ...prev, contenido_apoyo_id: '' }));
+      setContenidoApoyoError('Selecciona un contenido para usar como apoyo.');
+      return;
+    }
+    try {
+      const res = await api.get(`/contenidos/${contentId}`);
+      const contenido = res.data?.data;
+      if (contenido) {
+        setFormValues((prev) => ({ ...prev, contenido_apoyo_id: contentId }));
+        setContenidoApoyoError('');
+      } else {
+        setFormValues((prev) => ({ ...prev, contenido_apoyo_id: '' }));
+        setContenidoApoyoError('No es posible crear esta evaluación porque el módulo seleccionado no posee contenidos de apoyo disponibles.');
+      }
+    } catch {
+      setFormValues((prev) => ({ ...prev, contenido_apoyo_id: '' }));
+      setContenidoApoyoError('No es posible crear esta evaluación porque el módulo seleccionado no posee contenidos de apoyo disponibles.');
+    }
+  };
+
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
+
+    if (name === 'limitarIntentos') {
+      setFormValues((prev) => ({
+        ...prev,
+        limitarIntentos: checked,
+        max_intentos: checked ? prev.max_intentos : ''
+      }));
+      return;
+    }
+
+    if (name === 'requiere_contenido_apoyo') {
+      if (checked) {
+        setFormValues((prev) => ({ ...prev, requiere_contenido_apoyo: true }));
+        if (!formValues.modulo_content_id) {
+          setWarningSinModulo('Primero debes seleccionar un módulo para poder utilizar contenido de apoyo.');
+        } else {
+          setWarningSinModulo('');
+          validarContenidoApoyo(formValues.modulo_content_id);
+        }
+      } else {
+        setFormValues((prev) => ({
+          ...prev,
+          requiere_contenido_apoyo: false,
+          contenido_apoyo_id: ''
+        }));
+        setContenidoApoyoError('');
+        setWarningSinModulo('');
+      }
+      return;
+    }
+
+    if (name === 'modulo') {
+      if (modulos.length > 0) {
+        const contentId = value;
+        const contenido = modulos.find((m) => String(m.id) === contentId);
+        const moduloNombre = contenido ? contenido.modulo : '';
+        setFormValues((prev) => ({
+          ...prev,
+          modulo: moduloNombre,
+          modulo_content_id: contentId
+        }));
+        setContenidoApoyoError('');
+        setWarningSinModulo('');
+        if (formValues.requiere_contenido_apoyo) {
+          if (contentId) {
+            validarContenidoApoyo(contentId);
+          } else {
+            setWarningSinModulo('Primero debes seleccionar un módulo para poder utilizar contenido de apoyo.');
+            setFormValues((prev) => ({ ...prev, contenido_apoyo_id: '' }));
+          }
+        }
+      } else {
+        setFormValues((prev) => ({ ...prev, modulo: value }));
+        setContenidoApoyoError('');
+        setWarningSinModulo('');
+        if (formValues.requiere_contenido_apoyo) {
+          if (value) {
+            validarContenidoApoyo(value);
+          } else {
+            setWarningSinModulo('Primero debes seleccionar un módulo para poder utilizar contenido de apoyo.');
+            setFormValues((prev) => ({ ...prev, contenido_apoyo_id: '' }));
+          }
+        }
+      }
+      return;
+    }
+
     setFormValues((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -71,7 +169,8 @@ const CrearEvaluacion = () => {
       id: preguntas.length + 1,
       enunciado: '',
       opciones: { A: '', B: '', C: '', D: '' },
-      respuestaCorrecta: ''
+      respuestaCorrecta: '',
+      retroalimentacion: ''
     };
     setPreguntas((prev) => [...prev, nuevaPregunta]);
   };
@@ -91,6 +190,25 @@ const CrearEvaluacion = () => {
     if (!formValues.modulo.trim()) {
       setError('El módulo es obligatorio.');
       return false;
+    }
+
+    if (formValues.requiere_contenido_apoyo) {
+      if (!formValues.modulo) {
+        setContenidoApoyoError('Debe seleccionar un módulo para utilizar contenido de apoyo o desactivar esta opción.');
+        return false;
+      }
+      if (!formValues.contenido_apoyo_id) {
+        setContenidoApoyoError('No es posible crear esta evaluación porque el módulo seleccionado no posee contenidos de apoyo disponibles.');
+        return false;
+      }
+    }
+
+    if (formValues.limitarIntentos) {
+      const intentos = Number(formValues.max_intentos);
+      if (!formValues.max_intentos || !Number.isInteger(intentos) || intentos < 1) {
+        setError('La cantidad de intentos debe ser un número entero mayor o igual a 1.');
+        return false;
+      }
     }
 
     for (let i = 0; i < preguntas.length; i++) {
@@ -130,10 +248,24 @@ const CrearEvaluacion = () => {
       const evaluacionData = {
         ...formValues,
         docente_id: user.id,
-        preguntas: preguntas.map(({ id, ...rest }) => rest) // Remover id temporal
+        preguntas: preguntas.map(({ id, ...rest }) => rest)
       };
 
-      console.log('📤 Enviando datos:', JSON.stringify(evaluacionData, null, 2));
+      if (!evaluacionData.modulo_content_id) {
+        delete evaluacionData.modulo_content_id;
+      }
+
+      if (!evaluacionData.requiere_contenido_apoyo) {
+        delete evaluacionData.contenido_apoyo_id;
+      }
+
+      if (!evaluacionData.grupo_id) {
+        delete evaluacionData.grupo_id;
+      }
+
+      evaluacionData.max_intentos = formValues.limitarIntentos
+        ? Number(formValues.max_intentos)
+        : null;
 
       const response = await api.post('/evaluaciones', evaluacionData);
 
@@ -150,7 +282,7 @@ const CrearEvaluacion = () => {
   };
 
   return (
-    <div className="crear-evaluacion-container">
+    <div className="crear-evaluacion-container cartoon-area">
       <button className="volver-btn" onClick={() => navigate(-1)}>
         ← Volver a Evaluaciones
       </button>
@@ -159,8 +291,7 @@ const CrearEvaluacion = () => {
         <h2>Crear Nueva Evaluación</h2>
       </div>
 
-      
-
+      <form onSubmit={handleSubmit} className="crear-evaluacion-form">
         <div className="form-section">
           <h3>Información General</h3>
 
@@ -192,31 +323,35 @@ const CrearEvaluacion = () => {
           <div className="form-group">
             <label htmlFor="modulo">Módulo *</label>
             {modulos.length > 0 ? (
-            <select
-              type="text"
-              id="modulo"
-              name="modulo"
-              value={formValues.modulo}
-              onChange={handleChange}
-              required
-            >
-              <option value="">-- Selecciona un módulo --</option>
-                    {modulos.map((m) => (
-                      <option key={m.id} value={m.modulo}>{m.modulo} – {m.titulo}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    id="modulo"
-                    name="modulo"
-                    value={formValues.modulo}
-                    onChange={handleChange}
-                    placeholder="Ej: Matemáticas (no hay módulos creados)"
-                    required
-                  />
-                )}
+              <select
+                id="modulo"
+                name="modulo"
+                value={formValues.modulo_content_id || ''}
+                onChange={handleChange}
+                required
+              >
+                <option value="">-- Selecciona un módulo --</option>
+                {modulos.map((m) => (
+                  <option key={m.id} value={m.id}>{m.modulo} – {m.titulo} ({m.publicado ? 'Publicado' : 'Despublicado'})</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                id="modulo"
+                name="modulo"
+                value={formValues.modulo}
+                onChange={handleChange}
+                placeholder="Ej: Matemáticas (no hay módulos creados)"
+                required
+              />
+            )}
           </div>
+
+          <GrupoSelect
+            value={formValues.grupo_id}
+            onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
+          />
 
           <div className="form-group">
             <label className="checkbox-label">
@@ -246,6 +381,64 @@ const CrearEvaluacion = () => {
                 <option value={25}>25 minutos</option>
                 <option value={30}>30 minutos</option>
               </select>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                name="limitarIntentos"
+                checked={formValues.limitarIntentos}
+                onChange={handleChange}
+              />
+              <span>Limitar cantidad de intentos</span>
+            </label>
+          </div>
+            
+          {formValues.limitarIntentos && (
+            <div className="form-group">
+              <label htmlFor="max_intentos">Cantidad de intentos permitidos </label>
+              <input
+                type="number"
+                id="max_intentos"
+                name="max_intentos"
+                value={formValues.max_intentos}
+                onChange={handleChange}
+                min="1"
+                step="1"
+                placeholder="Ej: 1, 2, 3..."
+              />
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                name="requiere_contenido_apoyo"
+                checked={formValues.requiere_contenido_apoyo}
+                onChange={handleChange}
+              />
+              <span>Mostrar contenido de apoyo antes de iniciar la evaluación</span>
+            </label>
+          </div>
+
+          {formValues.requiere_contenido_apoyo && (
+            <div className="contenido-apoyo-block">
+              {warningSinModulo && (
+                <div className="alerta-info" style={{ background: '#fef3c7', border: '1px solid #f59e0b', color: '#92400e' }}>
+                  {warningSinModulo}
+                </div>
+              )}
+              {!warningSinModulo && (
+                <div className="alerta-info">
+                  El estudiante visualizara el módulo seleccionado como contenido de apoyo antes de iniciar esta evaluación. Sirve para reforzar conceptos clave relacionados a las preguntas que se presentarán posteriormente.
+                </div>
+              )}
+              {contenidoApoyoError && (
+                <div className="error-message">{contenidoApoyoError}</div>
+              )}
             </div>
           )}
         </div>
@@ -313,11 +506,20 @@ const CrearEvaluacion = () => {
                   <option value="D">D</option>
                 </select>
               </div>
+
+              <div className="form-group">
+                <label>Retroalimentación</label>
+                <textarea
+                  value={pregunta.retroalimentacion}
+                  onChange={(e) => handlePreguntaChange(pregunta.id, 'retroalimentacion', e.target.value)}
+                  placeholder="Explicación, recomendación o comentario sobre esta pregunta (opcional)"
+                  rows="2"
+                />
+              </div>
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} className="crear-evaluacion-form">
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
 

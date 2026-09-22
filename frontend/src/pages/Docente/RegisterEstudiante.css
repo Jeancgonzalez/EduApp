@@ -6,7 +6,7 @@
   min-height: 100vh;
   margin: 0 auto;
   background: linear-gradient(135deg, #e0f2f1 0%, #f8fafc 50%, #e8f5e9 100%);
-  font-family: 'Inter', sans-serif;
+
   padding: 2rem 1rem;
 }
 
@@ -181,7 +181,7 @@
 
 .register-form .input-wrapper input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 2.5rem;
+  padding: 0.875rem 2.75rem 0.875rem 2.5rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -201,6 +201,41 @@
 
 .register-form .input-wrapper input::placeholder {
   color: #9ca3af;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  z-index: 2;
+  line-height: 1;
+}
+
+.password-toggle-btn:hover {
+  color: #4b5563;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.password-hint {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  line-height: 1.4;
 }
 
 .register-form .input-wrapper input:disabled {
@@ -236,4 +271,83 @@
   margin-bottom: 2rem;
   text-decoration: none;
   transition: background-color 0.2s ease;
+}
+/* ===== ValidaciÃ³n visual de campos ===== */
+.form-group.has-error .input-wrapper input {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.form-group.has-error .input-wrapper input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  background: #ffffff;
+}
+
+.field-error {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+
+/* ===== Misión Digital obligatoria (IAD-Primaria) ===== */
+.mision-obligatoria-group {
+  margin-bottom: 1.25rem;
+}
+
+.mision-obligatoria-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border: 1.5px dashed #c7d2fe;
+  border-radius: 14px;
+  background: #eef2ff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.mision-obligatoria-label:hover {
+  border-color: #818cf8;
+}
+
+.mision-obligatoria-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 0.15rem;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.mision-obligatoria-label span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mision-obligatoria-label strong {
+  font-size: 0.95rem;
+  color: #312e81;
+}
+
+.mision-obligatoria-label small {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+html[data-theme="dark"] .mision-obligatoria-label {
+  background: #1e1b4b;
+  border-color: #3b3b8f;
+}
+
+html[data-theme="dark"] .mision-obligatoria-label strong {
+  color: #e0e7ff;
+}
+
+html[data-theme="dark"] .mision-obligatoria-label small {
+  color: #c7d2fe;
 }

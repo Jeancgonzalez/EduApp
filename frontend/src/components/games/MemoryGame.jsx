@@ -11,8 +11,8 @@ const cardFrontStyle = {
 const cardBackStyle = {
   position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
   borderRadius: '0.5rem', backfaceVisibility: 'hidden', fontWeight: 700, fontSize: '0.9rem',
-  background: '#f8fafc', border: '2px solid #e2e8f0', transform: 'rotateY(180deg)',
-  color: '#0f172a', padding: '0.2rem', wordBreak: 'break-word', textAlign: 'center', lineHeight: '1.2'
+  background: 'var(--bg-elevated)', border: '2px solid var(--border)', transform: 'rotateY(180deg)',
+  color: 'var(--text-strong)', padding: '0.2rem', wordBreak: 'break-word', textAlign: 'center', lineHeight: '1.2'
 };
 
 const MemoryGame = ({ config: rawConfig, onComplete }) => {
@@ -107,9 +107,9 @@ const MemoryGame = ({ config: rawConfig, onComplete }) => {
                 <div style={cardFrontStyle}>?</div>
                 <div style={{
                   ...cardBackStyle,
-                  background: matched.includes(card.id) ? '#ecfdf5' : '#f8fafc',
-                  borderColor: matched.includes(card.id) ? '#059669' : '#e2e8f0',
-                  color: matched.includes(card.id) ? '#059669' : '#0f172a'
+                  background: matched.includes(card.id) ? 'var(--success-soft)' : 'var(--bg-elevated)',
+                  borderColor: matched.includes(card.id) ? 'var(--success)' : 'var(--border)',
+                  color: matched.includes(card.id) ? 'var(--success)' : 'var(--text-strong)'
                 }}>{card.content}</div>
               </div>
             </div>

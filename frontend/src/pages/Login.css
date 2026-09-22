@@ -1,21 +1,9 @@
-/* Importando fuente moderna */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-/* Reseteo básico para evitar márgenes del navegador */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  /* Fondo sutil con gradiente simulando el desenfoque de tu imagen */
   background: linear-gradient(135deg, #e0f2f1 0%, #f8fafc 50%, #e8f5e9 100%);
-  font-family: 'Inter', sans-serif;
   padding: 1rem;
 }
 
@@ -82,6 +70,28 @@
   border: 1px solid #fecaca;
 }
 
+.verify-prompt {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.verify-link {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: inherit;
+}
+
+.verify-link:hover {
+  background: #dbeafe;
+}
+
 .form-group {
   margin-bottom: 1.25rem;
 }
@@ -113,7 +123,7 @@
 
 .login-form .input-wrapper input {
   width: 100%;
-  padding: 12px 12px 12px 50px;
+  padding: 12px 42px 12px 50px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -133,6 +143,34 @@
 
 .login-form .input-wrapper input::placeholder {
   color: #d1d5db;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  z-index: 2;
+  line-height: 1;
+}
+
+.password-toggle-btn:hover {
+  color: #4b5563;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid #00b050;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .login-btn {

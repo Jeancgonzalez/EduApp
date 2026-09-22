@@ -20,13 +20,39 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  password_encrypted: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   role: {
     type: DataTypes.ENUM('student', 'teacher'),
     defaultValue: 'student',
     allowNull: false,
+  },
+  docente_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  emailVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
+  iad_obligatorio: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    allowNull: false,
+  },
+  emailVerificationCodeHash: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  emailVerificationExpires: {
+    type: DataTypes.DATE,
+    allowNull: true,
   }
 }, {
-  timestamps: true, // Crea automáticamente createdAt y updatedAt
+  timestamps: true,
   tableName: 'users'
 });
 

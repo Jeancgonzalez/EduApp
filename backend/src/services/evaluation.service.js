@@ -1,22 +1,72 @@
 const Evaluation = require('../models/evaluation.model');
+const Content = require('../models/content.model');
 const Question = require('../models/question.model');
+const Group = require('../models/grupo.model');
+const NotificationService = require('./notification.service');
 const { sequelize } = require('../config/database');
+
+const DEBUG = process.env.DEBUG_LOG === '1';
 
 class EvaluationService {
   /**
+   * Normaliza el campo max_intentos: vacío/undefined/null => null (intentos ilimitados).
+   */
+  static _normalizarMaxIntentos(data) {
+    if (data && Object.prototype.hasOwnProperty.call(data, 'max_intentos')) {
+      const raw = data.max_intentos;
+      if (raw === '' || raw === null || raw === undefined) {
+        data.max_intentos = null;
+      } else {
+        const num = Number(raw);
+        data.max_intentos = Number.isFinite(num) ? num : null;
+      }
+    }
+    return data;
+  }
+
+  /**
    * Crea una nueva evaluación junto con sus preguntas.
-  
+   
    * @param {Object} data - Datos (ej: { titulo: '...', preguntas: [{enunciado: '...', opciones: {A: '...'}}] })
    */
-  static async crearEvaluacion(data) {
-    // Iniciamos una transacción de Sequelize
+static async crearEvaluacion(data) {
+    if (data.publicado) {
+      if (!data.modulo_content_id) {
+        const moduloExists = await Content.findOne({ where: { modulo: data.modulo, docente_id: data.docente_id, publicado: true } });
+        if (!moduloExists) {
+          throw new Error(`No es posible publicar la evaluación porque el contenido del módulo "${data.modulo}" aún no está publicado.`);
+        }
+      } else {
+        const contentExists = await Content.findByPk(data.modulo_content_id);
+        if (!contentExists) {
+          throw new Error('No es posible publicar la evaluación porque el contenido del módulo seleccionado fue eliminado.');
+        }
+        if (!contentExists.publicado) {
+          throw new Error(`No es posible publicar la evaluación porque el contenido del módulo "${contentExists.modulo}" aún no está publicado.`);
+        }
+      }
+    }
+
+    if (data.requiere_contenido_apoyo) {
+      const contenidoApoyo = await Content.findByPk(data.contenido_apoyo_id);
+      if (!contenidoApoyo) {
+        throw new Error('No es posible crear la evaluación porque el módulo seleccionado no posee contenidos de apoyo disponibles.');
+      }
+      if (data.publicado && !contenidoApoyo.publicado) {
+        throw new Error(`No es posible publicar la evaluación porque el contenido de apoyo "${contenidoApoyo.titulo}" del módulo "${contenidoApoyo.modulo}" no está publicado.`);
+      }
+    }
+
     const t = await sequelize.transaction();
     try {
-      // Extraemos las preguntas y las transformamos al formato del modelo
       const { preguntas, ...evaluacionData } = data;
-      
-      console.log('📋 Datos recibidos:', JSON.stringify(data, null, 2));
-      console.log('❓ Preguntas recibidas:', preguntas);
+
+      EvaluationService._normalizarMaxIntentos(evaluacionData);
+
+      if (DEBUG) {
+        console.log('📋 Datos recibidos:', JSON.stringify(data, null, 2));
+        console.log('❓ Preguntas recibidas:', preguntas);
+      }
       
       // Creamos la evaluación primero
       const nuevaEvaluacion = await Evaluation.create(evaluacionData, { transaction: t });
@@ -24,7 +74,7 @@ class EvaluationService {
       // Si hay preguntas, las creamos
       if (preguntas && preguntas.length > 0) {
         const preguntasFormateadas = preguntas.map((pregunta, index) => {
-          console.log(`📝 Pregunta ${index}:`, JSON.stringify(pregunta, null, 2));
+          if (DEBUG) console.log(`📝 Pregunta ${index}:`, JSON.stringify(pregunta, null, 2));
           
           return {
             evaluacion_id: nuevaEvaluacion.id,
@@ -33,16 +83,25 @@ class EvaluationService {
             opcion_b: pregunta.opciones?.B || '',
             opcion_c: pregunta.opciones?.C || '',
             opcion_d: pregunta.opciones?.D || '',
-            respuesta_correcta: pregunta.respuestaCorrecta?.toLowerCase() || ''
+            respuesta_correcta: pregunta.respuestaCorrecta?.toLowerCase() || '',
+            retroalimentacion: pregunta.retroalimentacion || null
           };
         });
         
-        console.log('✅ Preguntas formateadas:', JSON.stringify(preguntasFormateadas, null, 2));
+        if (DEBUG) console.log('✅ Preguntas formateadas:', JSON.stringify(preguntasFormateadas, null, 2));
         
         await Question.bulkCreate(preguntasFormateadas, { transaction: t });
       }
       
       await t.commit();
+
+      if (data.publicado) {
+        await NotificationService.notifyNewEvaluation(nuevaEvaluacion.docente_id, nuevaEvaluacion.titulo, nuevaEvaluacion.modulo, data.grupo_id || null).catch(e => {
+          console.error('[Notificación] Error global en notifyNewEvaluation (crearEvaluacion):', e.message);
+          console.error(e);
+        });
+      }
+
       return nuevaEvaluacion;
     } catch (error) {
       await t.rollback();
@@ -54,11 +113,14 @@ class EvaluationService {
   /**
    * Actualiza una evaluación existente y sus preguntas si se envían.
    */
-  static async actualizarEvaluacion(id, data) {
+  static async actualizarEvaluacion(id, data, docenteId = null) {
     const t = await sequelize.transaction();
     try {
       const { preguntas, ...evaluacionData } = data;
-      const evaluacion = await Evaluation.findByPk(id, { transaction: t });
+      EvaluationService._normalizarMaxIntentos(evaluacionData);
+      const where = { id };
+      if (docenteId) where.docente_id = docenteId;
+      const evaluacion = await Evaluation.findOne({ where, transaction: t });
 
       if (!evaluacion) {
         throw new Error('Evaluación no encontrada');
@@ -67,7 +129,7 @@ class EvaluationService {
       // No permitimos editar otros campos mientras esté publicada.
       if (evaluacion.publicado) {
         const isOnlyPublishChange = Object.keys(data).length === 1 && data.publicado !== undefined;
-        
+
         if (isOnlyPublishChange) {
           await evaluacion.update({ publicado: data.publicado }, { transaction: t });
           await t.commit();
@@ -75,6 +137,43 @@ class EvaluationService {
         }
         throw new Error('No se puede modificar una evaluación que ya está publicada.');
       }
+
+      const requiereCA = evaluacionData.requiere_contenido_apoyo !== undefined
+        ? evaluacionData.requiere_contenido_apoyo
+        : evaluacion.requiere_contenido_apoyo;
+      const contenidoApoyoId = evaluacionData.contenido_apoyo_id !== undefined
+        ? evaluacionData.contenido_apoyo_id
+        : evaluacion.contenido_apoyo_id;
+
+      if (evaluacionData.publicado) {
+        const contentIdActual = evaluacionData.modulo_content_id !== undefined ? evaluacionData.modulo_content_id : evaluacion.modulo_content_id;
+        if (contentIdActual) {
+          const contentExists = await Content.findByPk(contentIdActual);
+          if (!contentExists) {
+            throw new Error('No es posible publicar la evaluación porque el contenido del módulo seleccionado fue eliminado.');
+          }
+          if (!contentExists.publicado) {
+            throw new Error(`No es posible publicar la evaluación porque el contenido del módulo "${contentExists.modulo}" aún no está publicado.`);
+          }
+        } else {
+          const moduloActual = evaluacionData.modulo !== undefined ? evaluacionData.modulo : evaluacion.modulo;
+          const moduloExists = await Content.findOne({ where: { modulo: moduloActual, docente_id: evaluacion.docente_id, publicado: true } });
+          if (!moduloExists) {
+            throw new Error(`No es posible publicar la evaluación porque el contenido del módulo "${moduloActual}" aún no está publicado.`);
+          }
+        }
+
+        if (requiereCA && contenidoApoyoId) {
+          const contenidoApoyo = await Content.findByPk(contenidoApoyoId);
+          if (!contenidoApoyo) {
+            throw new Error('No es posible publicar la evaluación porque el módulo relacionado al contenido de apoyo ya no existe.');
+          }
+          if (!contenidoApoyo.publicado) {
+            throw new Error(`No es posible publicar la evaluación porque el contenido de apoyo "${contenidoApoyo.titulo}" del módulo "${contenidoApoyo.modulo}" no está publicado.`);
+          }
+        }
+      }
+
       await evaluacion.update(evaluacionData, { transaction: t });
 
       if (preguntas && Array.isArray(preguntas)) {
@@ -87,7 +186,8 @@ class EvaluationService {
           opcion_b: pregunta.opciones?.B || '',
           opcion_c: pregunta.opciones?.C || '',
           opcion_d: pregunta.opciones?.D || '',
-          respuesta_correcta: pregunta.respuestaCorrecta?.toLowerCase() || ''
+          respuesta_correcta: pregunta.respuestaCorrecta?.toLowerCase() || '',
+          retroalimentacion: pregunta.retroalimentacion || null
         }));
         if (preguntasFormateadas.length > 0) {
           await Question.bulkCreate(preguntasFormateadas, { transaction: t });
@@ -95,6 +195,14 @@ class EvaluationService {
       }
 
       await t.commit();
+
+      // Notificar solo cuando la evaluación pasó de despublicada a publicada.
+      if (evaluacion.publicado) {
+        await NotificationService.notifyNewEvaluation(evaluacion.docente_id, evaluacion.titulo, evaluacion.modulo, evaluacion.grupo_id || null).catch(e => {
+          console.error('[Notificación] Error global en notifyNewEvaluation (actualizarEvaluacion):', e.message);
+          console.error(e);
+        });
+      }
 
       return await Evaluation.findByPk(id, {
         include: [{
@@ -115,7 +223,8 @@ class EvaluationService {
   static async obtenerEvaluaciones(filtros = {}) {
     try {
       const evaluaciones = await Evaluation.findAll({
-        where: filtros
+        where: filtros,
+        include: [{ model: Group, as: 'grupo', attributes: ['id', 'materia', 'nombre'] }]
       });
       return evaluaciones;
     } catch (error) {
@@ -126,9 +235,10 @@ class EvaluationService {
   /**
    * Obtiene una evaluación por su ID y carga todas sus preguntas asociadas.
    */
-  static async obtenerEvaluacionPorId(id) {
+  static async obtenerEvaluacionPorId(id, extraWhere = {}) {
     try {
-      const evaluacion = await Evaluation.findByPk(id, {
+      const evaluacion = await Evaluation.findOne({
+        where: { id, ...extraWhere },
         include: [{
           model: Question,
           as: 'preguntas'
@@ -144,11 +254,16 @@ class EvaluationService {
     }
   }
 
-  static async eliminarEvaluacion(id) {
+  static async eliminarEvaluacion(id, docenteId = null) {
     try {
-      const evaluacion = await Evaluation.findByPk(id);
+      const where = { id };
+      if (docenteId) where.docente_id = docenteId;
+      const evaluacion = await Evaluation.findOne({ where });
       if (!evaluacion) {
         throw new Error('Evaluación no encontrada');
+      }
+      if (evaluacion.publicado) {
+        throw new Error('publicado: No se puede eliminar esta evaluación porque ya está publicada.');
       }
       await evaluacion.destroy();
       return evaluacion;
@@ -165,7 +280,6 @@ class EvaluationService {
    */
   static async responderEvaluacion(evaluacionId, respuestasUsuario) {
     try {
-      // 1. Obtener la evaluación con las respuestas correctas de la base de datos
       const evaluacion = await Evaluation.findByPk(evaluacionId, {
         include: [{
           model: Question,
@@ -181,15 +295,12 @@ class EvaluationService {
       let cantidadCorrectas = 0;
       const totalPreguntas = preguntasBD.length;
 
-      // 2. Evaluamos cada pregunta
       const detalle = preguntasBD.map(preguntaBD => {
-        // Buscamos qué respondió el usuario para esta pregunta específica
         const respuestaEnviada = respuestasUsuario.find(r => r.pregunta_id === preguntaBD.id);
         const fueRespondida = !!respuestaEnviada;
-        
+
         let esCorrecta = false;
         if (fueRespondida) {
-          // Comparamos sin importar mayúsculas/minúsculas (ej: 'a' vs 'A')
           esCorrecta = respuestaEnviada.respuesta.toLowerCase() === preguntaBD.respuesta_correcta.toLowerCase();
           if (esCorrecta) {
             cantidadCorrectas++;
@@ -201,20 +312,17 @@ class EvaluationService {
           respondida: fueRespondida,
           respuesta_enviada: fueRespondida ? respuestaEnviada.respuesta : null,
           es_correcta: esCorrecta,
-          // Opcional: devolvemos la respuesta correcta para que el estudiante vea en qué falló
-          respuesta_correcta: preguntaBD.respuesta_correcta 
+          respuesta_correcta: preguntaBD.respuesta_correcta
         };
       });
 
-      // 3. Calcular puntaje (ejemplo: base 100)
       const puntajeFinal = totalPreguntas > 0 ? Math.round((cantidadCorrectas / totalPreguntas) * 100) : 0;
 
-      // 4. Retornar los resultados analizados
       return {
         evaluacion_id: evaluacion.id,
         total_preguntas: totalPreguntas,
         respuestas_correctas: cantidadCorrectas,
-        puntaje: puntajeFinal, 
+        puntaje: puntajeFinal,
         detalle: detalle
       };
     } catch (error) {

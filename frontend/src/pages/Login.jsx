@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MdEmail, MdLock, MdSchool } from 'react-icons/md';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/layout/ThemeToggle';
+import PasswordInput from '../components/PasswordInput';
 import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [pendingEmail, setPendingEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -16,6 +19,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setPendingEmail('');
     setIsLoading(true);
 
     try {
@@ -27,28 +31,46 @@ const Login = () => {
         
         const user = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
         const isTeacher = user?.role === 'teacher' || user?.role === 'docente';
-        navigate(isTeacher ? '/dashboard' : '/student/dashboard');
+        navigate(isTeacher ? '/docente/dashboard' : '/student/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        // Correo no verificado: mostrar mensaje y permitir ir a la verificación
+        setPendingEmail(email);
+        setError(err.response?.data?.message || 'Debe verificar su correo electrónico.');
+      } else {
+        setError(err.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  const goToVerification = () => {
+    navigate('/verificar-correo', { state: { email: pendingEmail || email } });
+  };
+
   return (
     <div className="login-container">
+      <ThemeToggle className="auth-theme-toggle" />
       <div className="login-card">
         
         <div className="login-header">
           <div className="logo-icon">
             <MdSchool size={32} />
           </div>
-          <h1>EduGame Platform</h1>
+          <h1>EduApp Platform</h1>
           <p>Aprende jugando, enseña innovando</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
+        {pendingEmail && (
+          <div className="verify-prompt">
+            <button type="button" className="verify-link" onClick={goToVerification}>
+              Ir a verificar mi correo
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
@@ -67,16 +89,13 @@ const Login = () => {
 
           <div className="form-group">
             <label>Contraseña</label>
-            <div className="input-wrapper">
-              <MdLock className="input-icon" />
-              <input 
-                type="password" 
-                placeholder="Ingresa tu contraseña" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+            <PasswordInput
+              icon={<MdLock className="input-icon" />}
+              placeholder="Ingresa tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
           <button type="submit" className="login-btn" disabled={isLoading}>

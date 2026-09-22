@@ -2,7 +2,7 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
 }
 
 .juegos-header {
@@ -19,10 +19,11 @@
 .juegos-titulo {
   font-size: 2rem;
   color: #1f2937;
-  margin: 0;
+  margin-bottom: 0;
+  text-align: left;
 }
 
-.juegos-crear-btn {
+.crear-juego-btn {
   display: inline-flex;
   align-items: center;
   padding: 0.7rem 1.4rem;
@@ -34,32 +35,28 @@
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
-.juegos-crear-btn:hover {
+
+.crear-juego-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .juegos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
 .juego-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-.juego-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px -3px rgba(0,0,0,0.1);
-  border-color: #d1d5db;
+  justify-content: space-between;
 }
 
 .juego-card.publicado {
@@ -67,57 +64,43 @@
   background: #f0fdf4;
 }
 
-.juego-icon {
-  font-size: 2.5rem;
-  line-height: 1;
+.juego-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
 }
 
-.juego-info { flex: 1; }
-
 .card-titulo {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: #111827;
-  margin: 0 0 0.6rem 0;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
 .card-info {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-.badge {
-  padding: 0.2rem 0.7rem;
-  border-radius: 9999px;
-  font-size: 0.82rem;
-  font-weight: 600;
+.card-descripcion {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
 }
-.badge-tipo { background: #dbeafe; color: #1e40af; }
-.badge-modulo { background: #f3f4f6; color: #374151; }
-.badge-publicado { background: #dcfce7; color: #166534; }
 
 .botones-accion {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  width: 100%;
 }
-
-.editar-btn-juego {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background: #eff6ff;
-  color: #2563eb;
-  font-weight: 600;
-  font-size: 0.88rem;
-  text-decoration: none;
-  transition: all 0.2s;
-  border: 1px solid #bfdbfe;
-}
-.editar-btn-juego:hover { background: #dbeafe; }
 
 .publicar-btn {
   display: inline-flex;
@@ -132,9 +115,30 @@
   border: 1px solid #86efac;
   transition: all 0.2s;
 }
+
 .publicar-btn:hover { background: #dcfce7; }
+
 .publicar-btn.despublicar { background: #fffbeb; color: #b45309; border-color: #fcd34d; }
+
 .publicar-btn.despublicar:hover { background: #fef3c7; }
+
+.editar-btn-juego {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid #bfdbfe;
+}
+
+.editar-btn-juego:hover {
+  background: #dbeafe;
+}
 
 .eliminar-btn {
   display: inline-flex;
@@ -150,7 +154,32 @@
   border: 1px solid #fecaca;
   transition: all 0.2s;
 }
-.eliminar-btn:hover { background: #fee2e2; }
+
+.eliminar-btn:hover {
+  background: #fee2e2;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge-tipo {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-modulo {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.badge-publicado {
+  background-color: #d1fae5;
+  color: #065f46;
+}
 
 .juegos-mensaje {
   text-align: center;
@@ -158,7 +187,10 @@
   font-size: 1.2rem;
   color: #6b7280;
 }
-.juegos-mensaje.error { color: #ef4444; }
+
+.juegos-mensaje.error {
+  color: #ef4444;
+}
 
 .juegos-vacio {
   text-align: center;
@@ -173,19 +205,41 @@
   align-items: center;
 }
 
-.crear-juego-btn {
+.grupo-filtro {
   display: inline-flex;
   align-items: center;
-  padding: 0.75rem 1.25rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #ffffff;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
 }
 
-.crear-juego-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+.grupo-filtro .grupo-filtro-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.grupo-filtro select {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grupo-filtro select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+html[data-theme="dark"] .grupo-filtro .grupo-filtro-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .grupo-filtro select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
 }

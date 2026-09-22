@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MdExtension, MdCheckCircle, MdError, MdWarning } from 'react-icons/md';
 
 const parseConfig = (c) => (typeof c === 'string' ? (() => { try { return JSON.parse(c); } catch { return {}; } })() : (c || {}));
@@ -11,6 +11,34 @@ const CrosswordGame = ({ config: rawConfig, onComplete }) => {
 
   const tablero = config?.tablero || [];
   const size = tablero.length || 10;
+  const cols = tablero[0]?.length || size;
+
+  const boardRef = useRef(null);
+  const [cellSize, setCellSize] = useState(40);
+
+  // Ajusta dinámicamente el tamaño de cada casilla para que el tablero aproveche
+  // el espacio real del contenedor (ancho y alto disponible), manteniendo las
+  // casillas cuadradas y sin desbordar ni generar scroll innecesario.
+  // tamaño = mínimo(ancho disponible / columnas, alto disponible / filas)
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el || cols === 0) return;
+    const medir = () => {
+      const gap = 2;
+      const PADDING = 8; // solo reserva espacio mínimo; el margen visual lo da el padding flex
+      const anchoDisponible = Math.max(0, Math.min(el.clientWidth, window.innerWidth - 16) - PADDING);
+      const altoDisponible = Math.min(window.innerHeight * 0.65, 820);
+      const porAncho = Math.floor((anchoDisponible - (cols - 1) * gap) / cols);
+      const porAlto = Math.floor((altoDisponible - (size - 1) * gap) / size);
+      const s = Math.max(12, Math.min(72, porAncho, porAlto));
+      setCellSize(prev => (prev === s ? prev : s));
+    };
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    window.addEventListener('resize', medir);
+    return () => { ro.disconnect(); window.removeEventListener('resize', medir); };
+  }, [size, cols]);
 
   // All words from teacher form (may include unplaced words)
   const todasLasPalabras = (config?.palabras || []).filter(p => p.palabra);
@@ -136,7 +164,7 @@ const CrosswordGame = ({ config: rawConfig, onComplete }) => {
   };
 
   return (
-    <div className="game-container">
+    <div className="game-container crossword-game-container">
       <div className="game-header">
         <MdExtension className="game-icon" />
         <span className="game-type-label">Crucigrama</span>
@@ -144,35 +172,43 @@ const CrosswordGame = ({ config: rawConfig, onComplete }) => {
       </div>
 
       {tablero.length > 0 && (
-        <div className="crossword-board">
-          <div className="sopa-grid" style={{ '--grid-size': size }}>
+        <div className="crossword-board" ref={boardRef}>
+          <div className="sopa-grid" style={{
+            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
+            gap: '2px'
+          }}>
             {tablero.flat().map((cell, i) => {
-              const row = Math.floor(i / size), col = i % size;
+              const row = Math.floor(i / cols), col = i % cols;
               const isBlocked = !cell || cell === '#';
               const cellValidation = getCellValidation(row, col);
-              const bgColor = isBlocked ? '#1e293b'
-                : cellValidation === true ? '#059669'
-                : cellValidation === false ? '#dc2626'
-                : '#f8fafc';
+              const bgColor = isBlocked ? 'var(--cwg-cell-blocked-bg)'
+                : cellValidation === true ? 'var(--success)'
+                : cellValidation === false ? 'var(--danger)'
+                : 'var(--cwg-cell-active-bg)';
+              const borderColor = isBlocked ? 'var(--cwg-cell-blocked-border)'
+                : cellValidation === true ? 'var(--success)'
+                : cellValidation === false ? 'var(--danger)'
+                : 'var(--cwg-cell-active-border)';
               const textColor = isBlocked ? 'transparent'
                 : cellValidation !== null ? 'white'
-                : '#0f172a';
+                : 'var(--text-strong)';
               const keyCell = `${row}-${col}`;
               const val = userGrid[keyCell] || '';
 
               return (
                 <div key={i} className="sopa-cell" style={{
+                  width: cellSize, height: cellSize,
                   background: bgColor, color: textColor,
-                  border: isBlocked ? '1px solid #334155' : '1px solid #e2e8f0',
+                  border: `1px solid ${borderColor}`,
                   position: 'relative', transition: 'all 0.3s ease'
                 }}>
                   {!isBlocked && (
                     <>
                       {cell?.numero && (
                         <span style={{
-                          position: 'absolute', top: '1px', left: '3px',
-                          fontSize: '0.55rem', fontWeight: 700,
-                          color: cellValidation !== null ? 'rgba(255,255,255,0.85)' : '#64748b',
+                          position: 'absolute', top: '2px', left: '4px',
+                          fontSize: '0.7rem', fontWeight: 700,
+                          color: cellValidation !== null ? 'rgba(255,255,255,0.85)' : 'var(--cwg-cell-number)',
                           lineHeight: 1, pointerEvents: 'none', zIndex: 1
                         }}>
                           {cell.numero}
@@ -185,7 +221,7 @@ const CrosswordGame = ({ config: rawConfig, onComplete }) => {
                         maxLength={1} disabled={!!resultado}
                         style={{
                           width: '100%', height: '100%', border: 'none', background: 'transparent',
-                          textAlign: 'center', fontSize: '0.9rem', fontWeight: 700,
+                          textAlign: 'center', fontSize: cellSize < 30 ? '0.9rem' : cellSize < 44 ? '1.15rem' : '1.45rem', fontWeight: 800,
                           textTransform: 'uppercase', outline: 'none', color: 'inherit',
                           fontFamily: 'inherit', cursor: resultado ? 'default' : 'text',
                           padding: 0, boxSizing: 'border-box', position: 'relative', zIndex: 2
@@ -200,7 +236,10 @@ const CrosswordGame = ({ config: rawConfig, onComplete }) => {
       )}
 
       <div className="crossword-clues">
-        <h4>Pistas ({words.length}):</h4>
+        <div className="crossword-clues-header">
+          <h4>Pistas ({words.length}):</h4>
+          <span className="crossword-orientation-legend"><strong>↓</strong> Vertical · <strong>→</strong> Horizontal</span>
+        </div>
         {words.map((w, i) => (
           <div key={i} className="clue-item" style={{
             opacity: w.placed ? 1 : 0.6,

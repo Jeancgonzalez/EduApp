@@ -1,0 +1,967 @@
+/* ==========================================================================
+   CARTOON JUGUETON — Apartados estudiante y docente (una sola fuente compartida).
+   Reemplaza la identidad retro/pixel por tarjetas curvas, tipografia
+   redondeada, sombras coloridas suaves y micro-animaciones.
+   Se importa AL FINAL del bundle (gana en cascada a los bloques retro).
+   Aislado bajo :is(.student-area, .cartoon-area): ambas interfaces comparten
+   nombres de clase (.juego-card, .contenidos-container, etc.), por eso todas
+   las reglas van cableadas al marcador .cartoon-area. Las paginas de
+   estudiante usan .student-area, las de docente .cartoon-area.
+   ========================================================================== */
+
+/* --- Tipografia redondeada en todo el apartado estudiante --- */
+:is(.student-area, .cartoon-area) {
+  font-family: var(--font-body);
+}
+
+/* --- Titulos de seccion: redondeados y legibles (kilos de pixel) --- */
+:is(.student-area, .cartoon-area) .main-header h1,
+:is(.student-area, .cartoon-area) .contenidos-titulo,
+:is(.student-area, .cartoon-area) .juegos-titulo,
+:is(.student-area, .cartoon-area) .evaluaciones-titulo,
+:is(.student-area, .cartoon-area) .progreso-titulo,
+:is(.student-area, .cartoon-area) .section-titulo,
+:is(.student-area, .cartoon-area) .detalle-titulo {
+  font-family: var(--font-display) !important;
+  font-size: 1.45rem !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.3 !important;
+  color: var(--text-strong) !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Titulos dentro de tarjetas */
+:is(.student-area, .cartoon-area) .stat-card h3,
+:is(.student-area, .cartoon-area) .gamificacion-title h3,
+:is(.student-area, .cartoon-area) .progress-title,
+:is(.student-area, .cartoon-area) .card-titulo,
+:is(.student-area, .cartoon-area) .modulo-progreso-header h3,
+:is(.student-area, .cartoon-area) .welcome-card h2 {
+  font-family: var(--font-display) !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  text-transform: none !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.35 !important;
+  margin: 0 0 0.25rem;
+}
+
+:is(.student-area, .cartoon-area) .welcome-card h2 {
+  font-size: 1.7rem !important;
+}
+
+/* Iconos de titulo: coloridos y gruesos */
+:is(.student-area, .cartoon-area) .contenidos-titulo svg,
+:is(.student-area, .cartoon-area) .juegos-titulo svg,
+:is(.student-area, .cartoon-area) .evaluaciones-titulo svg,
+:is(.student-area, .cartoon-area) .progreso-titulo svg,
+:is(.student-area, .cartoon-area) .section-titulo svg,
+:is(.student-area, .cartoon-area) .detalle-titulo svg {
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+}
+
+/* --- TEXTOS DE TARJETAS: legibles (nada de pixel tiny) --- */
+:is(.student-area, .cartoon-area) .welcome-card p,
+:is(.student-area, .cartoon-area) .text-progress,
+:is(.student-area, .cartoon-area) .stat-card p,
+:is(.student-area, .cartoon-area) .puntos-label,
+:is(.student-area, .cartoon-area) .puntos-siguiente,
+:is(.student-area, .cartoon-area) .gamificacion-title span,
+:is(.student-area, .cartoon-area) .card-descripcion,
+:is(.student-area, .cartoon-area) .resumen-label,
+:is(.student-area, .cartoon-area) .resumen-valor,
+:is(.student-area, .cartoon-area) .modulo-progreso-stats,
+:is(.student-area, .cartoon-area) .actividad-nombre,
+:is(.student-area, .cartoon-area) .actividad-fecha,
+:is(.student-area, .cartoon-area) .medalla-nombre-progreso,
+:is(.student-area, .cartoon-area) .medalla-modal-encabezado h3,
+:is(.student-area, .cartoon-area) .medalla-modal-categoria,
+:is(.student-area, .cartoon-area) .medalla-modal-descripcion,
+:is(.student-area, .cartoon-area) .medalla-modal-estado,
+:is(.student-area, .cartoon-area) .medalla-modal-pregunta,
+:is(.student-area, .cartoon-area) .medalla-modal-respuesta,
+:is(.student-area, .cartoon-area) .resultado-puntaje,
+:is(.student-area, .cartoon-area) .juego-puntaje,
+:is(.student-area, .cartoon-area) .sin-actividad {
+  font-family: var(--font-body) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.55 !important;
+}
+
+:is(.student-area, .cartoon-area) .card-descripcion { font-size: 0.95rem !important; }
+:is(.student-area, .cartoon-area) .welcome-card p { font-size: 1rem !important; }
+:is(.student-area, .cartoon-area) .text-progress { font-size: 0.95rem !important; font-weight: 700; }
+:is(.student-area, .cartoon-area) .puntos-label { font-size: 0.95rem !important; font-weight: 700; }
+:is(.student-area, .cartoon-area) .puntos-siguiente { font-size: 0.85rem !important; font-weight: 600; }
+:is(.student-area, .cartoon-area) .gamificacion-title span { font-size: 0.95rem !important; font-weight: 700; }
+:is(.student-area, .cartoon-area) .resumen-label { font-size: 0.9rem !important; font-weight: 700; }
+:is(.student-area, .cartoon-area) .modulo-progreso-stats { font-size: 0.9rem !important; font-weight: 600; }
+:is(.student-area, .cartoon-area) .actividad-nombre { font-size: 0.95rem !important; font-weight: 600; }
+:is(.student-area, .cartoon-area) .actividad-fecha { font-size: 0.85rem !important; font-weight: 500; }
+:is(.student-area, .cartoon-area) .medalla-nombre-progreso { font-size: 0.85rem !important; font-weight: 700; }
+
+/* Numeros grandes destacados */
+:is(.student-area, .cartoon-area) .stat-card p,
+:is(.student-area, .cartoon-area) .puntos-valor,
+:is(.student-area, .cartoon-area) .resumen-valor {
+  font-family: var(--font-display) !important;
+  font-size: 1.6rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+}
+
+/* --- DECORATIVOS PSEUDO: se quitan (nada de [>>] ni simbolos pixel) --- */
+:is(.student-area, .cartoon-area) .welcome-card::before,
+:is(.student-area, .cartoon-area) .evaluacion-start-card::before,
+:is(.student-area, .cartoon-area) .resultado-card::before {
+  content: none !important;
+}
+
+/* --- TARJETAS: curvas, bordes suaves, sombras coloridas --- */
+:is(.student-area, .cartoon-area) .stat-card,
+:is(.student-area, .cartoon-area) .progress-card,
+:is(.student-area, .cartoon-area) .gamificacion-card,
+:is(.student-area, .cartoon-area) .juego-card,
+:is(.student-area, .cartoon-area) .evaluacion-card,
+:is(.student-area, .cartoon-area) .modulo-progreso-card,
+:is(.student-area, .cartoon-area) .medalla-card-progreso,
+:is(.student-area, .cartoon-area) .resumen-card,
+:is(.student-area, .cartoon-area) .detalle-card,
+:is(.student-area, .cartoon-area) .modulo-card,
+:is(.student-area, .cartoon-area) .contenido-card,
+:is(.student-area, .cartoon-area) .evaluacion-start-card,
+:is(.student-area, .cartoon-area) .pregunta-card,
+:is(.student-area, .cartoon-area) .resultado-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+
+:is(.student-area, .cartoon-area) .welcome-card {
+  border-radius: var(--radius-lg) !important;
+  border: none !important;
+  box-shadow: 0 14px 34px -12px rgba(124, 58, 237, 0.45) !important;
+  overflow: hidden !important;
+}
+
+:is(.student-area, .cartoon-area) .stat-card:hover,
+:is(.student-area, .cartoon-area) .progress-card:hover,
+:is(.student-area, .cartoon-area) .gamificacion-card:hover,
+:is(.student-area, .cartoon-area) .juego-card:hover,
+:is(.student-area, .cartoon-area) .evaluacion-card:hover,
+:is(.student-area, .cartoon-area) .modulo-progreso-card:hover,
+:is(.student-area, .cartoon-area) .resumen-card:hover,
+:is(.student-area, .cartoon-area) .modulo-card:hover,
+:is(.student-area, .cartoon-area) .contenido-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 30px -10px rgba(124, 58, 237, 0.32) !important;
+  border-color: var(--primary) !important;
+}
+
+/* --- HERO: toque jugueton --- */
+:is(.student-area, .cartoon-area) .welcome-card {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7) !important;
+}
+:is(.student-area, .cartoon-area) .welcome-card h2,
+:is(.student-area, .cartoon-area) .welcome-card p {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- BOTONES: pildoras redondeadas, hover con elevacion --- */
+:is(.student-area, .cartoon-area) .resolver-btn,
+:is(.student-area, .cartoon-area) .jugar-btn,
+:is(.student-area, .cartoon-area) .btn-iniciar,
+:is(.student-area, .cartoon-area) .btn-enviar,
+:is(.student-area, .cartoon-area) .back-btn,
+:is(.student-area, .cartoon-area) .btn-volver-jugar,
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-logout-btn,
+:is(.student-area, .cartoon-area) .logout-btn,
+:is(.student-area, .cartoon-area) .crear-contenido-btn {
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
+  cursor: pointer;
+}
+
+:is(.student-area, .cartoon-area) .resolver-btn:hover,
+:is(.student-area, .cartoon-area) .jugar-btn:hover,
+:is(.student-area, .cartoon-area) .btn-iniciar:hover,
+:is(.student-area, .cartoon-area) .btn-enviar:hover,
+:is(.student-area, .cartoon-area) .back-btn:hover,
+:is(.student-area, .cartoon-area) .btn-volver-jugar:hover,
+:is(.student-area, .cartoon-area) .crear-contenido-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 10px 22px -6px rgba(0, 0, 0, 0.35) !important;
+}
+
+:is(.student-area, .cartoon-area) .resolver-btn:active,
+:is(.student-area, .cartoon-area) .jugar-btn:active,
+:is(.student-area, .cartoon-area) .btn-iniciar:active,
+:is(.student-area, .cartoon-area) .btn-enviar:active,
+:is(.student-area, .cartoon-area) .back-btn:active,
+:is(.student-area, .cartoon-area) .btn-volver-jugar:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Colores por funcionalidad */
+:is(.student-area, .cartoon-area) .jugar-btn { background: linear-gradient(135deg, #f97316, #fb923c) !important; }
+:is(.student-area, .cartoon-area) .resolver-btn { background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important; }
+:is(.student-area, .cartoon-area) .btn-iniciar { background: linear-gradient(135deg, #4f46e5, #6366f1) !important; }
+:is(.student-area, .cartoon-area) .btn-enviar { background: linear-gradient(135deg, #059669, #10b981) !important; }
+:is(.student-area, .cartoon-area) .back-btn { background: var(--bg-elevated) !important; color: var(--text-strong) !important; }
+:is(.student-area, .cartoon-area) .btn-volver-jugar { background: linear-gradient(135deg, #059669, #10b981) !important; }
+:is(.student-area, .cartoon-area) .crear-contenido-btn { background: linear-gradient(135deg, #0284c7, #38bdf8) !important; }
+
+/* BOTON SALIR: pildora con texto del mismo ancho que el contenido */
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-logout-btn,
+:is(.student-area, .cartoon-area) .logout-btn {
+  width: auto;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 0.9rem;
+  gap: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill) !important;
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+  box-sizing: border-box;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-logout-btn svg,
+:is(.student-area, .cartoon-area) .logout-btn svg {
+  font-size: 1.15rem;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-logout-label,
+:is(.student-area, .cartoon-area) .logout-label {
+  display: inline;
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* --- BADGES / PILLS: redondeadas y legibles --- */
+:is(.student-area, .cartoon-area) .badge,
+:is(.student-area, .cartoon-area) .badge-tipo,
+:is(.student-area, .cartoon-area) .badge-modulo,
+:is(.student-area, .cartoon-area) .badge-publicado,
+:is(.student-area, .cartoon-area) .badge-nivel,
+:is(.student-area, .cartoon-area) .badge-tiempo,
+:is(.student-area, .cartoon-area) .puntaje-badge,
+:is(.student-area, .cartoon-area) .medallas-contador,
+:is(.student-area, .cartoon-area) .user-badge,
+:is(.student-area, .cartoon-area) .nivel-badge {
+  font-family: var(--font-display) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0.35rem 0.9rem !important;
+  line-height: 1.4 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:is(.student-area, .cartoon-area) .badge-tipo { background: #dbeafe !important; color: #1e40af !important; }
+:is(.student-area, .cartoon-area) .badge-modulo { background: #f3f4f6 !important; color: #374151 !important; }
+:is(.student-area, .cartoon-area) .badge-publicado { background: #d1fae5 !important; color: #065f46 !important; }
+
+/* NIVEL BADGE: morado degradado sin parpadeo */
+:is(.student-area, .cartoon-area) .nivel-badge {
+  animation: none !important;
+  background: linear-gradient(135deg, #a855f7, #8b5cf6) !important;
+  color: #ffffff !important;
+}
+
+/* --- BARRAS DE PROGRESO: curvas y animadas --- */
+:is(.student-area, .cartoon-area) .progress-bar-container {
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  background: var(--bg-sunken) !important;
+  overflow: hidden !important;
+}
+:is(.student-area, .cartoon-area) .progress-bar,
+:is(.student-area, .cartoon-area) .progress-bar-modulo,
+:is(.student-area, .cartoon-area) .progress-bar-gamif {
+  border-radius: var(--radius-pill) !important;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7) !important;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4) !important;
+  transition: width 0.7s ease !important;
+}
+
+/* --- MEDALLAS: curvas; obtenidas en amarillo, pendientes en gris --- */
+:is(.student-area, .cartoon-area) .medalla-item,
+:is(.student-area, .cartoon-area) .medalla-card-progreso,
+:is(.student-area, .cartoon-area) .medalla-item-progreso {
+  border-radius: var(--radius) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+:is(.student-area, .cartoon-area) .medalla-item svg,
+:is(.student-area, .cartoon-area) .medalla-item-progreso svg {
+  image-rendering: auto !important;
+}
+:is(.student-area, .cartoon-area) .medalla-card-progreso.obtenida,
+:is(.student-area, .cartoon-area) .medalla-item.obtenida {
+  background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+  border: 2px solid #10b981 !important;
+  box-shadow: 4px 4px 0 0 rgba(5, 150, 105, 0.25) !important;
+}
+:is(.student-area, .cartoon-area) .medalla-card-progreso.obtenida:hover,
+:is(.student-area, .cartoon-area) .medalla-item-progreso.obtenida:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 6px 6px 0 0 rgba(5, 150, 105, 0.3) !important;
+}
+:is(.student-area, .cartoon-area) .medalla-card-progreso.por-conseguir,
+:is(.student-area, .cartoon-area) .medalla-item.por-conseguir {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+/* --- OPCIONES DE PREGUNTA (evaluaciones): tarjetas redondeadas --- */
+:is(.student-area, .cartoon-area) .opcion-label {
+  border-radius: var(--radius) !important;
+  border: 2px solid var(--border) !important;
+  box-shadow: none !important;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease !important;
+}
+:is(.student-area, .cartoon-area) .opcion-label:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 8px 16px -6px rgba(124, 58, 237, 0.3) !important;
+}
+:is(.student-area, .cartoon-area) .opcion-label.selected {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-soft) !important;
+  background: var(--primary-soft) !important;
+}
+
+:is(.student-area, .cartoon-area) .pregunta-card { border-left: 6px solid var(--primary) !important; }
+:is(.student-area, .cartoon-area) .pregunta-numero {
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* --- BARRA DE ACCIONES (evaluacion): suave --- */
+:is(.student-area, .cartoon-area) .evaluacion-actions {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 -8px 24px -12px rgba(15, 23, 42, 0.25) !important;
+}
+
+/* --- NAVBAR ESTUDIANTE: pildoras curvas, tipografia redondeada --- */
+:is(.navbar.navbar-student, .navbar.navbar-teacher) {
+  background: var(--bg-card) !important;
+  border-bottom: none !important;
+  box-shadow: 0 4px 18px -6px rgba(15, 23, 42, 0.12) !important;
+  height: 72px;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-brand {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0 !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-title {
+  font-family: var(--font-display) !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-link {
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px -3px rgba(15, 23, 42, 0.15) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-link:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 18px -6px rgba(79, 70, 229, 0.4) !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-link.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.75), rgba(124, 58, 237, 0.75), rgba(79, 70, 229, 0.75)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px -6px rgba(79, 70, 229, 0.55) !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-link .nav-label {
+  font-family: var(--font-display) !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-user {
+  border-radius: var(--radius-pill) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+:is(.navbar.navbar-student, .navbar.navbar-teacher) .navbar-user-name {
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+/* --- SIDEBAR DEL ESTUDIANTE: pestaña activa morada transparente --- */
+:is(.student-area, .cartoon-area) .sidebar-nav .nav-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.75), rgba(124, 58, 237, 0.75), rgba(79, 70, 229, 0.75)) !important;
+  color: #ffffff !important;
+  border: 2px solid #7c3aed !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35) !important;
+}
+[data-theme='dark'] :is(.student-area, .cartoon-area) .sidebar-nav .nav-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(124, 58, 237, 0.8), rgba(109, 40, 217, 0.8)) !important;
+  border-color: #7c3aed !important;
+}
+
+/* --- KEYFRAMES: animaciones suaves --- */
+@keyframes cartoon-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cartoon-pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  70% { transform: scale(1.04); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes cartoon-grow {
+  from { width: 0; }
+}
+
+/* Entrada de tarjetas */
+:is(.student-area, .cartoon-area) .stat-card,
+:is(.student-area, .cartoon-area) .progress-card,
+:is(.student-area, .cartoon-area) .gamificacion-card,
+:is(.student-area, .cartoon-area) .juego-card,
+:is(.student-area, .cartoon-area) .evaluacion-card,
+:is(.student-area, .cartoon-area) .modulo-progreso-card,
+:is(.student-area, .cartoon-area) .medalla-card-progreso,
+:is(.student-area, .cartoon-area) .resumen-card,
+:is(.student-area, .cartoon-area) .detalle-card,
+:is(.student-area, .cartoon-area) .modulo-card,
+:is(.student-area, .cartoon-area) .contenido-card,
+:is(.student-area, .cartoon-area) .evaluacion-start-card,
+:is(.student-area, .cartoon-area) .pregunta-card,
+:is(.student-area, .cartoon-area) .resultado-card {
+  animation: cartoon-fade-up 0.45s ease both;
+}
+:is(.student-area, .cartoon-area) .stat-card:nth-child(2),
+:is(.student-area, .cartoon-area) .juego-card:nth-child(2),
+:is(.student-area, .cartoon-area) .evaluacion-card:nth-child(2) { animation-delay: 0.06s; }
+:is(.student-area, .cartoon-area) .stat-card:nth-child(3),
+:is(.student-area, .cartoon-area) .juego-card:nth-child(3),
+:is(.student-area, .cartoon-area) .evaluacion-card:nth-child(3) { animation-delay: 0.12s; }
+:is(.student-area, .cartoon-area) .stat-card:nth-child(4),
+:is(.student-area, .cartoon-area) .juego-card:nth-child(4),
+:is(.student-area, .cartoon-area) .evaluacion-card:nth-child(4) { animation-delay: 0.18s; }
+
+/* Recompensas: aparicion con "pop" */
+:is(.student-area, .cartoon-area) .puntos-valor,
+:is(.student-area, .cartoon-area) .resumen-valor,
+:is(.student-area, .cartoon-area) .resultado-puntaje,
+:is(.student-area, .cartoon-area) .medalla-item-progreso.obtenida,
+:is(.student-area, .cartoon-area) .medalla-card-progreso.obtenida {
+  animation: cartoon-pop 0.5s ease;
+}
+
+/* Barras: crecimiento animado */
+:is(.student-area, .cartoon-area) .progress-bar,
+:is(.student-area, .cartoon-area) .progress-bar-modulo,
+:is(.student-area, .cartoon-area) .progress-bar-gamif {
+  animation: cartoon-grow 0.7s ease both;
+}
+
+/* Respeto a usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  :is(.student-area, .cartoon-area) .stat-card,
+  :is(.student-area, .cartoon-area) .progress-card,
+  :is(.student-area, .cartoon-area) .gamificacion-card,
+  :is(.student-area, .cartoon-area) .juego-card,
+  :is(.student-area, .cartoon-area) .evaluacion-card,
+  :is(.student-area, .cartoon-area) .modulo-progreso-card,
+  :is(.student-area, .cartoon-area) .medalla-card-progreso,
+  :is(.student-area, .cartoon-area) .resumen-card,
+  :is(.student-area, .cartoon-area) .detalle-card,
+  :is(.student-area, .cartoon-area) .modulo-card,
+:is(.student-area, .cartoon-area) .contenido-card,
+  :is(.student-area, .cartoon-area) .evaluacion-start-card,
+  :is(.student-area, .cartoon-area) .pregunta-card,
+  :is(.student-area, .cartoon-area) .resultado-card,
+  :is(.student-area, .cartoon-area) .gestion-card,
+  :is(.student-area, .cartoon-area) .cuentas-summary-card,
+  :is(.student-area, .cartoon-area) .grupos-summary-card,
+  :is(.student-area, .cartoon-area) .progreso-stat-card,
+  :is(.student-area, .cartoon-area) .progreso-chart-card,
+  :is(.student-area, .cartoon-area) .student-progress-card,
+  :is(.student-area, .cartoon-area) .crear-contenido-card,
+  :is(.student-area, .cartoon-area) .crear-evaluacion-form,
+  :is(.student-area, .cartoon-area) .form-section,
+  :is(.student-area, .cartoon-area) .cuentas-table-wrapper,
+  :is(.student-area, .cartoon-area) .grupos-table-wrapper,
+  :is(.student-area, .cartoon-area) .progreso-table-wrapper {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   CARTOON JUGUETON — MODO OSCURO
+   ========================================================================== */
+[data-theme='dark'] :is(.student-area, .cartoon-area) .stat-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progress-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .gamificacion-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .juego-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .evaluacion-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .modulo-progreso-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .medalla-card-progreso,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .resumen-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .detalle-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .modulo-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .contenido-card,
+:is(.student-area, .cartoon-area) .contenido-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .evaluacion-start-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .pregunta-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .resultado-card {
+  border-color: var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.5) !important;
+}
+[data-theme='dark'] :is(.student-area, .cartoon-area) .welcome-card {
+  background: linear-gradient(135deg, #3730a3, #6d28d9, #7e22ce) !important;
+}
+[data-theme='dark'] :is(.student-area, .cartoon-area) .opcion-label.selected {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-soft) !important;
+  background: var(--primary-soft) !important;
+}
+
+/* ==========================================================================
+   CARTOON JUGUETON — BLOQUE DOCENTE
+   Componentes propios de la interfaz del docente (dashboard, gestion de
+   alumnos, grupos, cuentas, progreso, formularios de creacion/edicion y
+   registro de estudiantes). Misma identidad visual que el apartado estudiante.
+   ========================================================================== */
+
+/* --- Tipografia redondeada + tamano de letra en TODA la interfaz docente --- */
+:is(.student-area, .cartoon-area) .main-header h1,
+:is(.student-area, .cartoon-area) .sidebar-header h2,
+:is(.student-area, .cartoon-area) .gestion-header h1,
+:is(.student-area, .cartoon-area) .cuentas-header-top h1,
+:is(.student-area, .cartoon-area) .grupos-header h1,
+:is(.student-area, .cartoon-area) .progreso-header h1,
+:is(.student-area, .cartoon-area) .crear-evaluacion-header h2,
+:is(.student-area, .cartoon-area) .crear-juegos-header h2,
+:is(.student-area, .cartoon-area) .editar-juegos-header h2,
+:is(.student-area, .cartoon-area) .crear-contenido-card h2,
+:is(.student-area, .cartoon-area) .form-section h3,
+:is(.student-area, .cartoon-area) .crear-evaluacion-card h2,
+:is(.student-area, .cartoon-area) .register-header h1,
+:is(.student-area, .cartoon-area) .detalle-titulo,
+:is(.student-area, .cartoon-area) .pregunta-header h4 {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.3 !important;
+  text-transform: none !important;
+}
+
+:is(.student-area, .cartoon-area) .main-header h1 { font-size: 1.5rem !important; }
+:is(.student-area, .cartoon-area) .sidebar-header h2 { font-size: 1.1rem !important; }
+:is(.student-area, .cartoon-area) .gestion-header h1,
+:is(.student-area, .cartoon-area) .cuentas-header-top h1,
+:is(.student-area, .cartoon-area) .grupos-header h1,
+:is(.student-area, .cartoon-area) .progreso-header h1 { font-size: 1.8rem !important; }
+:is(.student-area, .cartoon-area) .crear-evaluacion-header h2,
+:is(.student-area, .cartoon-area) .crear-juegos-header h2,
+:is(.student-area, .cartoon-area) .editar-juegos-header h2,
+:is(.student-area, .cartoon-area) .crear-contenido-card h2 { font-size: 1.6rem !important; }
+:is(.student-area, .cartoon-area) .form-section h3 { font-size: 1.2rem !important; }
+:is(.student-area, .cartoon-area) .register-header h1 { font-size: 1.4rem !important; }
+:is(.student-area, .cartoon-area) .pregunta-header h4 { font-size: 1.15rem !important; }
+
+/* Iconos de cabecera: mas grandes y redondeados */
+:is(.student-area, .cartoon-area) .gestion-header-icon,
+:is(.student-area, .cartoon-area) .cuentas-header-icon,
+:is(.student-area, .cartoon-area) .grupos-header-icon {
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 18px !important;
+  font-size: 1.75rem !important;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7) !important;
+  box-shadow: 0 6px 16px -6px rgba(124, 58, 237, 0.5) !important;
+}
+
+/* Textos descriptivos mas legibles */
+:is(.student-area, .cartoon-area) .gestion-header p,
+:is(.student-area, .cartoon-area) .cuentas-header-top p,
+:is(.student-area, .cartoon-area) .grupos-header p,
+:is(.student-area, .cartoon-area) .progreso-header p,
+:is(.student-area, .cartoon-area) .header-subtitle,
+:is(.student-area, .cartoon-area) .gestion-card-content p,
+:is(.student-area, .cartoon-area) .form-group label,
+:is(.student-area, .cartoon-area) .grupo-filtro-label {
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  letter-spacing: 0 !important;
+}
+
+/* --- TARJETAS DE GESTION (Gestion Alumnos) --- */
+:is(.student-area, .cartoon-area) .gestion-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.18) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+  animation: cartoon-fade-up 0.45s ease both;
+}
+:is(.student-area, .cartoon-area) .gestion-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 16px 32px -10px rgba(124, 58, 237, 0.35) !important;
+  border-color: var(--primary) !important;
+}
+:is(.student-area, .cartoon-area) .gestion-card-icon {
+  border-radius: 18px !important;
+  width: 76px !important;
+  height: 76px !important;
+  font-size: 2.1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+:is(.student-area, .cartoon-area) .gestion-card-content h2 { font-size: 1.4rem !important; }
+:is(.student-area, .cartoon-area) .gestion-card-action {
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  border-radius: var(--radius-pill) !important;
+}
+
+/* --- TARJETAS DE RESUMEN (Cuentas / Grupos / Progreso) --- */
+:is(.student-area, .cartoon-area) .cuentas-summary-card,
+:is(.student-area, .cartoon-area) .grupos-summary-card,
+:is(.student-area, .cartoon-area) .progreso-stat-card,
+:is(.student-area, .cartoon-area) .progreso-chart-card,
+:is(.student-area, .cartoon-area) .progreso-empty-card,
+:is(.student-area, .cartoon-area) .progreso-error-card,
+:is(.student-area, .cartoon-area) .student-progress-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.18) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+:is(.student-area, .cartoon-area) .cuentas-summary-card:hover,
+:is(.student-area, .cartoon-area) .grupos-summary-card:hover,
+:is(.student-area, .cartoon-area) .progreso-stat-card:hover,
+:is(.student-area, .cartoon-area) .cuentas-chart-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 30px -10px rgba(124, 58, 237, 0.32) !important;
+  border-color: var(--primary) !important;
+}
+:is(.student-area, .cartoon-area) .summary-icon { font-size: 1.9rem !important; }
+:is(.student-area, .cartoon-area) .summary-value,
+:is(.student-area, .cartoon-area) .stat-value {
+  font-family: var(--font-display) !important;
+  font-size: 1.7rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+}
+:is(.student-area, .cartoon-area) .summary-label,
+:is(.student-area, .cartoon-area) .stat-label {
+  font-family: var(--font-display) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+}
+:is(.student-area, .cartoon-area) .stat-icon {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 16px !important;
+  font-size: 1.6rem !important;
+}
+:is(.student-area, .cartoon-area) .progreso-chart-card h3 { font-size: 1.15rem !important; }
+
+/* --- TABLAS (Cuentas / Grupos / Progreso) --- */
+:is(.student-area, .cartoon-area) .cuentas-table-wrapper,
+:is(.student-area, .cartoon-area) .grupos-table-wrapper,
+:is(.student-area, .cartoon-area) .progreso-table-wrapper {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.18) !important;
+  overflow: hidden !important;
+}
+:is(.student-area, .cartoon-area) .cuentas-table th,
+:is(.student-area, .cartoon-area) .grupos-table th,
+:is(.student-area, .cartoon-area) .progreso-table th {
+  font-family: var(--font-display) !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+:is(.student-area, .cartoon-area) .cuentas-table td,
+:is(.student-area, .cartoon-area) .grupos-table td,
+:is(.student-area, .cartoon-area) .progreso-table td {
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0 !important;
+}
+:is(.student-area, .cartoon-area) .cuentas-avatar,
+:is(.student-area, .cartoon-area) .grupos-avatar,
+:is(.student-area, .cartoon-area) .student-avatar {
+  border-radius: 12px !important;
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 0.95rem !important;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7) !important;
+  box-shadow: 0 3px 8px -2px rgba(124, 58, 237, 0.5) !important;
+}
+:is(.student-area, .cartoon-area) .status-badge,
+:is(.student-area, .cartoon-area) .cuentas-status-badge,
+:is(.student-area, .cartoon-area) .student-grupo-badge,
+:is(.student-area, .cartoon-area) .grupos-count-badge {
+  font-family: var(--font-display) !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  border-radius: var(--radius-pill) !important;
+  letter-spacing: 0 !important;
+}
+
+/* --- BOTONES DE ACCION DEL DOCENTE: pildoras cartoon --- */
+:is(.student-area, .cartoon-area) .volver-btn,
+:is(.student-area, .cartoon-area) .detalle-back,
+:is(.student-area, .cartoon-area) .cuentas-volver,
+:is(.student-area, .cartoon-area) .grupos-volver,
+:is(.student-area, .cartoon-area) .progreso-volver,
+:is(.student-area, .cartoon-area) .back-link-registerEst,
+:is(.student-area, .cartoon-area) .submit-btn,
+:is(.student-area, .cartoon-area) .agregar-pregunta-btn,
+:is(.student-area, .cartoon-area) .cuentas-register-btn,
+:is(.student-area, .cartoon-area) .grupos-register-btn,
+:is(.student-area, .cartoon-area) .crear-evaluacion-btn,
+:is(.student-area, .cartoon-area) .crear-juego-btn,
+:is(.student-area, .cartoon-area) .send-report-btn,
+:is(.student-area, .cartoon-area) .send-all-report-btn,
+:is(.student-area, .cartoon-area) .gestion-grupos-btn,
+:is(.student-area, .cartoon-area) .register-btn,
+:is(.student-area, .cartoon-area) .publicar-btn,
+:is(.student-area, .cartoon-area) .editar-btn-contenido,
+:is(.student-area, .cartoon-area) .editar-btn-evaluacion,
+:is(.student-area, .cartoon-area) .editar-btn-juego,
+:is(.student-area, .cartoon-area) .eliminar-btn {
+  font-family: var(--font-display) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  border-radius: var(--radius-pill) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
+  cursor: pointer;
+}
+:is(.student-area, .cartoon-area) .volver-btn:hover,
+:is(.student-area, .cartoon-area) .detalle-back:hover,
+:is(.student-area, .cartoon-area) .cuentas-volver:hover,
+:is(.student-area, .cartoon-area) .grupos-volver:hover,
+:is(.student-area, .cartoon-area) .progreso-volver:hover,
+:is(.student-area, .cartoon-area) .back-link-registerEst:hover,
+:is(.student-area, .cartoon-area) .submit-btn:hover,
+:is(.student-area, .cartoon-area) .agregar-pregunta-btn:hover,
+:is(.student-area, .cartoon-area) .cuentas-register-btn:hover,
+:is(.student-area, .cartoon-area) .grupos-register-btn:hover,
+:is(.student-area, .cartoon-area) .crear-evaluacion-btn:hover,
+:is(.student-area, .cartoon-area) .crear-juego-btn:hover,
+:is(.student-area, .cartoon-area) .send-report-btn:hover,
+:is(.student-area, .cartoon-area) .send-all-report-btn:hover,
+:is(.student-area, .cartoon-area) .gestion-grupos-btn:hover,
+:is(.student-area, .cartoon-area) .register-btn:hover:not(:disabled),
+:is(.student-area, .cartoon-area) .publicar-btn:hover,
+:is(.student-area, .cartoon-area) .editar-btn-contenido:hover,
+:is(.student-area, .cartoon-area) .editar-btn-evaluacion:hover,
+:is(.student-area, .cartoon-area) .editar-btn-juego:hover,
+:is(.student-area, .cartoon-area) .eliminar-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 10px 22px -6px rgba(0, 0, 0, 0.35) !important;
+}
+:is(.student-area, .cartoon-area) .submit-btn { background: linear-gradient(135deg, #4f46e5, #6366f1) !important; }
+:is(.student-area, .cartoon-area) .agregar-pregunta-btn,
+:is(.student-area, .cartoon-area) .cuentas-register-btn,
+:is(.student-area, .cartoon-area) .grupos-register-btn,
+:is(.student-area, .cartoon-area) .crear-evaluacion-btn,
+:is(.student-area, .cartoon-area) .crear-juego-btn { background: linear-gradient(135deg, #059669, #10b981) !important; }
+:is(.student-area, .cartoon-area) .send-all-report-btn { background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important; }
+:is(.student-area, .cartoon-area) .register-btn { background: linear-gradient(135deg, #4f46e5, #7c3aed) !important; }
+:is(.student-area, .cartoon-area) .publicar-btn { background: linear-gradient(135deg, #059669, #10b981) !important; color: #fff !important; }
+:is(.student-area, .cartoon-area) .eliminar-btn { background: linear-gradient(135deg, #ef4444, #f87171) !important; color: #fff !important; }
+
+/* Botones de iconos (acciones de fila) */
+:is(.student-area, .cartoon-area) .cuentas-action-btn,
+:is(.student-area, .cartoon-area) .grupos-action-btn,
+:is(.student-area, .cartoon-area) .password-reveal-btn {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+:is(.student-area, .cartoon-area) .cuentas-action-btn:hover,
+:is(.student-area, .cartoon-area) .grupos-action-btn:hover,
+:is(.student-area, .cartoon-area) .password-reveal-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 16px -6px rgba(124, 58, 237, 0.35) !important;
+}
+
+/* --- FORMULARIOS DEL DOCENTE: tarjetas curvas y campos redondeados --- */
+:is(.student-area, .cartoon-area) .crear-contenido-card,
+:is(.student-area, .cartoon-area) .crear-evaluacion-form,
+:is(.student-area, .cartoon-area) .form-section,
+:is(.student-area, .cartoon-area) .tipo-fields,
+:is(.student-area, .cartoon-area) .register-card {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.18) !important;
+}
+:is(.student-area, .cartoon-area) .form-group input,
+:is(.student-area, .cartoon-area) .form-group textarea,
+:is(.student-area, .cartoon-area) .form-group select,
+:is(.student-area, .cartoon-area) .form-group-half input,
+:is(.student-area, .cartoon-area) .form-group-half select,
+:is(.student-area, .cartoon-area) .crear-contenido-form input,
+:is(.student-area, .cartoon-area) .crear-contenido-form textarea,
+:is(.student-area, .cartoon-area) .crear-contenido-form select,
+:is(.student-area, .cartoon-area) .register-form .input-wrapper input {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border-strong) !important;
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+  letter-spacing: 0 !important;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+:is(.student-area, .cartoon-area) .form-group input:focus,
+:is(.student-area, .cartoon-area) .form-group textarea:focus,
+:is(.student-area, .cartoon-area) .form-group select:focus,
+:is(.student-area, .cartoon-area) .form-group-half input:focus,
+:is(.student-area, .cartoon-area) .form-group-half select:focus,
+:is(.student-area, .cartoon-area) .crear-contenido-form input:focus,
+:is(.student-area, .cartoon-area) .crear-contenido-form textarea:focus,
+:is(.student-area, .cartoon-area) .crear-contenido-form select:focus,
+:is(.student-area, .cartoon-area) .register-form .input-wrapper input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-soft), inset 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+:is(.student-area, .cartoon-area) .file-label {
+  border-radius: var(--radius) !important;
+  border: 2px dashed var(--border-strong) !important;
+  font-family: var(--font-body) !important;
+  font-size: 1rem !important;
+}
+:is(.student-area, .cartoon-area) .contenido-apoyo-block,
+:is(.student-area, .cartoon-area) .alerta-info {
+  border-radius: var(--radius) !important;
+  border: 1px solid #fde68a !important;
+}
+:is(.student-area, .cartoon-area) .search-box,
+:is(.student-area, .cartoon-area) .cuentas-search-box,
+:is(.student-area, .cartoon-area) .grupos-search-box {
+  border-radius: var(--radius-pill) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 10px -4px rgba(15, 23, 42, 0.12) !important;
+  overflow: hidden !important;
+}
+:is(.student-area, .cartoon-area) .search-box input,
+:is(.student-area, .cartoon-area) .cuentas-search-box input,
+:is(.student-area, .cartoon-area) .grupos-search-box input {
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
+}
+:is(.student-area, .cartoon-area) .filter-select,
+:is(.student-area, .cartoon-area) .grupo-filtro select {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.95rem !important;
+  padding: 0.75rem 1.1rem !important;
+}
+:is(.student-area, .cartoon-area) .pagination-btn {
+  border-radius: var(--radius-pill) !important;
+  border: 1px solid var(--border) !important;
+  font-family: var(--font-display) !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  transition: transform 0.18s ease, background 0.18s ease !important;
+}
+:is(.student-area, .cartoon-area) .pagination-btn.active {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+/* --- BARRAS DE PROGRESO DOCENTE: color morado degradado --- */
+:is(.student-area, .cartoon-area) .progress-bar-fill,
+:is(.student-area, .cartoon-area) .module-progress-bar,
+:is(.student-area, .cartoon-area) .dist-bar-fill {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7) !important;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.4) !important;
+}
+:is(.student-area, .cartoon-area) .dist-bar-track,
+:is(.student-area, .cartoon-area) .progress-bar-mini,
+:is(.student-area, .cartoon-area) .module-progress-bar-container {
+  border-radius: var(--radius-pill) !important;
+  background: var(--bg-sunken) !important;
+  overflow: hidden !important;
+}
+
+/* --- ANIMACIONES DOCENTE --- */
+:is(.student-area, .cartoon-area) .gestion-card,
+:is(.student-area, .cartoon-area) .cuentas-summary-card,
+:is(.student-area, .cartoon-area) .grupos-summary-card,
+:is(.student-area, .cartoon-area) .progreso-stat-card,
+:is(.student-area, .cartoon-area) .progreso-chart-card,
+:is(.student-area, .cartoon-area) .student-progress-card,
+:is(.student-area, .cartoon-area) .crear-contenido-card,
+:is(.student-area, .cartoon-area) .crear-evaluacion-form,
+:is(.student-area, .cartoon-area) .form-section,
+:is(.student-area, .cartoon-area) .cuentas-table-wrapper,
+:is(.student-area, .cartoon-area) .grupos-table-wrapper,
+:is(.student-area, .cartoon-area) .progreso-table-wrapper {
+  animation: cartoon-fade-up 0.45s ease both;
+}
+
+/* ==========================================================================
+   CARTOON JUGUETON — BLOQUE DOCENTE: MODO OSCURO
+   ========================================================================== */
+[data-theme='dark'] :is(.student-area, .cartoon-area) .gestion-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .cuentas-summary-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .grupos-summary-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progreso-stat-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progreso-chart-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progreso-empty-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progreso-error-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .student-progress-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .cuentas-table-wrapper,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .grupos-table-wrapper,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .progreso-table-wrapper,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .crear-contenido-card,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .crear-evaluacion-form,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .form-section,
+[data-theme='dark'] :is(.student-area, .cartoon-area) .register-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.5) !important;
+}

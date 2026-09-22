@@ -2,57 +2,92 @@ const Content = require('../models/content.model');
 const Game = require('../models/game.model');
 const Evaluation = require('../models/evaluation.model');
 const StudentProgress = require('../models/studentProgress.model');
-const Progress = require('../models/progress.model');
+const GrupoService = require('./grupo.service');
 const { Op } = require('sequelize');
 
 class StudentService {
-  static async getDashboardData(estudianteId) {
-    const totalContents = await Content.count({ where: { publicado: true } });
-    const totalGames = await Game.count({ where: { publicado: true } });
-    const totalEvaluations = await Evaluation.count({ where: { publicado: true } });
+  /**
+   * Convierte un porcentaje de logro (0-100) en estrellas (1 a 3).
+   * 0-69 => 1 estrella, 70-89 => 2 estrellas, 90-100 => 3 estrellas.
+   */
+  static estrellasDePorcentaje(pct) {
+    if (pct === null || pct === undefined || Number.isNaN(pct)) return 0;
+    if (pct >= 90) return 3;
+    if (pct >= 70) return 2;
+    return 1;
+  }
 
-    const progressRecords = await Progress.findAll({ where: { usuario_id: estudianteId } });
-    const totalProgress = progressRecords.reduce((sum, p) => sum + parseFloat(p.porcentaje_avance || 0), 0);
-    const moduleCount = progressRecords.length || 1;
-    const overallProgress = Math.round(totalProgress / moduleCount);
+  /**
+   * Verifica si el estudiante completó el contenido publicado del módulo.
+   * Si el módulo no posee contenido publicado, no existe requisito previo (true).
+   */
+  static async esContenidoModuloCompletado(estudianteId, modulo, docenteId) {
+    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const publishedContents = await Content.findAll({
+      where: { modulo, publicado: true, docente_id: docenteId, [Op.or]: condiciones },
+      attributes: ['id'],
+      raw: true
+    });
+    if (publishedContents.length === 0) return true;
 
-    const completedModules = progressRecords
-      .filter(p => parseFloat(p.porcentaje_avance) >= 100)
-      .map(p => p.modulo);
+    const completedRecords = await StudentProgress.findAll({
+      where: {
+        estudiante_id: estudianteId,
+        contenido_id: { [Op.in]: publishedContents.map(c => c.id) },
+        completado: true
+      },
+      attributes: ['contenido_id'],
+      raw: true
+    });
+    const completedIds = new Set(completedRecords.map(r => r.contenido_id));
+    return publishedContents.every(c => completedIds.has(c.id));
+  }
+
+  static async getDashboardData(estudianteId, docenteId) {
+    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const totalContents = await Content.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
+    const totalGames = await Game.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
+    const totalEvaluations = await Evaluation.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
+
+    const progressRecords = await StudentProgress.findAll({
+      where: { estudiante_id: estudianteId, completado: true },
+      raw: true
+    });
+
+    const bestPerActivity = StudentService._deduplicateProgress(progressRecords);
+
+    const cvRecords = bestPerActivity.filter(r => r.contenido_id);
+    const contentIds = cvRecords.map(r => r.contenido_id);
+    const contentsViewed = contentIds.length > 0
+      ? await Content.count({ where: { id: contentIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      : 0;
+
+    const gcRecords = bestPerActivity.filter(r => r.juego_id);
+    const gameIds = gcRecords.map(r => r.juego_id);
+    const gamesCompleted = gameIds.length > 0
+      ? await Game.count({ where: { id: gameIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      : 0;
+
+    const ecRecords = bestPerActivity.filter(r => r.evaluacion_id);
+    const evalIds = ecRecords.map(r => r.evaluacion_id);
+    const evaluationsCompleted = evalIds.length > 0
+      ? await Evaluation.count({ where: { id: evalIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      : 0;
+
+    const moduleProgress = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, condiciones);
+    const moduleEntries = Object.entries(moduleProgress);
+    const overallProgress = moduleEntries.length > 0
+      ? Math.round(moduleEntries.reduce((sum, [, m]) => sum + m.percentage, 0) / moduleEntries.length)
+      : 0;
+    const completedModules = moduleEntries
+      .filter(([, m]) => m.percentage >= 100)
+      .map(([mod]) => mod);
 
     const recentActivity = await StudentProgress.findAll({
       where: { estudiante_id: estudianteId },
       order: [['fecha', 'DESC']],
       limit: 5
     });
-
-    // Count completed items, only if the referenced item still exists
-    const cvRecords = await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, contenido_id: { [Op.ne]: null }, completado: true },
-      attributes: ['contenido_id']
-    });
-    const cvIds = cvRecords.map(r => r.contenido_id);
-    const contentsViewed = cvIds.length > 0
-      ? await Content.count({ where: { id: cvIds, publicado: true } })
-      : 0;
-
-    const gcRecords = await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, juego_id: { [Op.ne]: null }, completado: true },
-      attributes: ['juego_id']
-    });
-    const gcIds = gcRecords.map(r => r.juego_id);
-    const gamesCompleted = gcIds.length > 0
-      ? await Game.count({ where: { id: gcIds, publicado: true } })
-      : 0;
-
-    const ecRecords = await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, evaluacion_id: { [Op.ne]: null }, completado: true },
-      attributes: ['evaluacion_id']
-    });
-    const ecIds = ecRecords.map(r => r.evaluacion_id);
-    const evaluationsCompleted = ecIds.length > 0
-      ? await Evaluation.count({ where: { id: ecIds, publicado: true } })
-      : 0;
 
     return {
       totalContents,
@@ -67,6 +102,72 @@ class StudentService {
     };
   }
 
+  static _deduplicateProgress(records) {
+    const map = new Map();
+    for (const r of records) {
+      let key = null;
+      if (r.contenido_id) key = `content_${r.contenido_id}`;
+      else if (r.juego_id) key = `game_${r.juego_id}`;
+      else if (r.evaluacion_id) key = `eval_${r.evaluacion_id}`;
+      if (!key) continue;
+      const existing = map.get(key);
+      if (!existing || r.puntaje > existing.puntaje) {
+        map.set(key, r);
+      }
+    }
+    return [...map.values()];
+  }
+
+  static async _getModuleProgress(estudianteId, bestPerActivity, docenteId, condicionesExtra = null) {
+    const condiciones = condicionesExtra || await GrupoService.recursoWhereEstudiante(estudianteId);
+    const allContents = await Content.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
+    const allGames = await Game.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
+    const allEvaluations = await Evaluation.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
+
+    const modules = {};
+    for (const c of allContents) {
+      if (!c.modulo) continue;
+      if (!modules[c.modulo]) modules[c.modulo] = { items: new Set(), completed: new Set() };
+      modules[c.modulo].items.add(`content_${c.id}`);
+    }
+    for (const g of allGames) {
+      if (!g.modulo) continue;
+      if (!modules[g.modulo]) modules[g.modulo] = { items: new Set(), completed: new Set() };
+      modules[g.modulo].items.add(`game_${g.id}`);
+    }
+    for (const e of allEvaluations) {
+      if (!e.modulo) continue;
+      if (!modules[e.modulo]) modules[e.modulo] = { items: new Set(), completed: new Set() };
+      modules[e.modulo].items.add(`eval_${e.id}`);
+    }
+
+    for (const r of bestPerActivity) {
+      let key = null;
+      if (r.contenido_id) key = `content_${r.contenido_id}`;
+      else if (r.juego_id) key = `game_${r.juego_id}`;
+      else if (r.evaluacion_id) key = `eval_${r.evaluacion_id}`;
+      if (!key) continue;
+      for (const modData of Object.values(modules)) {
+        if (modData.items.has(key)) {
+          modData.completed.add(key);
+          break;
+        }
+      }
+    }
+
+    const result = {};
+    for (const [mod, data] of Object.entries(modules)) {
+      const total = data.items.size;
+      const completed = data.completed.size;
+      result[mod] = {
+        total,
+        completed,
+        percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+      };
+    }
+    return result;
+  }
+
   static async registerContentView(estudianteId, contenidoId) {
     const [record, created] = await StudentProgress.findOrCreate({
       where: { estudiante_id: estudianteId, contenido_id: contenidoId },
@@ -79,53 +180,72 @@ class StudentService {
       }
     });
     if (!created) {
-      await record.update({ completado: true, fecha: new Date() });
+      await record.update({ completado: true, puntaje: 0, fecha: new Date() });
     }
     return record;
   }
 
   static async registerGameResult(estudianteId, juegoId, puntaje) {
-    const existing = await StudentProgress.findOne({
-      where: { estudiante_id: estudianteId, juego_id: juegoId }
+    const [record, created] = await StudentProgress.findOrCreate({
+      where: { estudiante_id: estudianteId, juego_id: juegoId },
+      defaults: {
+        estudiante_id: estudianteId,
+        juego_id: juegoId,
+        completado: true,
+        puntaje,
+        fecha: new Date()
+      }
     });
-    if (existing) {
-      await existing.update({ completado: true, puntaje: Math.max(existing.puntaje, puntaje), fecha: new Date() });
-      return { ...existing.toJSON(), wasExisting: true };
+    if (!created && puntaje > record.puntaje) {
+      await record.update({ completado: true, puntaje, fecha: new Date() });
     }
-    const record = await StudentProgress.create({
-      estudiante_id: estudianteId,
-      juego_id: juegoId,
-      completado: true,
-      puntaje: puntaje,
-      fecha: new Date()
-    });
-    return { ...record.toJSON(), wasExisting: false };
+    return { ...record.toJSON(), wasExisting: !created };
   }
 
-  static async registerEvaluationResult(estudianteId, evaluacionId, puntaje) {
-    const existing = await StudentProgress.findOne({
-      where: { estudiante_id: estudianteId, evaluacion_id: evaluacionId }
+  static async registerEvaluationResult(estudianteId, evaluacionId, puntaje, respuestas = null) {
+    const [record, created] = await StudentProgress.findOrCreate({
+      where: { estudiante_id: estudianteId, evaluacion_id: evaluacionId },
+      defaults: {
+        estudiante_id: estudianteId,
+        evaluacion_id: evaluacionId,
+        completado: true,
+        puntaje,
+        intentos_realizados: 1,
+        respuestas: respuestas ? JSON.stringify(respuestas) : null,
+        fecha: new Date()
+      }
     });
-    if (existing) {
-      await existing.update({ completado: true, puntaje: Math.max(existing.puntaje, puntaje), fecha: new Date() });
-      return { ...existing.toJSON(), wasExisting: true };
+    if (!created) {
+      const updateFields = {
+        completado: true,
+        intentos_realizados: (record.intentos_realizados || 0) + 1,
+        respuestas: respuestas ? JSON.stringify(respuestas) : record.respuestas,
+        fecha: new Date()
+      };
+      if (puntaje > record.puntaje) {
+        updateFields.puntaje = puntaje;
+      }
+      await record.update(updateFields);
     }
-    const record = await StudentProgress.create({
-      estudiante_id: estudianteId,
-      evaluacion_id: evaluacionId,
-      completado: true,
-      puntaje: puntaje,
-      fecha: new Date()
-    });
-    return { ...record.toJSON(), wasExisting: false };
+    return { ...record.toJSON(), wasExisting: !created };
   }
 
-  static async getDetailedProgress(estudianteId) {
-    const rawContents = (await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, contenido_id: { [Op.ne]: null } },
-      include: [{ model: Content, as: 'contenido', required: false }]
-    })).filter(r => r.contenido !== null);
-    // Deduplicate: keep highest puntaje per contenido_id
+  static async getDetailedProgress(estudianteId, docenteId) {
+    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const [rawContents, rawGames, rawEvals] = await Promise.all([
+      StudentProgress.findAll({
+        where: { estudiante_id: estudianteId, contenido_id: { [Op.ne]: null } },
+        include: [{ model: Content, as: 'contenido', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+      }),
+      StudentProgress.findAll({
+        where: { estudiante_id: estudianteId, juego_id: { [Op.ne]: null } },
+        include: [{ model: Game, as: 'juego', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+      }),
+      StudentProgress.findAll({
+        where: { estudiante_id: estudianteId, evaluacion_id: { [Op.ne]: null } },
+        include: [{ model: Evaluation, as: 'evaluacion', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+      }),
+    ]);
     const contentsViewed = [...rawContents
       .reduce((map, r) => {
         const existing = map.get(r.contenido_id);
@@ -133,11 +253,6 @@ class StudentService {
         return map;
       }, new Map()).values()];
 
-    const rawGames = (await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, juego_id: { [Op.ne]: null } },
-      include: [{ model: Game, as: 'juego', required: false }]
-    })).filter(r => r.juego !== null);
-    // Deduplicate: keep highest puntaje per juego_id
     const gamesCompleted = [...rawGames
       .reduce((map, r) => {
         const existing = map.get(r.juego_id);
@@ -145,11 +260,6 @@ class StudentService {
         return map;
       }, new Map()).values()];
 
-    const rawEvals = (await StudentProgress.findAll({
-      where: { estudiante_id: estudianteId, evaluacion_id: { [Op.ne]: null } },
-      include: [{ model: Evaluation, as: 'evaluacion', required: false }]
-    })).filter(r => r.evaluacion !== null);
-    // Deduplicate: keep highest puntaje per evaluacion_id
     const evaluationsCompleted = [...rawEvals
       .reduce((map, r) => {
         const existing = map.get(r.evaluacion_id);
@@ -157,7 +267,45 @@ class StudentService {
         return map;
       }, new Map()).values()];
 
-    const progressByModule = await Progress.findAll({ where: { usuario_id: estudianteId } });
+    const allProgress = await StudentProgress.findAll({
+      where: { estudiante_id: estudianteId, completado: true },
+      raw: true
+    });
+    const bestPerActivity = StudentService._deduplicateProgress(allProgress);
+    const moduleProgressObj = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, condiciones);
+
+    // Map to array format with fields expected by frontend
+    const progressByModule = await Promise.all(
+      Object.entries(moduleProgressObj).map(async ([mod, data]) => {
+        const [contentIds, gameIds, evalIds] = await Promise.all([
+          Content.findAll({ where: { modulo: mod, publicado: true, docente_id: docenteId }, attributes: ['id'], raw: true }).then(cs => cs.map(c => c.id)),
+          Game.findAll({ where: { modulo: mod, publicado: true, docente_id: docenteId }, attributes: ['id'], raw: true }).then(gs => gs.map(g => g.id)),
+          Evaluation.findAll({ where: { modulo: mod, publicado: true, docente_id: docenteId }, attributes: ['id'], raw: true }).then(es => es.map(e => e.id)),
+        ]);
+
+        const moduleRecords = bestPerActivity.filter(r => {
+          if (r.contenido_id) return contentIds.includes(r.contenido_id);
+          if (r.juego_id) return gameIds.includes(r.juego_id);
+          if (r.evaluacion_id) return evalIds.includes(r.evaluacion_id);
+          return false;
+        });
+
+        const puntaje_total = moduleRecords
+          .filter(r => r.juego_id || r.evaluacion_id)
+          .reduce((sum, r) => sum + r.puntaje, 0);
+        const ultima_actividad = moduleRecords.length > 0
+          ? moduleRecords.reduce((latest, r) => r.fecha > latest ? r.fecha : latest, moduleRecords[0].fecha)
+          : null;
+
+        return {
+          modulo: mod,
+          puntaje_total,
+          nivel: puntaje_total >= 500 ? Math.floor(puntaje_total / 500) + 1 : 1,
+          porcentaje_avance: data.percentage,
+          ultima_actividad
+        };
+      })
+    );
 
     return {
       contentsViewed,

@@ -1,0 +1,1145 @@
+﻿.contenidos-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+}
+
+.contenidos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.contenidos-titulo {
+  font-size: 2rem;
+  color: #1f2937;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.crear-contenido-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.4rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.crear-contenido-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.crear-contenido-exit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: 9999px;
+  background: #eb2525;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.contenidos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Estilo para el Link que envuelve la tarjeta */
+.contenido-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+/* Estilos de la tarjeta */
+.contenido-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Efecto hover en el contenedor de la tarjeta */
+.contenido-link:hover .contenido-card {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
+}
+
+/* Estilo para tarjeta publicada */
+.contenido-card.publicado {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+/* Efecto hover para tarjeta publicada */
+.contenido-link:hover .contenido-card.publicado {
+  border-color: #10b981;
+  background: #dcfce7;
+}
+
+.card-titulo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.card-info {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.card-descripcion {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis; 
+  overflow: hidden;
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge-tipo {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-modulo {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.badge-publicado {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.contenidos-mensaje {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+.contenidos-mensaje.error {
+  color: #ef4444;
+}
+
+.contenidos-vacio {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  padding: 3rem 2rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}/* ==========================================================================
+   Modo Aventura (apartado estudiante) — sobreescribe sobre tokens.
+   ========================================================================== */
+.contenidos-container .juego-card,
+.contenidos-container .evaluacion-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-lg);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.contenidos-container .juego-card:hover,
+.contenidos-container .evaluacion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+.contenidos-container .juego-card .card-titulo,
+.contenidos-container .evaluacion-card .card-titulo {
+  color: var(--text-strong);
+  font-family: var(--font-display);
+}
+.contenidos-container .badge-publicado { background: var(--success-soft); color: var(--success); }
+.contenidos-container .progress-bar { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+.contenidos-container .progress-bar-container { background: var(--bg-sunken); }
+.contenidos-container .modulo-progreso-card,
+.contenidos-container .medalla-card-progreso {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+.contenidos-container .medalla-card-progreso.obtenida {
+  background: linear-gradient(135deg, var(--warning-soft), var(--warning-soft));
+  border-color: var(--warning);
+}
+.contenidos-container .nivel-badge {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+}
+
+/* ==========================================================================
+   Modo Aventura (apuntado real, contenedores reales del estudiante).
+   ========================================================================== */
+.contenidos-container .modulo-card,
+.contenidos-container .contenido-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.contenidos-container .modulo-card:hover,
+.contenidos-container .contenido-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+.contenidos-container .modulo-card h3,
+.contenidos-container .contenido-card h3,
+.contenidos-container h2 {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+}
+.contenidos-container .badge-publicado {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.contenidos-container .progress-bar-modulo,
+.juegos-container .progress-bar,
+.evaluaciones-container .progress-bar,
+.progreso-container .progress-bar {
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+.juegos-container .juego-card,
+.juegos-container .evaluacion-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.juegos-container .juego-card:hover,
+.juegos-container .evaluacion-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+.juegos-container .card-titulo,
+.evaluaciones-container .card-titulo {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+}
+.juegos-container .badge,
+.evaluaciones-container .badge { font-weight: 600; }
+.evaluaciones-container .evaluacion-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.evaluaciones-container .evaluacion-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+.progreso-container .progreso-resumen {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.progreso-container .resumen-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.progreso-container .modulo-progreso-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.progreso-container .modulo-progreso-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.progreso-container .medalla-card-progreso.obtenida {
+  background: linear-gradient(135deg, var(--success-soft), var(--warning-soft));
+  border-color: var(--warning);
+}
+
+/* ==========================================================================
+   RETRO / PIXEL ART — Apartado estudiante
+   Bordes pixel, sombras duras, esquinas cuadradas, fuentes de consola.
+   ========================================================================== */
+
+/* Headings: Press Start 2P */
+.student-dashboard .welcome-card h2,
+.student-dashboard .gamificacion-title h3,
+.student-dashboard .progress-title,
+.student-dashboard .stat-card h3,
+.main-header h1,
+.contenidos-container .modulo-card h3,
+.juegos-container .card-titulo,
+.evaluaciones-container .card-titulo,
+.progreso-container .section-titulo,
+.progreso-container .progreso-titulo,
+.juegos-container .juegos-titulo,
+.evaluaciones-container .evaluaciones-titulo,
+.contenidos-container .contenidos-titulo {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 2;
+  word-spacing: 0.15em;
+}
+
+/* Hero: retro card */
+.welcome-card {
+  border-radius: 0;
+  border: 4px solid var(--border-strong);
+  box-shadow: 8px 8px 0 0 var(--border-strong);
+  position: relative;
+  overflow: visible;
+}
+.welcome-card::before {
+  content: '[>>]';
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+.welcome-card p {
+  line-height: 1.8;
+}
+
+/* All cards: square + hard shadow */
+.stat-card,
+.progress-card,
+.gamificacion-card,
+.juego-card,
+.evaluacion-card,
+.modulo-progreso-card,
+.medalla-card-progreso,
+.resumen-card,
+.detalle-card,
+.contenidos-container .modulo-card,
+.evaluacion-start-card,
+.pregunta-card,
+.resultado-card {
+  border-radius: 0;
+  border: 3px solid var(--border-strong);
+  box-shadow: 6px 6px 0 0 var(--border-strong);
+  transition: transform 0.08s steps(2, end), box-shadow 0.08s steps(2, end);
+}
+
+/* Card hover: hard snap (no easing) */
+.stat-card:hover,
+.progress-card:hover,
+.gamificacion-card:hover,
+.juego-card:hover,
+.evaluacion-card:hover,
+.modulo-progreso-card:hover,
+.resumen-card:hover,
+.contenidos-container .modulo-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 0 var(--border-strong);
+}
+
+/* Buttons: console press effect */
+.resolver-btn,
+.jugar-btn,
+.btn-iniciar,
+.btn-enviar,
+.back-btn,
+.btn-volver-jugar,
+.navbar-logout-btn,
+.logout-btn,
+.navbar-student .navbar-link {
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 var(--border-strong);
+  border: 2px solid var(--border-strong);
+  transition: transform 0.06s steps(1, end), box-shadow 0.06s steps(1, end);
+}
+.resolver-btn:active,
+.jugar-btn:active,
+.btn-iniciar:active,
+.btn-enviar:active,
+.back-btn:active,
+.btn-volver-jugar:active,
+.navbar-logout-btn:active,
+.logout-btn:active,
+.navbar-student .navbar-link:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 0 var(--border-strong);
+}
+.navbar-student .navbar-link.active {
+  box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Progress bars: stepped fill */
+.progress-bar-container {
+  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  overflow: hidden;
+}
+.progress-bar,
+.progress-bar-modulo,
+.progress-bar-gamif {
+  border-radius: 0;
+  transition: width 0.6s steps(10, end);
+}
+
+/* Badges: square pixel style */
+.badge,
+.badge-tipo,
+.badge-modulo,
+.badge-publicado,
+.badge-nivel,
+.badge-tiempo,
+.puntaje-badge,
+.medallas-contador,
+.user-badge,
+.nivel-badge {
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 0.45rem;
+  border: 2px solid var(--border-strong);
+  box-shadow: 2px 2px 0 0 var(--border-strong);
+  letter-spacing: 0.05em;
+}
+.user-badge {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+
+/* Medals: square pixel */
+.medalla-item,
+.medalla-card-progreso {
+  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  box-shadow: 3px 3px 0 0 var(--border-strong);
+}
+.medalla-item.obtenida,
+.medalla-card-progreso.obtenida {
+  border-color: var(--warning);
+  box-shadow: 3px 3px 0 0 var(--warning);
+}
+
+/* Sidebar: square retro */
+.sidebar,
+.sidebar-header {
+  border-radius: 0;
+}
+.sidebar {
+  border-right: 4px solid var(--border-strong);
+}
+
+/* Resumen cards: retro */
+.resumen-card {
+  border: 3px solid var(--border-strong);
+  border-radius: 0;
+}
+
+/* Active nav in sidebar: pixel */
+.nav-item.active {
+  border-radius: 0;
+  border: 2px solid var(--success);
+  box-shadow: 3px 3px 0 0 var(--success);
+}
+
+/* Gamificacion card: retro XP */
+.gamificacion-icon {
+  border-radius: 0;
+  border: 2px solid var(--border-strong);
+}
+
+/* Reto blink on level badge */
+@keyframes pixel-blink {
+  0%, 70%, 100% { opacity: 1; }
+  75% { opacity: 0.5; }
+  80% { opacity: 1; }
+  85% { opacity: 0.3; }
+  90% { opacity: 1; }
+}
+.nivel-badge {
+  animation: pixel-blink 3s steps(1) infinite;
+}
+
+/* Evaluation start card: retro */
+.evaluacion-start-card {
+  border-radius: 0;
+  border: 4px solid var(--border-strong);
+  box-shadow: 8px 8px 0 0 var(--border-strong);
+}
+.start-icon {
+  font-size: 3rem;
+}
+.pregunta-card {
+  border-left: 6px solid var(--primary);
+}
+.pregunta-numero {
+  border-radius: 0;
+  border: 2px solid var(--primary);
+}
+
+/* Opcion labels: square radio */
+.opcion-label {
+  border-radius: 0;
+  border: 3px solid var(--border-strong);
+  box-shadow: 3px 3px 0 0 var(--border-strong);
+  transition: transform 0.06s steps(1, end), box-shadow 0.06s steps(1, end);
+}
+.opcion-label:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 var(--primary);
+  border-color: var(--primary);
+}
+.opcion-label.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+  background: var(--primary-soft);
+}
+
+/* Sticky evaluacion actions bar: retro */
+.evaluacion-actions {
+  border-radius: 0;
+  border: 3px solid var(--border-strong);
+  box-shadow: 0 -4px 0 0 var(--border-strong);
+}
+
+/* Result card: retro */
+.resultado-card {
+  border-radius: 0;
+  border: 4px solid var(--border-strong);
+  box-shadow: 8px 8px 0 0 var(--border-strong);
+}
+
+/* Back button: retro pill -> square */
+.back-btn {
+  border-radius: 0;
+}
+
+/* Dark mode retro neon accents */
+[data-theme='dark'] .welcome-card {
+  border-color: var(--primary);
+  box-shadow: 8px 8px 0 0 var(--primary);
+}
+[data-theme='dark'] .nivel-badge {
+  border-color: var(--accent);
+  box-shadow: 2px 2px 0 0 var(--accent);
+}
+[data-theme='dark'] .stat-card {
+  border-color: var(--primary-soft);
+  box-shadow: 6px 6px 0 0 var(--primary-soft);
+}
+[data-theme='dark'] .navbar-student .navbar-link.active {
+  box-shadow: 4px 4px 0 0 rgba(139, 92, 246, 0.5);
+}
+
+/* Retro specificity fix — contenidos */
+.contenidos-container .modulo-card {
+  border-radius: 0;
+  border: 3px solid var(--border-strong);
+  box-shadow: 6px 6px 0 0 var(--border-strong);
+}
+.contenidos-container .modulo-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 0 var(--border-strong);
+}
+
+/* ==========================================================================
+   FIX: Tarjetas redondeadas + texto pixel legible
+   Sobreescribe los border-radius: 0 y badge sizes del bloque retro anterior.
+   ========================================================================== */
+
+/* --- Tarjetas: restaurar border-radius --- */
+.student-dashboard .welcome-card,
+.student-dashboard .stat-card,
+.student-dashboard .progress-card,
+.student-dashboard .gamificacion-card,
+.contenidos-container .modulo-card,
+.juegos-container .juego-card,
+.evaluaciones-container .evaluacion-card,
+.progreso-container .resumen-card,
+.progreso-container .modulo-progreso-card,
+.progreso-container .medalla-card-progreso,
+.evaluacion-start-card,
+.pregunta-card,
+.resultado-card,
+.detalle-card {
+  border-radius: var(--radius);
+}
+.student-dashboard .welcome-card {
+  border-radius: var(--radius-lg);
+}
+
+/* --- Sidebar nav: redondeado tambien --- */
+.student-dashboard .sidebar { border-radius: 0; }
+.student-dashboard .sidebar-header { border-radius: 0; }
+.nav-item.active { border-radius: var(--radius); }
+
+/* --- Badges/etiquetas: redondeadas + mas grandes + gruesas --- */
+.badge,
+.badge-tipo,
+.badge-modulo,
+.badge-publicado,
+.badge-nivel,
+.badge-tiempo,
+.puntaje-badge,
+.medallas-contador,
+.nivel-badge,
+.user-badge,
+.student-dashboard .badge,
+.student-dashboard .badge-publicado,
+.student-dashboard .nivel-badge,
+.student-dashboard .user-badge,
+.contenidos-container .badge-publicado,
+.juegos-container .badge,
+.evaluaciones-container .badge,
+.progreso-container .badge-nivel {
+  border-radius: var(--radius-pill);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+/* --- Botones: pixel font + redondeado suave --- */
+.resolver-btn,
+.jugar-btn,
+.btn-iniciar,
+.btn-enviar,
+.back-btn,
+.btn-volver-jugar,
+.navbar-logout-btn,
+.logout-btn {
+  font-family: var(--font-display);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1.5rem;
+}
+.navbar-student .navbar-link {
+  font-family: var(--font-display);
+  font-size: 0.42rem;
+  letter-spacing: 0.05em;
+}
+
+/* --- Numeros y valores destacados: pixel font --- */
+.stat-card p {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  line-height: 1.6;
+}
+.puntos-valor {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+}
+.resumen-valor {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+.resumen-label {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* --- Titulos dentro de tarjetas: pixel mas legible --- */
+.stat-card h3,
+.gamificacion-title h3,
+.progress-title,
+.card-titulo,
+.section-titulo,
+.progreso-titulo,
+.evaluaciones-titulo,
+.juegos-titulo,
+.main-header h1 {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 2.2;
+}
+.welcome-card h2 {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  line-height: 2.2;
+}
+
+/* --- Opcion labels: redondeadas --- */
+.opcion-label {
+  border-radius: var(--radius-sm);
+}
+
+/* --- Medallas: redondeadas --- */
+.medalla-item,
+.medalla-card-progreso {
+  border-radius: var(--radius);
+}
+.medalla-card-progreso.obtenida {
+  border-color: var(--warning);
+}
+
+/* ==========================================================================
+   AJUSTES FINOS v2 — tarjetas curvas + texto pixel legible
+   Un solo bloque compartido para las 5 vistas del estudiante.
+   ========================================================================== */
+
+/* --- 1. Tarjetas: bordes curvos (restaurar), contenido pixel --- */
+.student-dashboard .stat-card,
+.student-dashboard .progress-card,
+.student-dashboard .gamificacion-card,
+.student-dashboard .welcome-card,
+.contenidos-container .modulo-card,
+.juegos-container .juego-card,
+.evaluaciones-container .evaluacion-card,
+.progreso-container .resumen-card,
+.progreso-container .modulo-progreso-card,
+.progreso-container .medalla-card-progreso,
+.evaluacion-start-card,
+.pregunta-card,
+.resultado-card,
+.detalle-card {
+  border-radius: var(--radius);
+}
+.student-dashboard .welcome-card {
+  border-radius: var(--radius-lg);
+}
+
+/* --- 2. Numeros grandes pixel --- */
+.stat-card p {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.puntos-valor {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.resumen-valor {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.resumen-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.puntos-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.puntos-siguiente {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- 3. Titulos y contenido general mas legible --- */
+.card-titulo,
+.modulo-progreso-header h3 {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.card-descripcion,
+.text-progress,
+.modulo-progreso-stats,
+.actividad-nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.actividad-fecha {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* --- 4. Botones pixel mas grandes --- */
+.resolver-btn,
+.jugar-btn,
+.btn-iniciar,
+.btn-enviar,
+.back-btn,
+.btn-volver-jugar,
+.logout-btn,
+.navbar-logout-btn {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.85rem 1.6rem;
+  letter-spacing: 0.06em;
+}
+
+/* --- 5. Pills proporcionadas (reducidas) --- */
+.badge,
+.badge-tipo,
+.badge-modulo,
+.badge-publicado,
+.badge-nivel,
+.badge-tiempo,
+.puntaje-badge,
+.medallas-contador,
+.nivel-badge {
+  font-size: 0.48rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+/* --- 6. Medallas: CUADRADAS (unica excepcion) --- */
+.medalla-item,
+.medalla-card-progreso {
+  border-radius: 0;
+}
+.medalla-card-progreso.obtenida {
+  border-color: var(--warning);
+}
+
+/* --- 7. Iconos de titulo de seccion: mas presencia --- */
+.contenidos-titulo svg,
+.juegos-titulo svg,
+.evaluaciones-titulo svg,
+.progreso-titulo svg,
+.section-titulo svg,
+.detalle-titulo svg {
+  width: 1.7rem;
+  height: 1.7rem;
+  vertical-align: middle;
+}
+
+/* --- 8. Navbar (estudiante): escala mayor, mismo estilo pixel --- */
+.navbar.navbar-student {
+  height: 76px;
+  padding: 0 1.75rem;
+}
+.navbar.navbar-student .navbar-logo {
+  width: 46px;
+  height: 46px;
+  font-size: 1.7rem;
+}
+.navbar.navbar-student .navbar-brand {
+  gap: 0.9rem;
+}
+.navbar.navbar-student .navbar-title {
+  font-size: 1.55rem;
+}
+.navbar.navbar-student .navbar-link {
+  font-size: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  gap: 0.5rem;
+}
+.navbar.navbar-student .nav-icon {
+  font-size: 1.35rem;
+}
+.navbar.navbar-student .navbar-user {
+  padding: 0.4rem 1rem;
+}
+.navbar.navbar-student .navbar-user-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* --- Correccion responsive: en movil se restaura el flujo del navbar --- */
+@media (max-width: 768px) {
+  .navbar.navbar-student {
+    height: auto;
+    padding: 0.75rem 1rem;
+  }
+  .navbar.navbar-student .navbar-logo {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+  .navbar.navbar-student .navbar-title {
+    font-size: 1.3rem;
+  }
+}
+
+/* ==========================================================================
+   SPECIFICITY OVERRIDE FINAL — asegura pills reducidas + medallas cuadradas
+   Iguala la especificidad del bloque FIX anterior (container-scoped).
+   ========================================================================== */
+
+/* Medallas: forzar CUADRADAS (override el bloque FIX que las redondo) */
+.progreso-container .medalla-card-progreso,
+.progreso-container .medalla-card-progreso.obtenida,
+.student-dashboard .medalla-item,
+.student-dashboard .medalla-item.obtenida,
+.student-dashboard .medalla-item.por-conseguir {
+  border-radius: 0;
+}
+.student-dashboard .medalla-item.obtenida,
+.progreso-container .medalla-card-progreso.obtenida {
+  border-color: var(--warning);
+}
+
+/* Pills: override el bloque FIX que las dejo en 0.65rem */
+.student-dashboard .badge,
+.student-dashboard .badge-publicado,
+.student-dashboard .nivel-badge,
+.student-dashboard .user-badge,
+.contenidos-container .badge-publicado,
+.juegos-container .badge,
+.evaluaciones-container .badge,
+.progreso-container .badge-nivel {
+  font-size: 0.48rem;
+  font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   AJUSTES RETRO FINALES — tipografia pixel completa dentro de tarjetas,
+   boton salir restaurado, navbar coherente, iconos con presencia.
+   Docente NO se toca.
+   ========================================================================== */
+
+/* ===== 0/8. BOTON SALIR (regresion) restaurado ===== */
+.navbar.navbar-student .navbar-logout-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 1.15rem;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  box-shadow: 2px 2px 0 0 var(--border-strong);
+  background: #fee2e2;
+  color: #ef4444;
+  box-sizing: border-box;
+}
+.navbar.navbar-student .navbar-logout-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 var(--border-strong);
+}
+
+/* ===== 6. NAVBAR coherente retro (solo estudiante) ===== */
+.navbar.navbar-student {
+  background: var(--bg-card);
+  border-bottom: 4px solid var(--border-strong);
+  box-shadow: 0 4px 0 0 var(--border-strong);
+}
+.navbar.navbar-student .navbar-title {
+  color: var(--text-strong);
+}
+.navbar.navbar-student .navbar-brand {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+.navbar.navbar-student .navbar-user {
+  background: var(--bg-soft);
+  border: 2px solid var(--border-strong);
+  border-radius: 0;
+  box-shadow: 2px 2px 0 0 var(--border-strong);
+}
+.navbar.navbar-student .navbar-user-name {
+  color: var(--text);
+}
+[data-theme='dark'].navbar.navbar-student,
+[data-theme='dark'] .navbar.navbar-student {
+  background: var(--bg-card);
+}
+
+/* ===== 2. TIPOGRAFIA PIXEL: todo el texto dentro de tarjetas ===== */
+.welcome-card p,
+.text-progress,
+.stat-card p,
+.puntos-label,
+.puntos-siguiente,
+.gamificacion-title span,
+.card-descripcion,
+.resumen-label,
+.resumen-valor,
+.modulo-progreso-stats,
+.actividad-nombre,
+.actividad-fecha,
+.medalla-nombre-progreso,
+.medalla-modal-encabezado h3,
+.medalla-modal-categoria,
+.medalla-modal-descripcion,
+.medalla-modal-estado,
+.medalla-modal-pregunta,
+.medalla-modal-respuesta,
+.resultado-puntaje,
+.juego-puntaje,
+
+.sin-actividad {
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+}
+.card-descripcion,
+.welcome-card p,
+.medalla-modal-descripcion,
+.medalla-modal-respuesta {
+  line-height: 2;
+}
+.card-descripcion {
+  font-size: 0.55rem;
+}
+.welcome-card p {
+  font-size: 0.5rem;
+}
+.text-progress {
+  font-size: 0.45rem;
+}
+.puntos-label {
+  font-size: 0.5rem;
+}
+.puntos-siguiente {
+  font-size: 0.38rem;
+  line-height: 1.8;
+}
+.gamificacion-title span {
+  font-size: 0.45rem;
+}
+.resumen-label {
+  font-size: 0.5rem;
+}
+.modulo-progreso-stats {
+  font-size: 0.45rem;
+}
+.actividad-nombre {
+  font-size: 0.5rem;
+}
+.actividad-fecha {
+  font-size: 0.4rem;
+}
+.medalla-nombre-progreso {
+  font-size: 0.45rem;
+}
+
+/* ===== 5. NUMEROS Y PUNTAJES "X Pt" en tarjetas ===== */
+.juegos-container .estrellas,
+.evaluaciones-container .estrellas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+/* ===== 3. ICONOS: mas presencia visual ===== */
+.welcome-card h2 svg {
+  width: 2.2rem;
+  height: 2.2rem;
+  vertical-align: middle;
+}
+.stat-card h3 svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  vertical-align: middle;
+}
+.juegos-titulo svg,
+.evaluaciones-titulo svg,
+.progreso-titulo svg,
+.contenidos-titulo svg,
+.section-titulo svg {
+  width: 2rem;
+  height: 2rem;
+}
+.progress-title svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: middle;
+}
+.resumen-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.gamificacion-icon svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+.medalla-item svg,
+.medalla-item-progreso svg {
+  image-rendering: pixelated;
+}
+
+/* ===== 8. BOTON REVISAR / VER CONTENIDO (fuente pixel) ===== */
+.crear-contenido-btn {
+  font-family: var(--font-display);
+  font-size: 0.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 0;
+  border: 2px solid var(--border-strong);
+  box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   AJUSTE RETRO (v3): tipografia PIXEL en el navbar superior del estudiante.
+   Gana por orden de cascada vs el bloque v2 (misma especificidad).
+   ========================================================================== */
+.navbar.navbar-student .navbar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.navbar.navbar-student .navbar-link {
+  font-family: var(--font-display);
+  font-size: 0.48rem;
+  letter-spacing: 0.06em;
+}
+.navbar.navbar-student .navbar-link .nav-label {
+  font-family: var(--font-display);
+}
+.navbar.navbar-student .navbar-user-name {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 768px) {
+  .navbar.navbar-student .navbar-title {
+    font-size: 0.9rem;
+  }
+}

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { MdGridOn, MdCheckCircle, MdError } from 'react-icons/md';
+import { MdGridOn, MdCheckCircle, MdError, MdSearch } from 'react-icons/md';
 
 const parseConfig = (c) => (typeof c === 'string' ? (() => { try { return JSON.parse(c); } catch { return {}; } })() : (c || {}));
 
@@ -105,8 +105,8 @@ const WordSearchGame = ({ config: rawConfig, onComplete }) => {
                 return (
                   <span key={i} className={`sopa-cell ${foundCell ? 'found-cell' : ''} ${selCell ? 'selected-cell' : ''}`}
                     style={{
-                      background: foundCell ? '#059669' : selCell ? '#6366f1' : '#f8fafc',
-                      color: foundCell || selCell ? 'white' : '#0f172a',
+                      background: foundCell ? 'var(--success)' : selCell ? 'var(--accent)' : 'var(--bg-elevated)',
+                      color: foundCell || selCell ? 'white' : 'var(--text-strong)',
                       cursor: resultado ? 'default' : 'pointer',
                       fontWeight: foundCell ? 700 : 600,
                       transition: 'all 0.2s ease',
@@ -125,23 +125,25 @@ const WordSearchGame = ({ config: rawConfig, onComplete }) => {
         </div>
         <div className="sopa-sidebar">
           <div className="word-list-panel">
-            <h4>Palabras a encontrar:</h4>
+            <h4>Encuentra las siguientes palabras:</h4>
             {palabras.map((p, i) => {
               const foundWord = found.some(f => f.palabraIdx === i);
               return (
-                <div key={i} className="word-item" style={{
-                  color: foundWord ? '#059669' : '#334155',
-                  textDecoration: foundWord ? 'line-through' : 'none',
-                  opacity: foundWord ? 0.6 : 1
-                }}>
-                  <span>{p.palabra}</span>
-                  {p.pista && <span className="word-hint">{p.pista}</span>}
-                  {foundWord && <MdCheckCircle className="word-check" />}
+                <div key={i} className="word-item" style={{ opacity: foundWord ? 0.6 : 1 }}>
+                  <div className="word-main" style={{
+                    color: foundWord ? 'var(--success)' : 'var(--text-strong)',
+                    textDecoration: foundWord ? 'line-through' : 'none'
+                  }}>
+                    <MdSearch className="word-icon" />
+                    <span>{p.palabra}</span>
+                    {foundWord && <MdCheckCircle className="word-check" />}
+                  </div>
+                  {p.pista && <p className="word-hint">{p.pista}</p>}
                 </div>
               );
             })}
           </div>
-          <div className="found-counter" style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', padding: '0.5rem 0' }}>
+          <div className="found-counter" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-strong)', padding: '0.5rem 0' }}>
             Encontradas: {found.length}/{todasLasPalabras.length}
           </div>
         </div>

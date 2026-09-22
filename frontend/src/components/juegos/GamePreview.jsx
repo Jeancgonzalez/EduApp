@@ -33,7 +33,7 @@ const GamePreview = ({ config }) => {
               {config.palabras?.map((p, i) => (
                 p.palabra && p.pista ? (
                   <li key={i}>
-                    <em>{p.orientacion === 'H' ? '(Horiz)' : '(Vert)'}</em> {p.pista} <strong>→ {p.palabra}</strong>
+                    {p.pista} <strong>→ {p.palabra}</strong>
                   </li>
                 ) : null
               ))}

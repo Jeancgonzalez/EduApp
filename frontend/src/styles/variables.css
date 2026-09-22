@@ -1,0 +1,107 @@
+/* variables.css - Tokens de EduApp ("Modo Aventura", solo apartado estudiante) */
+:root {
+  --bg-app: #f5f7ff;
+  --bg-card: #ffffff;
+  --bg-elevated: #eef2ff;
+  --bg-sunken: #e5e9f7;
+
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-soft: #ede9fe;
+  --accent: #6366f1;
+  --accent-soft: #e0e7ff;
+
+  --success: #059669;
+  --success-soft: #d1fae5;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --info: #0284c7;
+  --info-soft: #e0f2fe;
+
+  --text-strong: #111827;
+  --text: #334155;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --relacionar-arrow-color: #6366f1;
+
+  --cwg-cell-active-bg: #ffffff;
+  --cwg-cell-active-border: #cbd5e1;
+  --cwg-cell-blocked-bg: #eef2ff;
+  --cwg-cell-blocked-border: transparent;
+  --cwg-cell-number: #64748b;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 16px 40px -12px rgba(15, 23, 42, 0.22);
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --font-body: Inter, system-ui, -apple-system, sans-serif;
+  --font-display: 'Nunito', var(--font-body);
+}
+
+[data-theme='dark'] {
+  --bg-app: #0f1120;
+  --bg-card: #171a2b;
+  --bg-elevated: #20243a;
+  --bg-sunken: #12152a;
+
+  --primary: #8b5cf6;
+  --primary-hover: #7c3aed;
+  --primary-soft: #2e2a52;
+  --accent: #818cf8;
+  --accent-soft: #24284e;
+
+  --success: #34d399;
+  --success-soft: #123a32;
+  --warning: #fbbf24;
+  --warning-soft: #3a2c17;
+  --danger: #f87171;
+  --danger-soft: #4a1d1d;
+  --info: #38bdf8;
+  --info-soft: #123048;
+
+  --text-strong: #f1f5f9;
+  --text: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border: #2b3048;
+  --border-strong: #3b4160;
+
+  --relacionar-arrow-color: #a5b4fc;
+
+  --cwg-cell-active-bg: #2c3150;
+  --cwg-cell-active-border: #4b5478;
+  --cwg-cell-blocked-bg: #12152a;
+  --cwg-cell-blocked-border: transparent;
+  --cwg-cell-number: #a5b4fc;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 44px -12px rgba(0, 0, 0, 0.6);
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* X-scroller para las píldoras de progreso cuando el contenedor es estrecho */
+.student-progress-track {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+}

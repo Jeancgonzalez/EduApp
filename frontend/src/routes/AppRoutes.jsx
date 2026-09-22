@@ -1,17 +1,24 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/Login';
 import RegistrarDocente from '../pages/RegisterDocente';
+import VerificarCorreo from '../pages/VerificarCorreo';
 import RegistrarEstudiante from '../pages/Docente/RegisterEstudiante';
-import Dashboard from '../pages/Dashboard';
+import DashboardDocente from '../pages/Docente/DashboardDocente';
 import Contenidos from '../pages/Docente/Contenidos';
-import ContenidoDetalle from '../pages/Docente/ContenidoDetalle';
+import ContenidoEditar from '../pages/Docente/ContenidoEditar';
 import CrearContenido from '../pages/Docente/CrearContenido';
 import Evaluaciones from '../pages/Docente/Evaluaciones';
 import CrearEvaluacion from '../pages/Docente/CrearEvaluacion';
 import ProtectedRoute from './ProtectedRoute';
-import EvaluacionesDetalles from '../pages/Docente/EvaluacionesDetalles';
+import EvaluacionesEditar from '../pages/Docente/EvaluacionesEditar';
 import Juegos from '../pages/Docente/Juegos';
 import CrearJuegos from '../pages/Docente/CrearJuegos';
+import JuegosEditar from '../pages/Docente/JuegosEditar';
+import GestionAlumnos from '../pages/Docente/GestionAlumnos';
+import ProgresoEstudiantes from '../pages/Docente/ProgresoEstudiantes';
+
+import CuentasEstudiantes from '../pages/Docente/CuentasEstudiantes';
+import Grupos from '../pages/Docente/Grupos';
 
 import StudentDashboard from '../pages/Estudiantes/StudentDashboard';
 import StudentContenidos from '../pages/Estudiantes/StudentContenidos';
@@ -21,6 +28,8 @@ import StudentJuegoResolver from '../pages/Estudiantes/StudentJuegoResolver';
 import StudentEvaluaciones from '../pages/Estudiantes/StudentEvaluaciones';
 import StudentEvaluacionResolver from '../pages/Estudiantes/StudentEvaluacionResolver';
 import StudentProgreso from '../pages/Estudiantes/StudentProgreso';
+import StudentMisionDigital from '../pages/Estudiantes/StudentMisionDigital';
+import MisionRequeridaGate from './MisionRequeridaGate';
 
 const AppRoutes = () => {
   return (
@@ -29,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registroDocente" element={<RegistrarDocente />} />
+      <Route path="/verificar-correo" element={<VerificarCorreo />} />
 
       {/* Ruta protegida solo para profesores */}
       <Route 
@@ -40,12 +50,12 @@ const AppRoutes = () => {
         } 
       />
 
-      {/* Dashboard */}
+      {/* Dashboard Docente*/}
       <Route
-        path="/dashboard"
+        path="/docente/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardDocente />
           </ProtectedRoute>
         }
       />
@@ -64,7 +74,7 @@ const AppRoutes = () => {
         path="/contenidos/:id"
         element={
           <ProtectedRoute>
-            <ContenidoDetalle />
+            <ContenidoEditar/>
           </ProtectedRoute>
         }
       />
@@ -73,7 +83,7 @@ const AppRoutes = () => {
         path="/contenidos/:id/editar"
         element={
           <ProtectedRoute requiredRole="teacher">
-            <ContenidoDetalle />
+            <ContenidoEditar />
           </ProtectedRoute>
         }
       />
@@ -101,7 +111,7 @@ const AppRoutes = () => {
         path="/evaluaciones/:id"
         element={
           <ProtectedRoute>
-            <EvaluacionesDetalles />
+            <EvaluacionesEditar />
           </ProtectedRoute>
         }
       />
@@ -110,7 +120,7 @@ const AppRoutes = () => {
         path="/evaluaciones/:id/editar"
         element={
           <ProtectedRoute requiredRole="teacher">
-            <EvaluacionesDetalles />
+            <EvaluacionesEditar />
           </ProtectedRoute>
         }
       />
@@ -147,17 +157,63 @@ const AppRoutes = () => {
         path="/editar-juego/:id"
         element={
           <ProtectedRoute requiredRole="teacher">
-            <CrearJuegos />
+            <JuegosEditar />
           </ProtectedRoute>
         }
       />
 
-      {/* Rutas de Estudiante */}
+      {/* Rutas de Gestión de Estudiantes */}
+      <Route
+        path="/gestion-alumnos"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <GestionAlumnos />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gestion-alumnos/progreso"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <ProgresoEstudiantes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gestion-alumnos/cuentas"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <CuentasEstudiantes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gestion-alumnos/grupos"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <Grupos />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Ruta de resumen de progreso docente */}
+<Route
+        path="/gestion-alumnos/grupos"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <Grupos />
+          </ProtectedRoute>
+        }
+      />
+
+{/* Rutas de Estudiante */}
       <Route
         path="/student/dashboard"
         element={
           <ProtectedRoute>
-            <StudentDashboard />
+            <MisionRequeridaGate>
+              <StudentDashboard />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -166,7 +222,9 @@ const AppRoutes = () => {
         path="/student/contenidos"
         element={
           <ProtectedRoute>
-            <StudentContenidos />
+            <MisionRequeridaGate>
+              <StudentContenidos />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -175,7 +233,9 @@ const AppRoutes = () => {
         path="/student/contenidos/:id"
         element={
           <ProtectedRoute>
-            <StudentContenidoDetalle />
+            <MisionRequeridaGate>
+              <StudentContenidoDetalle />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -184,7 +244,9 @@ const AppRoutes = () => {
         path="/student/juegos"
         element={
           <ProtectedRoute>
-            <StudentJuegos />
+            <MisionRequeridaGate>
+              <StudentJuegos />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -193,7 +255,9 @@ const AppRoutes = () => {
         path="/student/juegos/:id"
         element={
           <ProtectedRoute>
-            <StudentJuegoResolver />
+            <MisionRequeridaGate>
+              <StudentJuegoResolver />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -202,7 +266,9 @@ const AppRoutes = () => {
         path="/student/evaluaciones"
         element={
           <ProtectedRoute>
-            <StudentEvaluaciones />
+            <MisionRequeridaGate>
+              <StudentEvaluaciones />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -211,7 +277,9 @@ const AppRoutes = () => {
         path="/student/evaluaciones/:id"
         element={
           <ProtectedRoute>
-            <StudentEvaluacionResolver />
+            <MisionRequeridaGate>
+              <StudentEvaluacionResolver />
+            </MisionRequeridaGate>
           </ProtectedRoute>
         }
       />
@@ -220,7 +288,18 @@ const AppRoutes = () => {
         path="/student/progreso"
         element={
           <ProtectedRoute>
-            <StudentProgreso />
+            <MisionRequeridaGate>
+              <StudentProgreso />
+            </MisionRequeridaGate>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/mision"
+        element={
+          <ProtectedRoute>
+            <StudentMisionDigital />
           </ProtectedRoute>
         }
       />

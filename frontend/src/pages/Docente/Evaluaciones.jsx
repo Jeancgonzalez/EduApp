@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import './Evaluaciones.css';
 import { FaTrashAlt, FaEdit } from 'react-icons/fa';
+import { MdAssignment, MdMenuBook, MdCheckCircle, MdLock, MdRocketLaunch, MdGroup } from 'react-icons/md';
 import Swal from 'sweetalert2';
 
 const Evaluaciones = () => {
@@ -12,6 +13,8 @@ const Evaluaciones = () => {
   const [evaluaciones, setEvaluaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterGrupo, setFilterGrupo] = useState('');
+  const [allGrupos, setAllGrupos] = useState([]);
   
 
   useEffect(() => {
@@ -28,7 +31,16 @@ const Evaluaciones = () => {
     };
 
     fetchEvaluaciones();
+
+    api.get('/teacher/grupos')
+      .then(res => setAllGrupos(res.data?.data?.grupos || []))
+      .catch(() => setAllGrupos([]));
   }, []);
+
+  const evaluacionesFiltradas = evaluaciones.filter(e => {
+    if (!filterGrupo) return true;
+    return (e.grupo_id === parseInt(filterGrupo, 10)) || (!e.grupo_id && e.grupo_id !== 0);
+  });
 
   const handleTogglePublicar = async (evaluacion) => {
     const result = await Swal.fire({
@@ -98,19 +110,32 @@ const Evaluaciones = () => {
   }
 
   return (
-    <div className="evaluaciones-container">
+    <div className="evaluaciones-container cartoon-area">
       <div className="evaluaciones-header">
-        <h2 className="evaluaciones-titulo">📝 Lista de Evaluaciones</h2>
-        {isTeacher && (
-          <Link to="/crear-evaluacion" className="crear-evaluacion-btn">
-            Crear Evaluación
-          </Link>
-        )}
+        <h2 className="evaluaciones-titulo"><MdAssignment style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />Lista de Evaluaciones</h2>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          {allGrupos.length > 0 && (
+            <div className="grupo-filtro">
+              <span className="grupo-filtro-label">Grupo:</span>
+              <select value={filterGrupo} onChange={(e) => setFilterGrupo(e.target.value)} aria-label="Filtrar por grupo">
+                <option value="">Todos los grupos</option>
+                {allGrupos.map((g) => (
+                  <option key={g.id} value={g.id}>{g.materia} – {g.nombre}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {isTeacher && (
+            <Link to="/crear-evaluacion" className="crear-evaluacion-btn">
+              Crear Evaluación
+            </Link>
+          )}
+        </div>
       </div>
 
-      {evaluaciones.length === 0 ? (
+      {evaluacionesFiltradas.length === 0 ? (
         <div className="evaluaciones-vacio">
-          <p>No hay evaluaciones disponibles en este momento.</p>
+          <p>{filterGrupo ? 'No hay evaluaciones para el grupo seleccionado.' : 'No hay evaluaciones disponibles en este momento.'}</p>
           {isTeacher && (
             <Link to="/crear-evaluacion" className="crear-evaluacion-btn">
               Crear la primera evaluación
@@ -119,13 +144,17 @@ const Evaluaciones = () => {
         </div>
       ) : (
         <div className="evaluaciones-grid">
-          {evaluaciones.map((evaluacion) => (
+          {evaluacionesFiltradas.map((evaluacion) => (
             <div key={evaluacion.id || evaluacion._id} className={`evaluacion-card ${evaluacion.publicado ? 'publicado' : ''}`}>
               <h3 className="card-titulo">{evaluacion.titulo}</h3>
               <div className="card-info">
-                <span className="badge badge-modulo">📚 Módulo {evaluacion.modulo}</span>
+                  <span className="badge badge-modulo"><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Módulo {evaluacion.modulo}</span>
+                  {evaluacion.grupo && <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupo: {evaluacion.grupo.materia} – {evaluacion.grupo.nombre}</span>}
+                  {evaluacion.requiere_contenido_apoyo && (
+                      <span className="badge badge-tiempo" style={{ background: '#fef3c7', color: '#92400e' }}><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />Contenido de apoyo</span>
+                    )}
                 {evaluacion.publicado && (
-                  <span className="badge badge-publicado">✅ Publicado</span>
+                  <span className="badge badge-publicado"><MdCheckCircle style={{ marginRight: '0.25rem' }} /> Publicado</span>
                 )}
               </div>
               {evaluacion.descripcion && (
@@ -138,7 +167,8 @@ const Evaluaciones = () => {
                     className={`publicar-btn ${evaluacion.publicado ? 'despublicar' : ''}`}
                     onClick={() => handleTogglePublicar(evaluacion)}
                   >
-                    {evaluacion.publicado ? '🔒 Despublicar' : '🚀 Publicar'}
+                    {evaluacion.publicado ? <MdLock style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> : <MdRocketLaunch style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />}
+                    {evaluacion.publicado ? 'Despublicar' : 'Publicar'}
                   </button>
                   
                   {!evaluacion.publicado && (

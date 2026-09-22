@@ -104,7 +104,7 @@
   top: 8px;
   font-size: 2rem;
   color: #bfdbfe;
-  font-family: serif;
+  font-family: inherit;
 }
 
 .respuesta-box {

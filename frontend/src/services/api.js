@@ -2,10 +2,7 @@ import axios from 'axios';
 
 // Configuración base de Axios
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api', // Modificar si el backend usa otro puerto
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: '/api'
 });
 
 // Interceptor para inyectar automáticamente el JWT en cada petición
@@ -28,10 +25,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      // Lógica para cerrar sesión o redirigir al login
-      console.warn('Acceso denegado o sesión expirada');
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const isAuthRequest = error.config?.url?.includes('/auth/');
+      // Evitamos redirigir/recargar en peticiones de autenticación (login, registro,
+      // verificación) para que el formulario muestre su mensaje de error en pantalla.
+      if (!isAuthRequest) {
+        console.warn('Acceso denegado o sesión expirada');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

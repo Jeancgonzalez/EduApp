@@ -167,21 +167,21 @@
 }
 .cruz-celda {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 .cruz-celda.activa { background: white; border: 1px solid #cbd5e1; border-radius: 3px; color: #1e293b; }
 .cruz-celda.vacia { background: #1e293b; border-radius: 3px; }
 .cruz-num {
   position: absolute;
-  top: 1px;
-  left: 2px;
-  font-size: 0.5rem;
+  top: 2px;
+  left: 3px;
+  font-size: 0.6rem;
   color: #64748b;
   font-weight: 700;
   line-height: 1;
@@ -295,7 +295,6 @@
 .col-a { background: #dbeafe; color: #1e40af; }
 .col-b { background: #fce7f3; color: #9d174d; }
 
-.crucigrama-row select { min-width: 110px; }
 .pares-row { align-items: stretch; }
 .par-card { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .par-card label { font-size: 0.78rem; color: #64748b; font-weight: 600; }

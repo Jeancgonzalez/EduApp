@@ -5,7 +5,7 @@
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(135deg, #e0f2f1 0%, #f8fafc 50%, #e8f5e9 100%);
-  font-family: 'Inter', sans-serif;
+
   padding: 2rem 1rem;
 }
 
@@ -180,7 +180,7 @@
 
 .register-form .input-wrapper input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 2.5rem;
+  padding: 0.875rem 2.75rem 0.875rem 2.5rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -202,6 +202,41 @@
   color: #9ca3af;
 }
 
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  z-index: 2;
+  line-height: 1;
+}
+
+.password-toggle-btn:hover {
+  color: #4b5563;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.password-hint {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
 .register-form .input-wrapper input:disabled {
   background: #f3f4f6;
   color: #9ca3af;
@@ -218,4 +253,72 @@
   margin-bottom: 1.5rem;
   text-align: center;
   border: 1px solid #fecaca;
+}
+
+.success-message {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid #bbf7d0;
+}
+
+.resend-box {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.resend-box p {
+  margin: 0 0 0.5rem;
+}
+
+.resend-cooldown {
+  display: block;
+  color: #9ca3af;
+}
+
+.resend-btn {
+  background: transparent;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.resend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* ===== Validación visual de campos ===== */
+.form-group.has-error .input-wrapper input {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.form-group.has-error .input-wrapper input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  background: #ffffff;
+}
+
+.field-error {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #dc2626;
 }

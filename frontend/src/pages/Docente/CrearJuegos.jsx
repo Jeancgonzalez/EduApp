@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import GrupoSelect from '../../components/GrupoSelect';
 import './CrearJuegos.css';
 import GameTypeCard from '../../components/juegos/GameTypeCard';
 import DynamicGameForm from '../../components/juegos/DynamicGameForm';
 import GamePreview from '../../components/juegos/GamePreview';
+import { MdSearch, MdGridOn, MdHelp, MdStyle, MdLink, MdSave } from 'react-icons/md';
 
 const CrearJuegos = () => {
   const navigate = useNavigate();
@@ -15,9 +17,11 @@ const CrearJuegos = () => {
     titulo: '',
     tipo: '',
     modulo: '',
-    contenido: '',
+    modulo_content_id: '',
+    descripcion: '',
     puntaje_max: 100,
-    configuracion: null
+    configuracion: null,
+    grupo_id: ''
   });
 
   const [modulos, setModulos] = useState([]);
@@ -36,6 +40,18 @@ const CrearJuegos = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+
+    if (name === 'modulo' && modulos.length > 0) {
+      const contenido = modulos.find((m) => String(m.id) === value);
+      const moduloNombre = contenido ? contenido.modulo : '';
+      setFormValues((prev) => ({
+        ...prev,
+        modulo: moduloNombre,
+        modulo_content_id: value
+      }));
+      return;
+    }
+
     setFormValues((prev) => ({
       ...prev,
       [name]: value
@@ -123,16 +139,26 @@ const CrearJuegos = () => {
     setLoading(true);
 
     try {
-      await api.post('/juegos', {
+      const payload = {
         ...formValues,
         docente_id: user?.id
-      });
+      };
+
+      if (!payload.modulo_content_id) {
+        delete payload.modulo_content_id;
+      }
+
+      if (!payload.grupo_id) {
+        delete payload.grupo_id;
+      }
+
+      await api.post('/juegos', payload);
 
       setSuccess('Juego creado exitosamente.');
 
       setTimeout(() => {
         navigate('/juegos');
-      }, 1500);
+      }, 900);
 
     } catch (err) {
       console.error(err);
@@ -146,15 +172,16 @@ const CrearJuegos = () => {
   };
 
   const gameTypes = [
-    { value: 'sopa_de_letras', icon: "🔍", label: "Sopa de Letras" },
-    { value: 'crucigrama', icon: "📝", label: "Crucigrama" },
-    { value: 'adivinanza', icon: "🤔", label: "Adivinanzas" },
-    { value: 'memoria', icon: "🃏", label: "Memotest" },
-    { value: 'relacionar', icon: "🧩", label: "Asociación de Palabras" },
+    { value: 'sopa_de_letras', icon: <MdSearch />, label: "Sopa de Letras" },
+    { value: 'crucigrama', icon: <MdGridOn />, label: "Crucigrama" },
+    { value: 'adivinanza', icon: <MdHelp />, label: "Adivinanzas" },
+    { value: 'memoria', icon: <MdStyle />, label: "Memotest" },
+    { value: 'relacionar', icon: <MdLink />, label: "Asociación de Palabras" },
   ];
+  
 
   return (
-    <div className="crear-juegos-container">
+    <div className="crear-juegos-container cartoon-area">
       <button className="volver-btn" onClick={() => navigate(-1)}>
         ← Volver a Juegos
       </button>
@@ -188,13 +215,13 @@ const CrearJuegos = () => {
                   <select
                     id="modulo"
                     name="modulo"
-                    value={formValues.modulo}
+                    value={formValues.modulo_content_id || ''}
                     onChange={handleChange}
                     required
                   >
                     <option value="">-- Selecciona un módulo --</option>
                     {modulos.map((m) => (
-                      <option key={m.id} value={m.modulo}>{m.modulo} – {m.titulo}</option>
+                      <option key={m.id} value={m.id}>{m.modulo} – {m.titulo}</option>
                     ))}
                   </select>
                 ) : (
@@ -225,16 +252,21 @@ const CrearJuegos = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="contenido">Descripción e Instrucciones</label>
+              <label htmlFor="descripcion">Descripción e Instrucciones</label>
               <textarea
-                id="contenido"
-                name="contenido"
-                value={formValues.contenido}
+                id="descripcion"
+                name="descripcion"
+                value={formValues.descripcion}
                 onChange={handleChange}
                 placeholder="Describe brevemente las instrucciones del juego"
                 rows="3"
               />
             </div>
+
+            <GrupoSelect
+              value={formValues.grupo_id}
+              onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
+            />
           </div>
 
           <div className="form-section">
@@ -273,7 +305,7 @@ const CrearJuegos = () => {
               disabled={loading || !formValues.tipo || !formValues.configuracion} 
               className="submit-btn"
             >
-              {loading ? 'Guardando Juego...' : '💾 Guardar y Publicar Juego'}
+              {loading ? 'Guardando Juego...' : <><MdSave style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} /> Guardar y Publicar Juego</>}
             </button>
           </form>
         </div>

@@ -1,0 +1,48 @@
+.modulo-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.modulo-filtro-icon {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.modulo-filtro .grupo-filtro-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modulo-filtro select {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  max-width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modulo-filtro select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+html[data-theme="dark"] .modulo-filtro .grupo-filtro-label {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .modulo-filtro select {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}

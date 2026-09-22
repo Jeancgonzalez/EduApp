@@ -34,10 +34,28 @@ const StudentProgress = sequelize.define('StudentProgress', {
   fecha: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
+  },
+  intentos_realizados: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  feedback_visto: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  respuestas: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'JSON con las respuestas del estudiante'
   }
 }, {
   timestamps: false,
-  tableName: 'progreso_estudiante'
+  tableName: 'progreso_estudiante',
+  indexes: [
+    { unique: true, fields: ['estudiante_id', 'contenido_id'] },
+    { unique: true, fields: ['estudiante_id', 'juego_id'] },
+    { unique: true, fields: ['estudiante_id', 'evaluacion_id'] }
+  ]
 });
 
 module.exports = StudentProgress;

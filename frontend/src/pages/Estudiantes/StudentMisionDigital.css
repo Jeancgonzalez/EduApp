@@ -1,0 +1,694 @@
+/* Misión Digital (IAD-Primaria) — apartado estudiante, estilo cartoon. */
+
+.mision-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mision-card h2 {
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  color: var(--text-strong, #0f172a);
+  margin: 0 0 0.5rem;
+}
+
+/* --- Intro: composición centrada estilo "bienvenida de juego" --- */
+.mision-intro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem 2.75rem;
+}
+
+/* Contenedores de mascota. INTRO y RESULTADO: el globo se ancla al ancho de la
+   tarjeta (arriba, con espacio reservado para que nunca se salga del viewport). */
+.mision-card .mision-intro-mascota,
+.mision-card .mision-resultado-mascota {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 3.6rem;
+}
+
+/* Misión en curso (cada pregunta): el globo va anclado a la PROPIA mascota,
+   pegado sobre su cabeza con un pequeño espacio, en vez del gran margen superior
+   que usa la intro. */
+.mision-card .mision-activa-mascota {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+}
+
+.mision-card .mision-activa-mascota .mascota-contenedor {
+  position: relative;
+  display: inline-flex;
+  width: auto;
+}
+
+/* Globo "cerca de la mascota" solo en la pregunta: pegado a la parte superior
+   de su contenedor (la cabeza) y centrado sobre ella. */
+.mision-card .mision-activa-mascota .mascota-contenedor .mascota-burbuja-mensaje {
+  top: auto;
+  bottom: calc(100% + 0.9rem);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(85vw, 28rem);
+}
+
+/* En el resultado, la burbuja va un poco más abajo (más pegada a la mascota). */
+.mision-card .mision-resultado-nube .mascota-contenedor .mascota-burbuja-mensaje {
+  bottom: calc(100% + 0.1rem);
+}
+
+/* GLOBO DE EDDU: se re-ancla al contenedor de la mascota (ancho completo de la
+   tarjeta) en vez de a la propia mascota, eliminando el desplazamiento fijo a
+   la izquierda (translateX(-85px)) que lo sacaba del borde del viewport. */
+.mision-card .mascota-contenedor {
+  position: static;
+  display: block;
+}
+
+.mision-card .mascota-contenedor .mascota-burbuja-mensaje {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-135%);
+  width: max-content;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.6rem 1rem;
+  border-radius: 14px;
+  background: #1e1b4b;
+  color: #eef2ff;
+  box-shadow: 0 6px 18px -4px rgba(30, 27, 75, 0.45);
+  z-index: 12;
+}
+
+/* Decoración sutil de fondo: estrellas de la paleta de gamificación. */
+.mision-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.mision-decor-star {
+  position: absolute;
+  color: #f59e0b;
+  opacity: 0.7;
+  animation: mision-pulso-estrella 3s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes mision-pulso-estrella {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-10px) rotate(22deg) scale(1.2);
+    opacity: 1;
+  }
+}
+
+.mision-decor-star-1 { top: 1.1rem; left: 1.5rem; font-size: 1.7rem; animation-duration: 3.2s; }
+.mision-decor-star-2 { top: 3.2rem; right: 2.1rem; font-size: 1.1rem; color: #818cf8; animation-duration: 4s; animation-delay: 0.5s; }
+.mision-decor-star-3 { bottom: 1.9rem; left: 2.4rem; font-size: 1.2rem; color: #818cf8; animation-duration: 2.6s; animation-delay: 1.2s; }
+.mision-decor-star-4 { bottom: 0.9rem; right: 1.6rem; font-size: 1.7rem; animation-duration: 3.6s; animation-delay: 0.2s; }
+.mision-decor-star-5 { top: 5.6rem; left: 4rem; font-size: 1.3rem; color: #fb7185; animation-duration: 2.8s; animation-delay: 1.6s; }
+.mision-decor-star-6 { top: 2.3rem; left: 8.5rem; font-size: 0.9rem; color: #818cf8; animation-duration: 4.2s; animation-delay: 0.8s; }
+.mision-decor-star-7 { top: 46%; left: 2.6rem; font-size: 1.1rem; animation-duration: 3s; animation-delay: 2.1s; }
+.mision-decor-star-8 { top: 42%; right: 2.4rem; font-size: 1.3rem; color: #818cf8; animation-duration: 2.4s; animation-delay: 0.6s; }
+.mision-decor-star-9 { bottom: 4.6rem; left: 3.2rem; font-size: 0.95rem; color: #fb7185; animation-duration: 4s; animation-delay: 1.9s; }
+.mision-decor-star-10 { bottom: 2.9rem; right: 4.4rem; font-size: 1.35rem; animation-duration: 3.4s; animation-delay: 1.2s; }
+
+/* "Reducir movimiento": se SUAVIZA, no se apaga (igual criterio que la mascota). */
+@keyframes mision-estrella-suave {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-3px) rotate(10deg);
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mision-decor-star {
+    animation: mision-estrella-suave 4s ease-in-out infinite;
+  }
+}
+
+.mision-intro > .mision-intro-mascota,
+.mision-intro > .mision-intro-texto {
+  position: relative;
+  z-index: 1;
+}
+
+.mision-intro-texto {
+  max-width: 560px;
+}
+
+.mision-intro-texto p {
+  color: #475569;
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+
+.mision-intro-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  color: #334155;
+  font-size: 0.95rem;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+}
+
+.mision-intro-lista li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: max-content;
+}
+
+.mision-intro-lista svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* --- Cabecera de misión --- */
+.mision-activa .mision-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.mision-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text-strong, #0f172a);
+}
+
+.mision-titulo-icono {
+  color: #6366f1;
+  font-size: 1.3rem;
+}
+
+.mision-dots {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.mision-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #e2e8f0;
+}
+
+.mision-dot.completada {
+  background: #10b981;
+}
+
+.mision-dot.actual {
+  background: #6366f1;
+  transform: scale(1.25);
+}
+
+/* --- Situación --- */
+.mision-situacion {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.mision-dimension {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6366f1;
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+.mision-situacion p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1e293b;
+  line-height: 1.55;
+}
+
+/* --- Opciones --- */
+.mision-opciones {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mision-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.mision-opcion:hover {
+  border-color: #a5b4fc;
+  background: #f5f8ff;
+}
+
+.mision-opcion.seleccionada {
+  border-color: #6366f1;
+  background: #eef2ff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+.mision-opcion-letra {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #6366f1;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mision-opcion.seleccionada .mision-opcion-letra {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+.mision-opcion-texto {
+  line-height: 1.45;
+}
+
+/* --- Acciones --- */
+.mision-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.mision-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+
+.mision-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mision-btn-primario {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  box-shadow: 0 4px 10px -2px rgba(99, 102, 241, 0.45);
+}
+
+.mision-btn-primario:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -2px rgba(99, 102, 241, 0.55);
+}
+
+/* --- Resultado --- */
+.mision-resultado {
+  text-align: center;
+}
+
+.mision-resultado-mascota {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.mision-resultado-nota {
+  color: #475569;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto 1.25rem;
+}
+
+.mision-pill {
+  display: inline-block;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  margin-top: 0.4rem;
+}
+
+.mision-puntaje-total {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-strong, #0f172a);
+  margin: 0.75rem 0 1rem;
+}
+
+.mision-dimensiones {
+  display: grid;
+  gap: 0.9rem;
+  text-align: left;
+  margin-bottom: 1.25rem;
+}
+
+.mision-dimension-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.mision-dimension-nombre {
+  font-weight: 700;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.mision-dimension-valor {
+  font-weight: 800;
+  color: #6366f1;
+  font-size: 0.9rem;
+}
+
+.mision-dimension-bar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mision-dimension-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.mision-fortaleza {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem 1.1rem;
+  text-align: left;
+  color: #475569;
+  font-size: 0.92rem;
+  margin-bottom: 1rem;
+}
+
+.mision-fortaleza p {
+  margin: 0.25rem 0;
+}
+
+.mision-fortaleza strong {
+  color: #334155;
+}
+
+.mision-error {
+  text-align: center;
+}
+
+.mision-error p {
+  color: #475569;
+  margin: 0 0 1.25rem;
+}
+
+.mascota-mision {
+  max-width: 170px;
+}
+
+.mascota-mision .mascota-burbuja {
+  font-size: 0.82rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .mision-intro {
+    padding: 1.25rem 1.25rem 2.25rem;
+  }
+
+  .mision-card .mision-intro-mascota,
+  .mision-card .mision-resultado-mascota {
+    padding-top: 4.6rem;
+  }
+
+  .mision-card .mision-activa-mascota {
+    padding-top: 0.5rem;
+  }
+
+  .mision-card .mascota-contenedor .mascota-burbuja-mensaje {
+    font-size: 0.78rem;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .mision-intro .mision-intro-lista {
+    justify-items: center;
+  }
+
+  .mision-intro .mision-btn {
+    margin: 0 auto;
+  }
+}
+
+/* --- Modo oscuro --- */
+html[data-theme="dark"] .mision-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .mision-card h2,
+html[data-theme="dark"] .mision-puntaje-total,
+html[data-theme="dark"] .mision-titulo {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .mision-intro-texto p,
+html[data-theme="dark"] .mision-intro-lista,
+html[data-theme="dark"] .mision-resultado-nota,
+html[data-theme="dark"] .mision-error p {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .mision-intro-lista svg {
+  color: #34d399;
+}
+
+html[data-theme="dark"] .mision-situacion {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .mision-situacion p {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .mision-dimension {
+  color: #a5b4fc;
+  background: #312e81;
+}
+
+html[data-theme="dark"] .mision-dot {
+  background: #334155;
+}
+
+html[data-theme="dark"] .mision-dot.completada {
+  background: #34d399;
+}
+
+html[data-theme="dark"] .mision-opcion {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .mision-opcion:hover {
+  border-color: #818cf8;
+  background: #111c33;
+}
+
+html[data-theme="dark"] .mision-opcion.seleccionada {
+  border-color: #818cf8;
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .mision-opcion-letra {
+  background: #312e81;
+  color: #a5b4fc;
+}
+
+html[data-theme="dark"] .mision-opcion.seleccionada .mision-opcion-letra {
+  background: #818cf8;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .mision-dimension-bar {
+  background: #334155;
+}
+
+html[data-theme="dark"] .mision-dimension-nombre {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .mision-fortaleza {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .mision-fortaleza strong {
+  color: #e2e8f0;
+}
+
+.mision-intro-obligatoria {
+  margin: 1rem 0 0.25rem;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px dashed #f8b4b4;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+html[data-theme="dark"] .mision-intro-obligatoria {
+  background: #4c1d1d;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+
+html[data-theme="dark"] .mision-decor-star {
+  opacity: 0.75;
+}
+
+html[data-theme="dark"] .mision-card .mascota-contenedor .mascota-burbuja-mensaje {
+  background: #312e81;
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.5);
+}
+
+
+/* --- Cabecera sin sidebar: bot�n volver + logout compacto --- */
+.mision-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.mision-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.mision-back-btn:hover {
+  background: #e0e7ff;
+  transform: translateY(-1px);
+}
+
+.mision-header-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.mision-header-logout:hover {
+  background: #fecaca;
+}
+
+@media (max-width: 768px) {
+  .mision-header-left {
+    gap: 0.6rem;
+  }
+  .mision-back-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+html[data-theme="dark"] .mision-back-btn {
+  background: #312e81;
+  border-color: #6366f1;
+  color: #e0e7ff;
+}
+
+html[data-theme="dark"] .mision-back-btn:hover {
+  background: #4338ca;
+}
+
+html[data-theme="dark"] .mision-header-logout {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+
+html[data-theme="dark"] .mision-header-logout:hover {
+  background: #7f1d1d;
+}

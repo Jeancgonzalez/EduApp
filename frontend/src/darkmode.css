@@ -1,0 +1,1037 @@
+/* ============================================================
+   Modo Oscuro Global - EduApp
+   Se activa con: html[data-theme="dark"]
+   ============================================================ */
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  background-color: #0f172a;
+  color: #cbd5e1;
+}
+
+/* ---------- Páginas principales ---------- */
+html[data-theme="dark"] .dashboard-container,
+html[data-theme="dark"] .progreso-container,
+html[data-theme="dark"] .evaluaciones-container,
+html[data-theme="dark"] .juegos-container,
+html[data-theme="dark"] .contenidos-container,
+html[data-theme="dark"] .crear-evaluacion-container,
+html[data-theme="dark"] .crear-juegos-container,
+html[data-theme="dark"] .editar-juegos-container,
+html[data-theme="dark"] .crear-contenido-container,
+html[data-theme="dark"] .gestion-container,
+html[data-theme="dark"] .cuentas-container,
+html[data-theme="dark"] .detalle-container,
+html[data-theme="dark"] .student-page {
+  background-color: #0f172a;
+  color: #cbd5e1;
+}
+
+/* Gradientes de fondo de login/registro */
+html[data-theme="dark"] .login-container,
+html[data-theme="dark"] .register-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+}
+
+html[data-theme="dark"] .login-card,
+html[data-theme="dark"] .register-card {
+  background: #1e293b;
+}
+
+/* ---------- Headers de página ---------- */
+html[data-theme="dark"] .progreso-header,
+html[data-theme="dark"] .evaluaciones-header,
+html[data-theme="dark"] .juegos-header,
+html[data-theme="dark"] .contenidos-header,
+html[data-theme="dark"] .page-header {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .progreso-titulo,
+html[data-theme="dark"] .section-titulo,
+html[data-theme="dark"] .evaluaciones-titulo,
+html[data-theme="dark"] .juegos-titulo,
+html[data-theme="dark"] .contenidos-titulo,
+html[data-theme="dark"] .crear-evaluacion-header h2,
+html[data-theme="dark"] .crear-juegos-header h2,
+html[data-theme="dark"] .editar-juegos-header h2,
+html[data-theme="dark"] .crear-contenido-card h2,
+html[data-theme="dark"] .detalle-titulo,
+html[data-theme="dark"] .page-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .crear-evaluacion-header p,
+html[data-theme="dark"] .crear-juegos-header .header-subtitle,
+html[data-theme="dark"] .editar-juegos-header .header-subtitle,
+html[data-theme="dark"] .page-header p,
+html[data-theme="dark"] .header-subtitle {
+  color: #94a3b8;
+}
+
+/* ---------- Tarjetas blancas ---------- */
+html[data-theme="dark"] .resumen-card,
+html[data-theme="dark"] .modulo-progreso-card,
+html[data-theme="dark"] .actividad-item,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .progress-card,
+html[data-theme="dark"] .gamificacion-card,
+html[data-theme="dark"] .evaluacion-card,
+html[data-theme="dark"] .juego-card,
+html[data-theme="dark"] .contenido-card,
+html[data-theme="dark"] .catalog-card,
+html[data-theme="dark"] .detalle-card,
+html[data-theme="dark"] .crear-evaluacion-form,
+html[data-theme="dark"] .form-section,
+html[data-theme="dark"] .crear-contenido-card,
+html[data-theme="dark"] .gestion-card,
+html[data-theme="dark"] .progreso-stat-card,
+html[data-theme="dark"] .progreso-chart-card,
+html[data-theme="dark"] .progreso-table-wrapper,
+html[data-theme="dark"] .cuentas-summary-card,
+html[data-theme="dark"] .cuentas-table-wrapper,
+html[data-theme="dark"] .student-progress-card,
+html[data-theme="dark"] .module-stat-item,
+html[data-theme="dark"] .progreso-error-card,
+html[data-theme="dark"] .progreso-empty-card,
+html[data-theme="dark"] .dynamic-form-container,
+html[data-theme="dark"] .game-preview-container,
+html[data-theme="dark"] .game-type-card,
+html[data-theme="dark"] .evaluacion-start-card,
+html[data-theme="dark"] .pregunta-card,
+html[data-theme="dark"] .evaluacion-actions,
+html[data-theme="dark"] .resultado-card,
+html[data-theme="dark"] .juego-contenido,
+html[data-theme="dark"] .detalle-contenido {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .resumen-card:hover,
+html[data-theme="dark"] .modulo-progreso-card:hover,
+html[data-theme="dark"] .actividad-item:hover,
+html[data-theme="dark"] .evaluacion-card:hover,
+html[data-theme="dark"] .juego-card:hover,
+html[data-theme="dark"] .contenido-card:hover,
+html[data-theme="dark"] .catalog-card:hover {
+  border-color: #475569;
+}
+
+/* Tarjetas "publicado" (verde suave) */
+html[data-theme="dark"] .evaluacion-card.publicado,
+html[data-theme="dark"] .juego-card.publicado,
+html[data-theme="dark"] .contenido-card.publicado {
+  background-color: #0c2b21;
+  border-color: #166534;
+}
+
+/* ---------- Títulos y textos de tarjeta ---------- */
+html[data-theme="dark"] .card-titulo,
+html[data-theme="dark"] .catalog-card h3,
+html[data-theme="dark"] .resumen-valor,
+html[data-theme="dark"] .modulo-progreso-header h3,
+html[data-theme="dark"] .actividad-nombre,
+html[data-theme="dark"] .stat-card p,
+html[data-theme="dark"] .stat-value,
+html[data-theme="dark"] .student-name,
+html[data-theme="dark"] .summary-value,
+html[data-theme="dark"] .progreso-chart-card h3,
+html[data-theme="dark"] .game-type-label,
+html[data-theme="dark"] .detalle-body h3,
+html[data-theme="dark"] .form-section h3,
+html[data-theme="dark"] .gamificacion-title h3,
+html[data-theme="dark"] .module-name,
+html[data-theme="dark"] .module-score,
+html[data-theme="dark"] .module-stat-value,
+html[data-theme="dark"] .dist-count,
+html[data-theme="dark"] .pregunta-header h4 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .card-descripcion,
+html[data-theme="dark"] .catalog-card p,
+html[data-theme="dark"] .resumen-label,
+html[data-theme="dark"] .modulo-progreso-stats,
+html[data-theme="dark"] .actividad-fecha,
+html[data-theme="dark"] .stat-label,
+html[data-theme="dark"] .student-email,
+html[data-theme="dark"] .summary-label,
+html[data-theme="dark"] .puntos-label,
+html[data-theme="dark"] .puntos-siguiente,
+html[data-theme="dark"] .gamificacion-title span,
+html[data-theme="dark"] .text-progress,
+html[data-theme="dark"] .progress-title,
+html[data-theme="dark"] .stat-card h3,
+html[data-theme="dark"] .progreso-table th,
+html[data-theme="dark"] .cuentas-table th {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .sin-actividad,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .evaluaciones-vacio,
+html[data-theme="dark"] .juegos-vacio,
+html[data-theme="dark"] .contenidos-vacio,
+html[data-theme="dark"] .game-empty,
+html[data-theme="dark"] .game-hint,
+html[data-theme="dark"] .progreso-mensaje,
+html[data-theme="dark"] .evaluaciones-mensaje,
+html[data-theme="dark"] .juegos-mensaje,
+html[data-theme="dark"] .contenidos-mensaje,
+html[data-theme="dark"] .detalle-foot,
+html[data-theme="dark"] .detalle-mensaje {
+  background-color: #1f2937;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+/* ---------- Formularios ---------- */
+html[data-theme="dark"] label,
+html[data-theme="dark"] .form-group label,
+html[data-theme="dark"] .dynamic-form-section h4,
+html[data-theme="dark"] .form-group label,
+html[data-theme="dark"] .detalle-card label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #64748b;
+}
+
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] select:focus {
+  border-color: #818cf8;
+  outline: none;
+}
+
+html[data-theme="dark"] .search-box,
+html[data-theme="dark"] .filter-select,
+html[data-theme="dark"] .cuentas-search-box {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .search-box input,
+html[data-theme="dark"] .cuentas-search-box input {
+  background-color: transparent;
+  color: #e2e8f0;
+}
+
+/* Botones secundarios (azul claro) */
+html[data-theme="dark"] .back-btn,
+html[data-theme="dark"] .volver-btn,
+html[data-theme="dark"] .detalle-back,
+html[data-theme="dark"] .progreso-volver,
+html[data-theme="dark"] .cuentas-volver,
+html[data-theme="dark"] .editar-btn-juego,
+html[data-theme="dark"] .editar-btn-evaluacion,
+html[data-theme="dark"] .btn-back,
+html[data-theme="dark"] .gestion-card-action,
+html[data-theme="dark"] .submit-btn-contenido,
+html[data-theme="dark"] .editar-btn-contenido,
+html[data-theme="dark"] .back-link-registerEst {
+  background-color: #1e3a5f;
+  border-color: #1d4ed8;
+  color: #bfdbfe;
+}
+
+html[data-theme="dark"] .btn-volver-jugar,
+html[data-theme="dark"] .catalog-btn {
+  background-color: #334155;
+  color: #cbd5e1;
+}
+
+/* Botón eliminar / peligro */
+html[data-theme="dark"] .eliminar-btn,
+html[data-theme="dark"] .delete-btn,
+html[data-theme="dark"] .cancel-btn-contenido,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .navbar-logout-btn {
+  background-color: #3b1518;
+  border-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+/* ---------- Tablas ---------- */
+html[data-theme="dark"] .progreso-table-wrapper,
+html[data-theme="dark"] .cuentas-table-wrapper {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .progreso-table thead,
+html[data-theme="dark"] .cuentas-table thead {
+  background-color: #0f172a;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .progreso-table td,
+html[data-theme="dark"] .cuentas-table td {
+  color: #cbd5e1;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .progreso-table tbody tr:hover,
+html[data-theme="dark"] .cuentas-table tbody tr:hover {
+  background-color: #1f2937;
+}
+
+/* ---------- Barras de progreso ---------- */
+html[data-theme="dark"] .progress-bar-container,
+html[data-theme="dark"] .module-progress-bar-container,
+html[data-theme="dark"] .dist-bar-track,
+html[data-theme="dark"] .progress-bar-mini {
+  background-color: #334155;
+}
+
+html[data-theme="dark"] .progress-bar-modulo,
+html[data-theme="dark"] .progress-bar-gamif,
+html[data-theme="dark"] .progress-bar {
+  /* conserva gradientes originales para contraste */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Mensajes de error/success/info ---------- */
+html[data-theme="dark"] .error-message,
+html[data-theme="dark"] .form-error {
+  background-color: #3b1518;
+  border-color: #7f1d1d;
+  color: #fecaca;
+}
+
+html[data-theme="dark"] .success-message,
+html[data-theme="dark"] .form-success {
+  background-color: #0c2b21;
+  border-color: #14532d;
+  color: #bbf7d0;
+}
+
+html[data-theme="dark"] .alerta-info,
+html[data-theme="dark"] .retroalimentacion-texto,
+html[data-theme="dark"] .contenido-apoyo-block,
+html[data-theme="dark"] .info-message-external {
+  background-color: #312e1b;
+  border-color: #7c5a0d;
+  color: #fde68a;
+}
+
+/* ---------- Sidebar y cabeceras de dashboard ---------- */
+html[data-theme="dark"] .sidebar {
+  background-color: #111827;
+  border-right-color: #1f2937;
+}
+
+html[data-theme="dark"] .sidebar-header,
+html[data-theme="dark"] .sidebar-footer {
+  border-color: #1f2937;
+}
+
+html[data-theme="dark"] .sidebar-header h2 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .nav-item {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .nav-item:hover {
+  background-color: #1f2937;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .nav-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(124, 58, 237, 0.8), rgba(109, 40, 217, 0.8));
+  color: #ffffff;
+  border: 2px solid #7c3aed;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+}
+
+html[data-theme="dark"] .user-info-sidebar {
+  background: linear-gradient(135deg, #1e293b 0%, #111827 100%);
+  border-color: #1f2937;
+}
+
+html[data-theme="dark"] .user-name-sidebar,
+html[data-theme="dark"] .user-role-sidebar {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .main-header {
+  background-color: #111827;
+  border-bottom-color: #1f2937;
+}
+
+html[data-theme="dark"] .main-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .user-badge {
+  background-color: #1e293b;
+  color: #a5b4fc;
+}
+
+/* ---------- Navbar (top) ---------- */
+html[data-theme="dark"] .navbar {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: #1f2937;
+}
+
+html[data-theme="dark"] .navbar-title {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .navbar-link {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .navbar-link:hover {
+  background: #1f2937;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .navbar-link.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(124, 58, 237, 0.8), rgba(109, 40, 217, 0.8));
+  color: #f5f3ff;
+}
+
+html[data-theme="dark"] .navbar-user {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .navbar-user-name {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .navbar-hamburger {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .navbar-links {
+  border-top-color: #1f2937;
+}
+
+/* ---------- Medallas ---------- */
+html[data-theme="dark"] .medalla-item.obtenida {
+  background: linear-gradient(135deg, #3a2f0b, #4a3b10);
+  color: #fbbf24;
+  border-color: #a16207;
+}
+
+html[data-theme="dark"] .medalla-item.por-conseguir {
+  background: #1f2937;
+  color: #475569;
+  border-color: #334155;
+  opacity: 0.75;
+  filter: grayscale(1);
+}
+
+/* ---------- Medallas en Mi Progreso ---------- */
+html[data-theme="dark"] .medalla-card-progreso {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html[data-theme="dark"] .medalla-card-progreso.obtenida {
+  background: linear-gradient(135deg, #3a2f0b, #4a3b10);
+  border-color: #a16207;
+}
+
+html[data-theme="dark"] .medalla-card-progreso.obtenida .medalla-icono-progreso {
+  color: #fbbf24;
+}
+
+html[data-theme="dark"] .medalla-card-progreso.por-conseguir {
+  background: #111827;
+  border-color: #374151;
+}
+
+html[data-theme="dark"] .medalla-modal {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+html[data-theme="dark"] .medalla-modal-encabezado.obtenida {
+  background: linear-gradient(135deg, #3a2f0b, #4a3b10);
+  color: #fbbf24;
+}
+
+html[data-theme="dark"] .medalla-modal-encabezado.por-conseguir {
+  background: #111827;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .medalla-modal-descripcion {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .medalla-modal-pregunta {
+  color: #f3f4f6;
+}
+
+html[data-theme="dark"] .medalla-modal-respuesta {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .medallas-contador {
+  background: #3a2f0b;
+  color: #fbbf24;
+}
+
+/* ---------- Juegos / componentes ---------- */
+html[data-theme="dark"] .adivinanza-box,
+html[data-theme="dark"] .opcion-item,
+html[data-theme="dark"] .relacionar-select,
+html[data-theme="dark"] .sopa-cell,
+html[data-theme="dark"] .clue-item,
+html[data-theme="dark"] .clue-input,
+html[data-theme="dark"] .card-back,
+html[data-theme="dark"] .list-item-row,
+html[data-theme="dark"] .sopa-grid,
+html[data-theme="dark"] .game-preview-box,
+html[data-theme="dark"] .tipo-fields,
+html[data-theme="dark"] .relacionar-item,
+html[data-theme="dark"] .opcion-row,
+html[data-theme="dark"] .word-list-panel,
+html[data-theme="dark"] .no-board-msg {
+  background-color: #1f2937;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .opcion-texto-badge,
+html[data-theme="dark"] .clue-text,
+html[data-theme="dark"] .preview-content,
+html[data-theme="dark"] .adivinanza-text {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .opcion-letra-badge,
+html[data-theme="dark"] .num-badge,
+html[data-theme="dark"] .col-header,
+html[data-theme="dark"] .game-type-label {
+  color: #94a3b8;
+}
+
+/* Juegos: estados y textos faltantes */
+html[data-theme="dark"] .game-empty h3,
+html[data-theme="dark"] .memory-stats-bar {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .word-list-panel h4,
+html[data-theme="dark"] .crossword-clues h4,
+html[data-theme="dark"] .found-counter {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .word-item.found {
+  color: #4ade80;
+}
+
+html[data-theme="dark"] .opcion-item:hover {
+  background: #334155;
+}
+
+html[data-theme="dark"] .opcion-item.selected {
+  background: #1e1b3a;
+  border-color: #7c3aed;
+}
+
+html[data-theme="dark"] .opcion-item.correct,
+html[data-theme="dark"] .relacionar-select.match {
+  background: #0c2b21;
+  border-color: #059669;
+}
+
+html[data-theme="dark"] .opcion-item.wrong,
+html[data-theme="dark"] .relacionar-select.nomatch {
+  background: #3b1518;
+  border-color: #dc2626;
+}
+
+html[data-theme="dark"] .relacionar-item.match {
+  background: #0c2b21;
+}
+
+html[data-theme="dark"] .relacionar-item.nomatch {
+  background: #3b1518;
+}
+
+html[data-theme="dark"] .clue-input.correct {
+  background: #0c2b21;
+  border-color: #059669;
+}
+
+html[data-theme="dark"] .clue-input.wrong {
+  background: #3b1518;
+  border-color: #dc2626;
+}
+
+html[data-theme="dark"] .memory-card.matched .card-back {
+  background: #0c2b21;
+  border-color: #059669;
+  color: #4ade80;
+}
+
+/* Resultados de juegos */
+html[data-theme="dark"] .game-result.success {
+  background-color: #0c2b21;
+  color: #4ade80;
+}
+
+html[data-theme="dark"] .game-result.fail {
+  background-color: #3b1518;
+  color: #fca5a5;
+}
+
+/* ---------- Detalle de contenido ---------- */
+html[data-theme="dark"] .detalle-body,
+html[data-theme="dark"] .contenido-cuerpo,
+html[data-theme="dark"] .detalle-contenido,
+html[data-theme="dark"] .detalle-descripcion {
+  background-color: #1f2937;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .detalle-body p,
+html[data-theme="dark"] .leccion-contenido p,
+html[data-theme="dark"] .leccion-contenido li {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .leccion-contenido table th {
+  background-color: #1f2937;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .leccion-contenido blockquote {
+  border-left-color: #475569;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .leccion-contenido code {
+  background-color: #334155;
+}
+
+/* ---------- RichTextEditor ---------- */
+html[data-theme="dark"] .rich-text-editor,
+html[data-theme="dark"] .rte-select {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .rte-toolbar,
+html[data-theme="dark"] .rte-extra-actions {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .rte-btn {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rte-btn:hover {
+  background-color: #334155;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .rte-active {
+  background-color: #1e3a5f;
+  border-color: #1d4ed8;
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .rte-content-wrapper .ProseMirror {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .rte-video-panel {
+  background-color: #1e293b;
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .rte-video-label,
+html[data-theme="dark"] .rte-video-help {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .rte-video-error-msg {
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .rte-input-error {
+  border-color: #f87171 !important;
+}
+
+html[data-theme="dark"] .rte-video-cancel {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .rte-video-cancel:hover {
+  background-color: #334155;
+}
+
+html[data-theme="dark"] .ProseMirror table th {
+  background-color: #1f2937;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .ProseMirror blockquote {
+  border-left-color: #475569;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .ProseMirror code {
+  background-color: #334155;
+}
+
+/* ---------- Opciones de evaluación (respuesta) ---------- */
+html[data-theme="dark"] .opcion-label {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .opcion-label.selected {
+  background-color: #1e1b3a;
+  border-color: #7c3aed;
+}
+
+html[data-theme="dark"] .opcion-texto {
+  color: #cbd5e1;
+}
+
+/* ---------- Preguntas / contenido apoyo ---------- */
+html[data-theme="dark"] .detalle-item {
+  background-color: #1f2937;
+  border-left-color: #334155;
+}
+
+/* ---------- Paginación ---------- */
+html[data-theme="dark"] .pagination-btn {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .pagination-btn.active {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+/* ---------- Badges ---------- */
+html[data-theme="dark"] .badge-modulo,
+html[data-theme="dark"] .badge.tipo,
+html[data-theme="dark"] .modulo-badge,
+html[data-theme="dark"] .badge-publicado {
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .badge-nivel,
+html[data-theme="dark"] .puntaje-badge,
+html[data-theme="dark"] .badge-tiempo {
+  background-color: #3a2f0b;
+  color: #fbbf24;
+}
+
+/* ---------- Contraste en tarjetas de progreso del docente ---------- */
+/* Tarjeta de módulo dentro del progreso por estudiante */
+html[data-theme="dark"] .module-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .module-card:hover {
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .module-stat-item {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .module-stat-icon {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .module-card-footer {
+  border-top-color: #334155;
+}
+
+html[data-theme="dark"] .module-score {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .progreso-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .progreso-header p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .progreso-error-card h3 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .progreso-error-card p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .progreso-loading {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .dist-label {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .td-center,
+html[data-theme="dark"] .td-puntaje,
+html[data-theme="dark"] .td-promedio {
+  color: #f1f5f9;
+}
+
+/* Badges de estado (nivel) del estudiante */
+html[data-theme="dark"] .status-badge.badge-excelente {
+  background: #0c2b21;
+  color: #4ade80;
+  border: 1px solid #166534;
+}
+html[data-theme="dark"] .status-badge.badge-bueno {
+  background: #1e2737;
+  color: #60a5fa;
+  border: 1px solid #1d4ed8;
+}
+html[data-theme="dark"] .status-badge.badge-regular {
+  background: #3a2f0b;
+  color: #fbbf24;
+  border: 1px solid #7c5a0d;
+}
+html[data-theme="dark"] .status-badge.badge-bajo {
+  background: #3b1518;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+/* Botón individual de reporte + botón masivo de reporte */
+html[data-theme="dark"] .send-report-btn {
+  background: #1e3a5f;
+  border: 1px solid #1d4ed8;
+  color: #bfdbfe;
+}
+html[data-theme="dark"] .send-report-btn:hover:not(:disabled) {
+  background: #274b7a;
+}
+html[data-theme="dark"] .send-report-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+html[data-theme="dark"] .send-all-report-btn {
+  background: #1e3a5f;
+  border: 1px solid #1d4ed8;
+  color: #bfdbfe;
+}
+html[data-theme="dark"] .send-all-report-btn:hover:not(:disabled) {
+  background: #274b7a;
+}
+html[data-theme="dark"] .send-all-report-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Contraste en cabeceras de Login / Registro ---------- */
+html[data-theme="dark"] .login-header h1,
+html[data-theme="dark"] .register-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .login-header p,
+html[data-theme="dark"] .register-header p {
+  color: #94a3b8;
+}
+
+/* Placeholders y texto de enlaces en footer */
+html[data-theme="dark"] .login-footer {
+  color: #94a3b8;
+}
+html[data-theme="dark"] .login-footer a {
+  color: #60a5fa;
+}
+
+/* Enlaces / botones de enlace de regreso (fondos claros) */
+html[data-theme="dark"] .verify-link {
+  background: #1e293b;
+  border-color: #334155;
+  color: #60a5fa;
+}
+html[data-theme="dark"] .verify-link:hover {
+  background: #334155;
+}
+
+/* Toggle Estudiante/Docente en el registro */
+html[data-theme="dark"] .role-toggle {
+  background: #0f172a;
+  border: 1px solid #334155;
+}
+html[data-theme="dark"] .role-toggle button {
+  color: #94a3b8;
+}
+html[data-theme="dark"] .role-toggle button.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* ---------- Gestión de estudiantes (GestionAlumnos) ---------- */
+html[data-theme="dark"] .gestion-alumnos-container {
+  background-color: #0f172a;
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .gestion-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .gestion-header p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .gestion-card-content h2 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .gestion-card-content p {
+  color: #94a3b8;
+}
+
+/* ---------- Gestión de cuentas (CuentasEstudiantes) ---------- */
+html[data-theme="dark"] .cuentas-loading {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .cuentas-header-top h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .cuentas-header-top p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .cuentas-student-name {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .td-email,
+html[data-theme="dark"] .td-date {
+  color: #94a3b8;
+}
+
+/* ---------- Resolver de evaluación ---------- */
+html[data-theme="dark"] .student-loading,
+html[data-theme="dark"] .empty-state h3,
+html[data-theme="dark"] .empty-state {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .texto-container,
+html[data-theme="dark"] .leccion-contenido {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .resolver-info h1,
+html[data-theme="dark"] .evaluacion-start-card h1,
+html[data-theme="dark"] .resultado-card h3,
+html[data-theme="dark"] .resultado-preguntas h4,
+html[data-theme="dark"] .pregunta-enunciado,
+html[data-theme="dark"] .modulos-progreso h2,
+html[data-theme="dark"] .actividad-col h2,
+html[data-theme="dark"] .contenido-apoyo-visualizacion h2 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .evaluacion-start-card p,
+html[data-theme="dark"] .start-info,
+html[data-theme="dark"] .respuestas-count,
+html[data-theme="dark"] .resultado-detalle p,
+html[data-theme="dark"] .detalle-numero,
+html[data-theme="dark"] .detalle-respuesta,
+html[data-theme="dark"] .contenido-apoyo-visualizacion p {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .detalle-pregunta {
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .pregunta-numero {
+  background: #342a52;
+  color: #c4b5fd;
+}
+
+html[data-theme="dark"] .tiempo-restante {
+  background: #3a2f0b;
+  color: #fbbf24;
+}
+
+html[data-theme="dark"] .tiempo-critico {
+  background: #3b1518;
+  color: #fca5a5;
+}
+
+html[data-theme="dark"] .feedback-opcion.correcta-seleccionada,
+html[data-theme="dark"] .feedback-opcion.correcta-no-seleccionada {
+  background: #0c2b21;
+  border-color: #059669;
+}
+
+html[data-theme="dark"] .feedback-opcion.incorrecta-seleccionada {
+  background: #3b1518;
+  border-color: #dc2626;
+}
+
+/* ---------- SweetAlert ---------- */
+html[data-theme="dark"] .swal2-popup {
+  background-color: #1e293b !important;
+}
+
+html[data-theme="dark"] .swal2-title,
+html[data-theme="dark"] .swal2-html-container {
+  color: #e2e8f0 !important;
+}
+
+/* ---------- Transición suave al cambiar de tema ---------- */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .dashboard-container,
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .main-header,
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .gamificacion-card,
+html[data-theme="dark"] .progress-card,
+html[data-theme="dark"] .resumen-card,
+html[data-theme="dark"] .actividad-item,
+html[data-theme="dark"] .evaluacion-card,
+html[data-theme="dark"] .juego-card,
+html[data-theme="dark"] .contenido-card,
+html[data-theme="dark"] .detalle-card,
+html[data-theme="dark"] .form-section {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

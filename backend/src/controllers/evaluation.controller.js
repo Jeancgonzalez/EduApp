@@ -1,4 +1,7 @@
 const EvaluationService = require('../services/evaluation.service');
+const StudentService = require('../services/student.service');
+const GrupoService = require('../services/grupo.service');
+const { Op } = require('sequelize');
 
 class EvaluationController {
   /**
@@ -7,6 +10,7 @@ class EvaluationController {
   static async crearEvaluacion(req, res) {
     try {
       const data = req.body;
+      data.docente_id = req.user.id;
       const nuevaEvaluacion = await EvaluationService.crearEvaluacion(data);
       
       res.status(201).json({
@@ -29,7 +33,7 @@ class EvaluationController {
     try {
       const { id } = req.params;
       const data = req.body;
-      const evaluacionActualizada = await EvaluationService.actualizarEvaluacion(id, data);
+      const evaluacionActualizada = await EvaluationService.actualizarEvaluacion(id, data, req.user.id);
 
       res.status(200).json({
         success: true,
@@ -56,6 +60,13 @@ class EvaluationController {
   static async obtenerEvaluaciones(req, res) {
     try {
       const filtros = req.query;
+      const esEstudiante = req.user.role === 'student' || req.user.role === 'estudiante';
+      filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
+      if (esEstudiante) {
+        filtros.publicado = true;
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        filtros[Op.or] = condiciones;
+      }
       const evaluaciones = await EvaluationService.obtenerEvaluaciones(filtros);
       
       res.status(200).json({
@@ -73,7 +84,7 @@ class EvaluationController {
  static async eliminarEvaluacion(req, res) {
     try {
       const { id } = req.params;
-      const evaluacionEliminada = await EvaluationService.eliminarEvaluacion(id);
+      const evaluacionEliminada = await EvaluationService.eliminarEvaluacion(id, req.user.id);
 
       res.status(200).json({
         success: true,
@@ -81,6 +92,18 @@ class EvaluationController {
         data: evaluacionEliminada
       });
     } catch (error) {
+      if (error.message.includes('no encontrada')) {
+        return res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      }
+      if (error.message.includes('publicado')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
       res.status(500).json({
         success: false,
         message: error.message
@@ -94,8 +117,26 @@ class EvaluationController {
   static async obtenerEvaluacionPorId(req, res) {
     try {
       const { id } = req.params;
-      const evaluacion = await EvaluationService.obtenerEvaluacionPorId(id);
-      
+      const where = { id };
+      const esEstudiante = req.user.role === 'student' || req.user.role === 'estudiante';
+      where.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
+      if (esEstudiante) {
+        where.publicado = true;
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        where[Op.or] = condiciones;
+      }
+      const evaluacion = await EvaluationService.obtenerEvaluacionPorId(id, where);
+
+      if (esEstudiante) {
+        const contenidoCompletado = await StudentService.esContenidoModuloCompletado(req.user.id, evaluacion.modulo, req.user.docente_id);
+        if (!contenidoCompletado) {
+          return res.status(403).json({
+            success: false,
+            message: '🔒 Completa el contenido para desbloquear esta actividad.'
+          });
+        }
+      }
+
       // Opcional: Podríamos mapear la evaluación aquí para no devolver la "respuesta_correcta"
       // al frontend antes de que el estudiante responda, para evitar trampas.
       

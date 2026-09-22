@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 import {
   MdDashboard,
   MdMenuBook,
@@ -25,7 +26,7 @@ const Navbar = () => {
   };
 
   const teacherLinks = [
-    { to: '/dashboard', icon: <MdDashboard />, label: 'Inicio' },
+    { to: '/docente/dashboard', icon: <MdDashboard />, label: 'Inicio' },
     { to: '/contenidos', icon: <MdMenuBook />, label: 'Contenidos' },
     { to: '/juegos', icon: <MdSportsEsports />, label: 'Juegos' },
     { to: '/evaluaciones', icon: <MdAssignment />, label: 'Evaluaciones' },
@@ -43,7 +44,7 @@ const Navbar = () => {
   const links = isTeacher ? teacherLinks : studentLinks;
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isTeacher ? 'navbar-teacher' : 'navbar-student'}`}>
       <div className="navbar-brand">
         <div className="navbar-logo">
           <MdSchool />
@@ -66,6 +67,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-actions">
+        <ThemeToggle />
         {user && (
           <div className="navbar-user">
             <span className="navbar-user-role">{isTeacher ? '👨‍🏫' : '🎓'}</span>
@@ -74,6 +76,7 @@ const Navbar = () => {
         )}
         <button className="navbar-logout-btn" onClick={handleLogout} title="Cerrar sesión">
           <MdLogout />
+          <span className="navbar-logout-label"></span>
         </button>
         <button
           className="navbar-hamburger"

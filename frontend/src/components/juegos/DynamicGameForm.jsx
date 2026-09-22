@@ -46,67 +46,149 @@ const generarSopaDeLetras = (palabras, tamano = 12) => {
 };
 
 /* ============================
-   GENERADOR DE CRUCIGRAMA
+   GENERADOR DE CRUCIGRAMA (auto-ubicación)
+   El docente solo ingresa palabra + pista; este generador decide la
+   orientación y la posición de cada palabra para que se entrelacen.
+   Estrategia:
+     1) Normalizar letras; descartar las palabras que no caben en el tablero.
+     2) Ordenar de mayor a menor longitud (las largas se ubican primero).
+     3) Primera palabra en horizontal, centrada.
+4) Resto: probar todas las posiciones del tablero en ambas orientaciones y
+         escoger la de más cruces; las palabras sin letras en común se ubican en
+         la posición más cercana al cuerpo del crucigrama (siempre acopladas).
    ============================ */
 const generarCrucigrama = (palabrasInput, tamano = 15) => {
   const size = tamano;
   const grid = Array.from({ length: size }, () => Array(size).fill(null));
   const colocadas = [];
+  const noColocadas = [];
+
+  // 1) Normalización y filtrado.
   const palabras = palabrasInput
-    .filter(p => p.palabra?.trim())
-    .map((p, i) => ({ ...p, palabra: p.palabra.toUpperCase().trim(), numero: i + 1 }));
+    .map(p => ({
+      palabra: (p.palabra || '').toUpperCase().replace(/\s/g, ''),
+      pista: (p.pista || '').trim()
+    }))
+    .filter(p => p.palabra.length > 0)
+    .filter(p => {
+      if (p.palabra.length > size) {
+        noColocadas.push(`${p.palabra} (demasiado larga)`);
+        return false;
+      }
+      return true;
+    })
+    // 2) De mayor a menor longitud.
+    .sort((a, b) => b.palabra.length - a.palabra.length)
+    .map((p, i) => ({ ...p, numero: i + 1 }));
 
-  if (palabras.length === 0) return { grid, colocadas, size };
+  if (palabras.length === 0) return { grid, colocadas, size, noColocadas };
 
-  // Colocar la primera palabra en el centro
+  // Escribe la palabra en (fila, col) según la orientación (número en su inicio).
+  const escribir = (pw, fila, col, orientacion) => {
+    for (let k = 0; k < pw.palabra.length; k++) {
+      const r = orientacion === 'V' ? fila + k : fila;
+      const c = orientacion === 'H' ? col + k : col;
+      if (!grid[r][c]) grid[r][c] = { letra: pw.palabra[k], numero: k === 0 ? pw.numero : null };
+    }
+  };
+
+  // ¿La palabra cabe completa dentro del tablero desde (fila, col)?
+  const enLimites = (fila, col, longitud, orientacion) => {
+    const fin = orientacion === 'V' ? fila + longitud : col + longitud;
+    return fila >= 0 && col >= 0 && fila < size && col < size && fin <= size;
+  };
+
+  // Evalúa una candidatura (fila, col, orientacion) para 'pw'.
+  //  - Cada celda propia debe estar vacía o contener la misma letra (cruce).
+  //  - Las celdas ortogonalmente adyacentes que NO son cruce deben estar
+  //    vacías, para que las palabras no queden pegadas sin cruzarse.
+  // Devuelve el número de cruces (letras compartidas) o -1 si no es válida.
+  const crucesDe = (pw, fila, col, orientacion) => {
+    if (!enLimites(fila, col, pw.palabra.length, orientacion)) return -1;
+    const cruces = [];
+    for (let k = 0; k < pw.palabra.length; k++) {
+      const r = orientacion === 'V' ? fila + k : fila;
+      const c = orientacion === 'H' ? col + k : col;
+      if (grid[r][c]) {
+        if (grid[r][c].letra !== pw.palabra[k]) return -1; // letra distinta
+        cruces.push(k);
+      }
+    }
+    // Regla de aislamiento: vecinos ortogonales de las celdas sin cruce vacíos.
+    for (let k = 0; k < pw.palabra.length; k++) {
+      if (cruces.includes(k)) continue;
+      const r = orientacion === 'V' ? fila + k : fila;
+      const c = orientacion === 'H' ? col + k : col;
+      const vecinos = orientacion === 'V' ? [[r, c - 1], [r, c + 1]] : [[r - 1, c], [r + 1, c]];
+      for (const [vr, vc] of vecinos) {
+        if (vr >= 0 && vr < size && vc >= 0 && vc < size && grid[vr][vc]) return -1;
+      }
+    }
+    return cruces.length;
+  };
+
+  // Distancia mínima (Chebyshev) de una candidatura al cuerpo del crucigrama,
+  // para que las palabras sin cruce queden pegadas al conjunto y nunca "floten"
+  // en un extremo lejano del tablero.
+  const distanciaAlCuerpo = (fila, col, orientacion, longitud) => {
+    let min = Infinity;
+    for (let k = 0; k < longitud; k++) {
+      const r = orientacion === 'V' ? fila + k : fila;
+      const c = orientacion === 'H' ? col + k : col;
+      for (let rf = 0; rf < size; rf++) {
+        for (let cf = 0; cf < size; cf++) {
+          if (!grid[rf][cf]) continue;
+          const d = Math.max(Math.abs(rf - r), Math.abs(cf - c));
+          if (d < min) min = d;
+        }
+      }
+    }
+    return min;
+  };
+
+  // 3) Primera palabra: horizontal, centrada.
   const primera = palabras[0];
-  const startCol = Math.floor((size - primera.palabra.length) / 2);
-  const startRow = Math.floor(size / 2);
-  for (let i = 0; i < primera.palabra.length; i++)
-    grid[startRow][startCol + i] = { letra: primera.palabra[i], numero: i === 0 ? primera.numero : null };
-  colocadas.push({ ...primera, fila: startRow, col: startCol, orientacion: 'H' });
+  const filaIni = Math.floor(size / 2);
+  const colIni = Math.floor((size - primera.palabra.length) / 2);
+  escribir(primera, filaIni, colIni, 'H');
+  colocadas.push({ ...primera, fila: filaIni, col: colIni, orientacion: 'H' });
 
-  // Intentar colocar el resto intersectando
+  // 4) Resto de palabras: probar TODAS las posiciones del tablero en ambas
+  //    orientaciones y escoger la mejor según:
+  //      - cuantos más cruces tenga la candidatura, mejor (acople real);
+  //      - a igualdad de cruces, la más cercana al cuerpo del crucigrama.
+  //    Score = cruces * 1000 - distancia. Así, una palabra sin letras en común
+  //    se coloca inmediatamente al lado del cuerpo (distancia mínima) en lugar
+  //    de quedar descolgada en un borde.
   for (let idx = 1; idx < palabras.length; idx++) {
     const pw = palabras[idx];
-    let colocada = false;
-    for (const ya of colocadas) {
-      for (let pi = 0; pi < pw.palabra.length && !colocada; pi++) {
-        for (let yi = 0; yi < ya.palabra.length && !colocada; yi++) {
-          if (pw.palabra[pi] !== ya.palabra[yi]) continue;
-          const orientNueva = ya.orientacion === 'H' ? 'V' : 'H';
-          let fila, col;
-          if (orientNueva === 'V') {
-            fila = ya.fila - pi;
-            col = ya.col + yi;
-          } else {
-            fila = ya.fila + yi;
-            col = ya.col - pi;
-          }
-          const endFila = orientNueva === 'V' ? fila + pw.palabra.length - 1 : fila;
-          const endCol = orientNueva === 'H' ? col + pw.palabra.length - 1 : col;
-          if (fila < 0 || endFila >= size || col < 0 || endCol >= size) continue;
-          let ok = true;
-          for (let k = 0; k < pw.palabra.length && ok; k++) {
-            const r = orientNueva === 'V' ? fila + k : fila;
-            const c = orientNueva === 'H' ? col + k : col;
-            const cell = grid[r][c];
-            if (cell && cell.letra !== pw.palabra[k]) ok = false;
-          }
-          if (ok) {
-            for (let k = 0; k < pw.palabra.length; k++) {
-              const r = orientNueva === 'V' ? fila + k : fila;
-              const c = orientNueva === 'H' ? col + k : col;
-              if (!grid[r][c]) grid[r][c] = { letra: pw.palabra[k], numero: k === 0 ? pw.numero : null };
-            }
-            colocadas.push({ ...pw, fila, col, orientacion: orientNueva });
-            colocada = true;
+    let mejor = null;
+    let mejorScore = -Infinity;
+
+    for (let fila = 0; fila < size; fila++) {
+      for (let col = 0; col < size; col++) {
+        for (const orientacion of ['H', 'V']) {
+          const cruces = crucesDe(pw, fila, col, orientacion);
+          if (cruces < 0) continue;
+          const dist = distanciaAlCuerpo(fila, col, orientacion, pw.palabra.length);
+          const score = cruces * 1000 - dist;
+          if (score > mejorScore) {
+            mejorScore = score;
+            mejor = { fila, col, orientacion, cruces };
           }
         }
       }
     }
+
+    if (mejor) {
+      escribir(pw, mejor.fila, mejor.col, mejor.orientacion);
+      colocadas.push({ ...pw, fila: mejor.fila, col: mejor.col, orientacion: mejor.orientacion });
+    } else {
+      noColocadas.push(`${pw.palabra} (sin espacio)`);
+    }
   }
-  return { grid, colocadas, size };
+
+  return { grid, colocadas, size, noColocadas };
 };
 
 /* ============================
@@ -137,7 +219,7 @@ const DynamicGameForm = ({ tipo, configuracion, onChange }) => {
           initialConfig = { ...initialConfig, tamano: 12, palabras: [{ palabra: '', pista: '' }] };
           break;
         case 'crucigrama':
-          initialConfig = { ...initialConfig, palabras: [{ palabra: '', pista: '', orientacion: 'H' }] };
+          initialConfig = { ...initialConfig, palabras: [{ palabra: '', pista: '' }] };
           break;
         case 'adivinanza':
           initialConfig = { ...initialConfig, adivinanza: '', pista: '', opcionA: '', opcionB: '', opcionC: '', respuestaCorrecta: 'A' };
@@ -232,6 +314,7 @@ const DynamicGameForm = ({ tipo, configuracion, onChange }) => {
   const renderCrucigrama = () => (
     <div className="dynamic-form-section">
       <h4>📝 Crucigrama</h4>
+      <p className="hint-text">El sistema ubica y orienta cada palabra automáticamente, cruzándolas por letras comunes.</p>
       <div className="list-items">
         {configuracion.palabras?.map((item, index) => (
           <div key={index} className="list-item-row crucigrama-row">
@@ -240,16 +323,11 @@ const DynamicGameForm = ({ tipo, configuracion, onChange }) => {
               onChange={(e) => handleArrayChange('palabras', index, 'palabra', e.target.value)} />
             <input type="text" placeholder="Pista descriptiva" value={item.pista}
               onChange={(e) => handleArrayChange('palabras', index, 'pista', e.target.value)} />
-            <select value={item.orientacion}
-              onChange={(e) => handleArrayChange('palabras', index, 'orientacion', e.target.value)}>
-              <option value="H">Horizontal</option>
-              <option value="V">Vertical</option>
-            </select>
             <button type="button" className="btn-remove" onClick={() => removeArrayItem('palabras', index)}>✖</button>
           </div>
         ))}
         <button type="button" className="btn-add"
-          onClick={() => addArrayItem('palabras', { palabra: '', pista: '', orientacion: 'H' })}>
+          onClick={() => addArrayItem('palabras', { palabra: '', pista: '' })}>
           + Agregar Palabra
         </button>
       </div>
@@ -259,6 +337,9 @@ const DynamicGameForm = ({ tipo, configuracion, onChange }) => {
       {mostrarTablero && tableroGenerado && (
         <div className="tablero-preview">
           <p className="tablero-info">✅ Crucigrama generado con {tableroGenerado.colocadas?.length} palabras</p>
+          {tableroGenerado.noColocadas && tableroGenerado.noColocadas.length > 0 && (
+            <p className="tablero-warning">⚠️ No se pudieron colocar: {tableroGenerado.noColocadas.join(', ')}</p>
+          )}
           <div className="crucigrama-wrapper">
             {(() => {
               const { grid, size } = tableroGenerado;

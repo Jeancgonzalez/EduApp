@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   background-color: #f8fafc;
-  font-family: 'Inter', sans-serif;
+
 }
 
 /* Sidebar */
@@ -97,9 +97,12 @@
   color: #0f172a;
 }
 
-.nav-item.active {
-  background-color: #e0f2f1;
-  color: #00b050;
+.dashboard-container:not(.student-area) .sidebar-nav .nav-item.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.75), rgba(124, 58, 237, 0.75), rgba(79, 70, 229, 0.75)) !important;
+  color: #ffffff !important;
+  border: 2px solid #7c3aed !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35) !important;
 }
 
 .sidebar-footer {
@@ -160,6 +163,8 @@
   gap: 0.25rem;
   padding: 0.5rem 1rem;
   border-radius: 9999px;
+  background-color: #e0e7ff;
+  color: #4338ca;
 }
 
 .user-name {
@@ -178,15 +183,8 @@
   gap: 0.25rem;
 }
 
-.teacher-badge {
-  background-color: #e0e7ff;
-  color: #4338ca;
-}
 
-.student-badge {
-  background-color: #e0f2f1;
-  color: #00b050;
-}
+
 
 .dashboard-content {
   padding: 2.5rem;

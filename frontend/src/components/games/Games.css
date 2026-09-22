@@ -97,6 +97,13 @@
 }
 
 /* ==============================
+   RELACIONAR - FLECHAS CENTRALES
+   ============================== */
+.games-rel-arrow {
+  color: var(--relacionar-arrow-color);
+}
+
+/* ==============================
    ADIVINANZA
    ============================== */
 .adivinanza-box {
@@ -265,19 +272,31 @@
 }
 .word-item {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0;
   font-size: 0.9rem;
   transition: all 0.2s;
 }
 .word-item.found {
   color: #059669;
-  text-decoration: line-through;
   opacity: 0.6;
 }
-.word-hint { color: #94a3b8; font-size: 0.8rem; }
-.word-check { color: #059669; margin-left: auto; }
+.word-main {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+.word-icon { color: #6366f1; font-size: 1rem; flex-shrink: 0; }
+.word-hint {
+  margin: 0;
+  padding-left: 1.35rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+.word-check { color: #059669; margin-left: auto; flex-shrink: 0; }
 
 .found-counter {
   font-weight: 600;
@@ -288,8 +307,27 @@
 /* ==============================
    CRUCIGRAMA
    ============================== */
+.crossword-game-container {
+  max-width: 1100px;
+}
+
+/* Tablero del crucigrama: ocupa el mayor espacio disponible del contenedor,
+   centrado horizontal y verticalmente, con margen interno uniforme. */
 .crossword-board {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 200px;
+  box-sizing: border-box;
+  padding: 0.75rem;
   margin-bottom: 1.5rem;
+}
+.crossword-board .sopa-grid {
+  max-width: none;
+}
+.crossword-board .sopa-cell {
+  box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.08);
 }
 
 .crossword-clues {
@@ -299,6 +337,27 @@
   color: #475569;
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
+}
+.crossword-clues-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.crossword-clues-header h4 { margin-bottom: 0; }
+.crossword-orientation-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--info-soft);
+  border: 1px solid var(--info);
+  color: var(--info);
+  border-radius: 9999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 .clue-item {
   display: flex;

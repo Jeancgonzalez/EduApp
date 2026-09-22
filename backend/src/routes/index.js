@@ -29,6 +29,12 @@ router.use('/progreso', progressRoutes);
 const studentRoutes = require('./student.routes');
 router.use('/student', studentRoutes);
 
+const teacherRoutes = require('./teacher.routes');
+router.use('/teacher', teacherRoutes);
+
+const cuentasRoutes = require('./cuentas.routes');
+router.use('/cuentas', cuentasRoutes);
+
 const respuestasController = require('../controllers/respuestas.controller');
 const { verifyToken, isStudent } = require('../middlewares/authMiddleware');
 

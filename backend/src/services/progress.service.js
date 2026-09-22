@@ -1,27 +1,19 @@
 const Progress = require('../models/progress.model');
+const Content = require('../models/content.model');
+const Game = require('../models/game.model');
+const Evaluation = require('../models/evaluation.model');
+const StudentProgress = require('../models/studentProgress.model');
+const User = require('../models/User');
+const GrupoService = require('./grupo.service');
+const { Op } = require('sequelize');
 
 class ProgressService {
-  /**
-   * Función interna para calcular el nivel del estudiante según sus puntos.
-   * Lógica de ejemplo: Cada 500 puntos el usuario sube 1 nivel.
-   * @param {number} puntajeTotal - El puntaje histórico acumulado.
-   * @returns {number} El nivel correspondiente.
-   */
   static calcularNivel(puntajeTotal) {
-    // Ejemplo: 
-    // 0 - 499 puntos = Nivel 1
-    // 500 - 999 puntos = Nivel 2
-    // 1000 - 1499 puntos = Nivel 3...
     const puntosPorNivel = 500;
     const nivel = Math.floor(puntajeTotal / puntosPorNivel) + 1;
     return nivel;
   }
 
-  /**
-   * Obtiene todos los registros de progreso de un estudiante específico.
-   * @param {number|string} usuarioId - ID del estudiante.
-   * @returns {Promise<Array>} Lista con el progreso en cada módulo.
-   */
   static async obtenerProgresoPorUsuario(usuarioId) {
     try {
       const progresos = await Progress.findAll({
@@ -33,28 +25,79 @@ class ProgressService {
     }
   }
 
-  /**
-   * Actualiza el progreso de un estudiante en un módulo específico.
-   * Ideal para ser llamado al finalizar un "Juego" o una "Evaluación".
-   * 
-   * @param {number} usuarioId - ID del estudiante.
-   * @param {string} modulo - Nombre del módulo donde jugó/evaluó (ej: 'Matemáticas').
-   * @param {number} puntosGanados - Puntos a sumar (calculados del juego o evaluación).
-   * @param {number} incrementoAvance - Porcentaje de avance a sumar (ej: 5.5%).
-   * @returns {Promise<Object>} El progreso actualizado.
-   */
+  static async recalcularProgreso(estudianteId, modulo, transaction, docenteId) {
+    const condicionesGrupo = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const whereExtra = docenteId ? { docente_id: docenteId } : {};
+    const [contents, games, evaluations] = await Promise.all([
+      Content.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction }),
+      Game.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction }),
+      Evaluation.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction })
+    ]);
+
+    const contentIds = contents.map(c => `content_${c.id}`);
+    const gameIds = games.map(g => `game_${g.id}`);
+    const evaluationIds = evaluations.map(e => `eval_${e.id}`);
+    const totalItems = contentIds.length + gameIds.length + evaluationIds.length;
+
+    const progressRecords = await StudentProgress.findAll({
+      where: { estudiante_id: estudianteId, completado: true },
+      raw: true,
+      transaction
+    });
+
+    const bestPerActivity = new Map();
+    for (const r of progressRecords) {
+      let key = null;
+      if (r.contenido_id) key = `content_${r.contenido_id}`;
+      else if (r.juego_id) key = `game_${r.juego_id}`;
+      else if (r.evaluacion_id) key = `eval_${r.evaluacion_id}`;
+      if (!key) continue;
+      const existing = bestPerActivity.get(key);
+      if (!existing || r.puntaje > existing.puntaje) {
+        bestPerActivity.set(key, r);
+      }
+    }
+
+    const allValidKeys = new Set([...contentIds, ...gameIds, ...evaluationIds]);
+    let completedCount = 0;
+    let totalScore = 0;
+    const scores = [];
+    for (const [key, record] of bestPerActivity) {
+      if (allValidKeys.has(key)) {
+        completedCount++;
+        if (!key.startsWith('content_')) {
+          totalScore += record.puntaje;
+          scores.push(record.puntaje);
+        }
+      }
+    }
+
+    const avg = scores.length > 0 ? Math.round(totalScore / scores.length) : 0;
+
+    const [progress] = await Progress.findOrCreate({
+      where: { usuario_id: estudianteId, modulo },
+      defaults: { puntaje_total: 0, nivel: 1, porcentaje_avance: 0.00 },
+      transaction
+    });
+
+    const nivel = avg >= 90 ? 3 : avg >= 70 ? 2 : 1;
+    const porcentaje = totalItems > 0 ? Math.min(100, Math.round((completedCount / totalItems) * 100)) : 0;
+
+    await progress.update({
+      puntaje_total: totalScore,
+      nivel,
+      porcentaje_avance: porcentaje,
+      ultima_actividad: new Date()
+    }, { transaction });
+  }
+
   static async actualizarProgreso(usuarioId, modulo, puntosGanados, incrementoAvance = 0) {
     try {
-      // 1. Buscamos si el estudiante ya empezó este módulo previamente
       let progreso = await Progress.findOne({
-        where: { 
-          usuario_id: usuarioId, 
-          modulo: modulo 
-        }
+        where: { usuario_id: usuarioId, modulo }
       });
 
       if (!progreso) {
-        // 2a. Si no existe, es la primera vez que hace algo en este módulo. Lo creamos.
         progreso = await Progress.create({
           usuario_id: usuarioId,
           modulo: modulo,
@@ -63,29 +106,43 @@ class ProgressService {
           porcentaje_avance: incrementoAvance
         });
       } else {
-        // 2b. Si ya existe, acumulamos los puntos y el avance
         const nuevoPuntaje = progreso.puntaje_total + puntosGanados;
-        
-        // Parseamos a float porque DECIMAL viene como string de MySQL
         let nuevoAvance = parseFloat(progreso.porcentaje_avance) + incrementoAvance;
-        
-        // Lógica de validación: el módulo no puede pasar de 100% de avance
         if (nuevoAvance > 100) {
           nuevoAvance = 100;
         }
-
-        // Actualizamos en BD
         await progreso.update({
           puntaje_total: nuevoPuntaje,
-          nivel: this.calcularNivel(nuevoPuntaje), // Se recalcula si subió de nivel
+          nivel: this.calcularNivel(nuevoPuntaje),
           porcentaje_avance: nuevoAvance,
-          ultima_actividad: new Date() // Actualizamos explícitamente la fecha
+          ultima_actividad: new Date()
         });
       }
 
       return progreso;
     } catch (error) {
       throw new Error(`Error al actualizar el progreso: ${error.message}`);
+    }
+  }
+
+  static async recalcularProgresoParaEstudiante(estudianteId) {
+    const student = await User.findByPk(estudianteId, { attributes: ['docente_id'], raw: true });
+    const docenteId = student ? student.docente_id : null;
+    const whereExtra = docenteId ? { docente_id: docenteId } : {};
+    const condicionesGrupo = await GrupoService.recursoWhereEstudiante(estudianteId);
+
+    const modulosSet = new Set();
+    const [contents, games, evaluations] = await Promise.all([
+      Content.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true }),
+      Game.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true }),
+      Evaluation.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true })
+    ]);
+    for (const c of contents) if (c.modulo) modulosSet.add(c.modulo);
+    for (const g of games) if (g.modulo) modulosSet.add(g.modulo);
+    for (const e of evaluations) if (e.modulo) modulosSet.add(e.modulo);
+
+    for (const modulo of modulosSet) {
+      await this.recalcularProgreso(estudianteId, modulo, null, docenteId);
     }
   }
 }

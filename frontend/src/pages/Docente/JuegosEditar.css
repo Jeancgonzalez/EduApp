@@ -1,0 +1,211 @@
+.editar-juegos-container {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+}
+
+.volver-btn {
+  display: inline-flex;
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  margin-bottom: 2rem;
+  transition: background-color 0.2s ease;
+}
+
+.volver-btn:hover {
+  background: #e5e7eb;
+}
+
+.editar-juegos-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.editar-juegos-header h2 {
+  color: #111827;
+  font-size: 2.2rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.header-subtitle {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.editar-juegos-layout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.preview-column {
+  position: sticky;
+  top: 2rem;
+}
+
+.form-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.form-section h3 {
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f1f5f9;
+  font-size: 1.3rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.row-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group-half {
+  flex: 1;
+}
+
+.form-group label, .form-group-half label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group-half input,
+.form-group-half select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group-half input:focus,
+.form-group-half select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.game-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.editar-juegos-form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detalle-mensaje {
+  padding: 0.9rem 1rem;
+  border-radius: 0.9rem;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.detalle-mensaje.error {
+  color: #dc2626;
+}
+
+.detalle-body p {
+  margin: 0;
+  color: #4b5563;
+  white-space: pre-wrap;
+}
+
+.detalle-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.detalle-mensaje.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.submit-btn {
+  border: none;
+  background: #10b981;
+  color: white;
+  font-weight: 700;
+  padding: 1.25rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+}
+
+.submit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.3);
+}
+
+@media (max-width: 900px) {
+  .editar-juegos-layout {
+    grid-template-columns: 1fr;
+  }
+  .preview-column {
+    position: static;
+  }
+  .row-group {
+    flex-direction: column;
+  }
+}

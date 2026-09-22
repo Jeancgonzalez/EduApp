@@ -5,10 +5,15 @@ const Content = sequelize.define('Content', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   titulo: { type: DataTypes.STRING, allowNull: false },
   descripcion: { type: DataTypes.TEXT, allowNull: true },
-  tipo: { type: DataTypes.STRING, allowNull: false, comment: 'video, pdf, texto, enlace' },
+  tipo: { type: DataTypes.STRING, allowNull: false, comment: 'texto, video, pdf, documento' },
   contenido: { type: DataTypes.TEXT, allowNull: false, comment: 'URL o texto del contenido' },
   modulo: { type: DataTypes.STRING, allowNull: false },
   docente_id: { type: DataTypes.INTEGER, allowNull: false },
+  grupo_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Grupo al que está dirigido el contenido. NULL = visible para todos los estudiantes del docente'
+  },
   publicado: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
