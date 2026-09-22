@@ -204,11 +204,16 @@
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
-  overflow: hidden;
+  /* Deja que la tabla ancha (7 columnas) haga scroll horizontal en móvil
+     en lugar de recortarse por el overflow:hidden anterior. */
+  overflow-x: auto;
 }
 
 .cuentas-table {
   width: 100%;
+  /* Anchura mínima para que en pantallas angostas las columnas visibles
+     no se compriman y el usuario pueda hacer scroll horizontal. */
+  min-width: 640px;
   border-collapse: collapse;
 }
 

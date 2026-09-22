@@ -191,3 +191,59 @@
 .verify-footer a:hover {
   text-decoration: underline;
 }
+
+/* ---------- Modo oscuro ---------- */
+/* La pantalla de verificación debe respetar el tema activo en TODOS sus elementos.
+   (En claro conserva los estilos de arriba; aquí se sobreescribe todo bajo [data-theme="dark"].) */
+html[data-theme="dark"] .verify-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+}
+
+html[data-theme="dark"] .verify-card {
+  background: #1e293b;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .verify-header h1 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .verify-header p,
+html[data-theme="dark"] .resend-box,
+html[data-theme="dark"] .verify-footer,
+html[data-theme="dark"] .resend-cooldown {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .form-group label {
+  color: #cbd5e1;
+}
+
+/* Especificidad superior a la regla global de darkmode.css para inputs */
+html[data-theme="dark"] .verify-form input {
+  background: #111827;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .verify-form input:focus {
+  background: #0f172a;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+html[data-theme="dark"] .verify-form input::placeholder {
+  color: #64748b;
+}
+
+html[data-theme="dark"] .error-message {
+  background: #3f1620;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
+html[data-theme="dark"] .success-message {
+  background: #123a32;
+  color: #6ee7b7;
+  border-color: #065f46;
+}

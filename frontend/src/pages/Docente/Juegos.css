@@ -47,6 +47,12 @@
   gap: 1.5rem;
 }
 
+/* Responsive: sin desborde horizontal en pantallas de celular */
+@media (max-width: 480px) {
+  .juegos-container { padding: 1rem; }
+  .juegos-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
 .juego-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;

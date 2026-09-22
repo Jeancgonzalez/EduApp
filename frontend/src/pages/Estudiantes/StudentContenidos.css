@@ -61,6 +61,12 @@
   gap: 1.5rem;
 }
 
+/* Responsive: sin desborde horizontal en pantallas de celular */
+@media (max-width: 480px) {
+  .contenidos-container { padding: 1rem; }
+  .contenidos-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
 /* Estilo para el Link que envuelve la tarjeta */
 .contenido-link {
   text-decoration: none;

@@ -62,6 +62,12 @@
   gap: 1.5rem;
 }
 
+/* Responsive: sin desborde horizontal en pantallas de celular */
+@media (max-width: 480px) {
+  .evaluaciones-container { padding: 1rem; }
+  .evaluaciones-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
 .evaluacion-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
