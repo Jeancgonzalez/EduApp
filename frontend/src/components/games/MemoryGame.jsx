@@ -39,7 +39,13 @@ const MemoryGame = ({ config: rawConfig, onComplete }) => {
   useEffect(() => {
     if (cards.length > 0 && matched.length === cards.length && !resultado) {
       const intentosOptimos = pares.length;
-      const puntaje = Math.max(0, Math.round((intentosOptimos / Math.max(attempts, intentosOptimos)) * 100));
+
+      // Nuevo puntaje: curva suave (media armónica entre el óptimo y los
+      // intentos reales). Da 100 con el mínimo de intentos, ~67 con el doble,
+      // ~50 con el triple, y un piso de 45 para no castigar a quienes tardan
+      // más en resolverlo (antes caía en picada: con 24 intentos daba 33).
+      const puntaje = Math.max(45, Math.min(100, Math.round((200 * intentosOptimos) / (intentosOptimos + attempts))));
+
       setResultado({ puntaje, attempts, total: pares.length });
       onComplete({ puntaje_obtenido: puntaje, intentos: attempts });
     }
