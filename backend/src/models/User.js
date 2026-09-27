@@ -50,6 +50,18 @@ const User = sequelize.define('User', {
   emailVerificationExpires: {
     type: DataTypes.DATE,
     allowNull: true,
+  },
+  // Recuperación de contraseña. Son columnas APARTE de las de verificación de
+  // correo a propósito: si compartieran campos, un reseteo pisaría el código de
+  // verificación de un docente que se acaba de registrar, y el código de reseteo
+  // sería aceptado como si fuera de verificación (mismo hash, misma función).
+  passwordResetCodeHash: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  passwordResetExpires: {
+    type: DataTypes.DATE,
+    allowNull: true,
   }
 }, {
   timestamps: true,

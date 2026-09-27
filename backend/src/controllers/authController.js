@@ -120,9 +120,50 @@ const resendCode = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ status: 'error', message: 'Falta el correo' });
+    }
+
+    const { emailSent } = await authService.requestPasswordReset(email);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Si el correo está registrado, te enviamos un código para crear una contraseña nueva.',
+      data: { emailSent }
+    });
+  } catch (error) {
+    res.status(error.status || 500).json({ status: 'error', message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+
+    if (!email || !code || !password) {
+      return res.status(400).json({ status: 'error', message: 'Faltan correo, código o contraseña' });
+    }
+
+    await authService.resetPassword(email, code, password);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tu contraseña fue actualizada. Ya puedes iniciar sesión.'
+    });
+  } catch (error) {
+    res.status(error.status || 500).json({ status: 'error', message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   verifyEmail,
-  resendCode
+  resendCode,
+  forgotPassword,
+  resetPassword
 };

@@ -255,6 +255,35 @@ const startServer = async () => {
       console.warn('⚠️ No se pudo verificar/agregar la columna emailVerificationExpires:', migrateError.message);
     }
 
+    // Agregar columnas de recuperación de contraseña a users si no existen (migración manual)
+    try {
+      const { QueryTypes } = require('sequelize');
+      const checkResetHash = await sequelize.query(
+        "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'passwordResetCodeHash'",
+        { type: QueryTypes.SELECT }
+      );
+      if (checkResetHash[0].cnt === 0) {
+        await sequelize.query('ALTER TABLE users ADD COLUMN passwordResetCodeHash VARCHAR(255) NULL');
+        console.log('➕ Columna passwordResetCodeHash agregada a users.');
+      }
+    } catch (migrateError) {
+      console.warn('⚠️ No se pudo verificar/agregar la columna passwordResetCodeHash:', migrateError.message);
+    }
+
+    try {
+      const { QueryTypes } = require('sequelize');
+      const checkResetExpires = await sequelize.query(
+        "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'passwordResetExpires'",
+        { type: QueryTypes.SELECT }
+      );
+      if (checkResetExpires[0].cnt === 0) {
+        await sequelize.query('ALTER TABLE users ADD COLUMN passwordResetExpires DATETIME NULL');
+        console.log('➕ Columna passwordResetExpires agregada a users.');
+      }
+    } catch (migrateError) {
+      console.warn('⚠️ No se pudo verificar/agregar la columna passwordResetExpires:', migrateError.message);
+    }
+
     // Agregar iad_obligatorio a users si no existe. DEFAULT TRUE: los
     // estudiantes ya registrados quedan con la Misión Digital obligatoria
     // (el docente la desactiva explícitamente al registrar o editar).

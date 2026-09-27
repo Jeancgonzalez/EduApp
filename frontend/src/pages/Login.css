@@ -217,3 +217,25 @@
 .login-footer a:hover {
   text-decoration: underline;
 }
+
+/* Enlace de recuperación de contraseña, alineado a la derecha bajo el campo */
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.forgot-link {
+  color: #007bff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+html[data-theme="dark"] .forgot-link {
+  color: #60a5fa;
+}

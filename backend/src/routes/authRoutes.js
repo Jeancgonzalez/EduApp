@@ -14,4 +14,10 @@ router.post('/verify-email', authController.verifyEmail);
 // POST /api/auth/resend-code (reenvía un nuevo código de verificación)
 router.post('/resend-code', authController.resendCode);
 
+// POST /api/auth/forgot-password (envía el código para restablecer la contraseña)
+router.post('/forgot-password', authController.forgotPassword);
+
+// POST /api/auth/reset-password (valida el código y guarda la contraseña nueva)
+router.post('/reset-password', authController.resetPassword);
+
 module.exports = router;

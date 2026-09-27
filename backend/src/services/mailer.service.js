@@ -87,6 +87,35 @@ const sendVerificationEmail = async (to, code) => {
   return sendMail(to, subject, text, html);
 };
 
+const sendPasswordResetEmail = async (to, name, code) => {
+  const subject = 'Recupera tu contraseña - EduApp';
+  const text =
+    `Hola ${name || ''},` +
+    `\n\nSolicitaste restablecer la contraseña de tu cuenta de EduApp.` +
+    `\n\nTu código para crear una contraseña nueva es:` +
+    `\n\n${code}` +
+    `\n\nEste código es válido durante 10 minutos.` +
+    `\n\nSi no solicitaste este cambio, puedes ignorar este mensaje: tu contraseña actual seguirá siendo válida.` +
+    `\n\nSaludos,` +
+    `\nEquipo EduApp`;
+
+  const html = `
+    <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f7f6; padding:24px; border-radius:12px; max-width:480px; margin:0 auto;">
+      <div style="background:#ffffff; border-radius:12px; padding:28px; text-align:center; border:1px solid #e5e7eb;">
+        <h2 style="margin:0 0 8px; color:#111827;">Recupera tu contraseña</h2>
+        <p style="color:#6b7280; margin:0 0 20px;">Solicitaste restablecer la contraseña de tu cuenta de EduApp.</p>
+        <p style="color:#374151; margin:0 0 8px;">Tu código para crear una contraseña nueva es:</p>
+        <div style="font-size:32px; font-weight:700; letter-spacing:8px; color:#00b050; background:#ecfdf5; border-radius:8px; padding:12px; margin:12px 0;">${code}</div>
+        <p style="color:#9ca3af; font-size:13px; margin:12px 0 0;">Este código es válido durante 10 minutos.</p>
+        <p style="color:#9ca3af; font-size:13px; margin:12px 0 0;">Si no solicitaste este cambio, puedes ignorar este mensaje: tu contraseña actual seguirá siendo válida.</p>
+        <p style="color:#111827; margin:20px 0 0;">Saludos,<br/><strong>Equipo EduApp</strong></p>
+      </div>
+    </div>
+  `;
+
+  return sendMail(to, subject, text, html);
+};
+
 // Plantilla base para los correos de notificación/aviso.
 const notificationWrapper = (title, innerHtml) => `
   <div style="font-family: Arial, Helvetica, sans-serif; background:#f4f7f6; padding:24px; border-radius:12px; max-width:520px; margin:0 auto;">
@@ -261,6 +290,7 @@ const sendGroupAssignedEmail = async (studentName, to, nombreGrupo, materia) => 
 
 module.exports = {
   sendVerificationEmail,
+  sendPasswordResetEmail,
   sendNewContentEmail,
   sendNewEvaluationEmail,
   sendNewGameEmail,

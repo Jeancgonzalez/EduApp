@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { sendVerificationEmail } = require('./mailer.service');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('./mailer.service');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretoeduapp123';
 
@@ -11,6 +11,10 @@ const RESEND_COOLDOWN_MS = 60 * 1000; // 60 segundos entre reenvíos
 
 // Almacén en memoria del último envío por correo para limitar el reenvío (entorno local).
 const lastSentAt = new Map();
+// Cooldown independiente para la recuperación de contraseña: si compartiera mapa con
+// `lastSentAt`, pedir un reseteo bloquearía el reenvío del código de verificación
+// (y al revés) durante 60 s, aunque los dos flujos son independientes.
+const lastResetSentAt = new Map();
 
 // El código se almacena como HMAC para no guardarlo en texto plano.
 const hashCode = (code) =>
@@ -145,6 +149,99 @@ const resendVerificationCode = async (email) => {
   return { email: user.email };
 };
 
+// ----------------------------------------------------------------------------
+// Recuperación de contraseña
+// Reutiliza el mismo esquema de la verificación de correo (código de 6 dígitos,
+// HMAC con el JWT_SECRET y TTL de 10 minutos) pero con columnas propias.
+// ----------------------------------------------------------------------------
+const requestPasswordReset = async (email) => {
+  const user = await User.findOne({ where: { email } });
+
+  if (!user) {
+    const err = new Error('No encontramos ninguna cuenta registrada con ese correo.');
+    err.status = 404;
+    err.code = 'EMAIL_NOT_FOUND';
+    throw err;
+  }
+
+  // Protección contra abuso: 60 s entre solicitudes, en un mapa aparte del de
+  // verificación para que un flujo no bloquee al otro.
+  const now = Date.now();
+  const prev = lastResetSentAt.get(email) || 0;
+  if (now - prev < RESEND_COOLDOWN_MS) {
+    const remaining = Math.ceil((RESEND_COOLDOWN_MS - (now - prev)) / 1000);
+    const err = new Error(`Espera ${remaining} segundos antes de solicitar otro código.`);
+    err.status = 429;
+    throw err;
+  }
+  lastResetSentAt.set(email, now);
+
+  const code = generateCode();
+  user.passwordResetCodeHash = hashCode(code);
+  user.passwordResetExpires = new Date(Date.now() + CODE_TTL_MS);
+  await user.save();
+
+  // Igual que en el registro, un fallo del SMTP no aborta la operación: se
+  // registra y la interfaz informa que el correo no pudo enviarse.
+  let emailSent = true;
+  try {
+    await sendPasswordResetEmail(user.email, user.name, code);
+  } catch (err) {
+    emailSent = false;
+    console.error(
+      `[AuthService] No se pudo enviar el código de recuperación a ${user.email}: ${err.message}`
+    );
+  }
+
+  return { email: user.email, emailSent };
+};
+
+const resetPassword = async (email, code, newPassword) => {
+  if (!newPassword || newPassword.length < 8) {
+    const err = new Error('La contraseña debe tener al menos 8 caracteres.');
+    err.status = 400;
+    throw err;
+  }
+
+  const user = await User.findOne({ where: { email } });
+  if (!user) {
+    const err = new Error('No encontramos ninguna cuenta registrada con ese correo.');
+    err.status = 404;
+    throw err;
+  }
+
+  if (!user.passwordResetCodeHash || !user.passwordResetExpires) {
+    const err = new Error('El código ha expirado. Solicita un nuevo código.');
+    err.status = 400;
+    throw err;
+  }
+
+  if (user.passwordResetCodeHash !== hashCode(String(code))) {
+    const err = new Error('El código ingresado no es correcto. Inténtalo nuevamente.');
+    err.status = 400;
+    throw err;
+  }
+
+  if (Date.now() > new Date(user.passwordResetExpires).getTime()) {
+    const err = new Error('El código ha expirado. Solicita un nuevo código.');
+    err.status = 400;
+    throw err;
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  // El código es de un solo uso.
+  user.passwordResetCodeHash = null;
+  user.passwordResetExpires = null;
+  // Recibir el código demuestra control del buzón, que es justo lo que exige la
+  // verificación. Esto desbloquea al docente que se registró pero nunca verificó
+  // (si no, recuperaría su contraseña y aun así no podría iniciar sesión).
+  user.emailVerified = true;
+  await user.save();
+
+  return { user };
+};
+
 const loginUser = async (email, password) => {
   // Buscar al usuario
   const user = await User.findOne({ where: { email } });
@@ -188,4 +285,6 @@ module.exports = {
   loginUser,
   verifyEmail,
   resendVerificationCode,
+  requestPasswordReset,
+  resetPassword,
 };

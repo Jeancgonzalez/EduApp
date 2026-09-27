@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/Login';
 import RegistrarDocente from '../pages/RegisterDocente';
 import VerificarCorreo from '../pages/VerificarCorreo';
+import RecuperarPassword from '../pages/RecuperarPassword';
 import RegistrarEstudiante from '../pages/Docente/RegisterEstudiante';
 import DashboardDocente from '../pages/Docente/DashboardDocente';
 import Contenidos from '../pages/Docente/Contenidos';
@@ -39,6 +40,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/registroDocente" element={<RegistrarDocente />} />
       <Route path="/verificar-correo" element={<VerificarCorreo />} />
+      <Route path="/recuperar-password" element={<RecuperarPassword />} />
 
       {/* Ruta protegida solo para profesores */}
       <Route 

@@ -96,6 +96,11 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div className="forgot-row">
+              <Link to="/recuperar-password" className="forgot-link">
+                ¿Olvidó su contraseña?
+              </Link>
+            </div>
           </div>
 
           <button type="submit" className="login-btn" disabled={isLoading}>
