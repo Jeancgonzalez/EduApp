@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import ThemeToggle from '../components/layout/ThemeToggle';
@@ -19,36 +19,6 @@ const RegisterDocente = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
-
-  // Estado de verificación de correo
-  const [registeredEmail, setRegisteredEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [verifyMessage, setVerifyMessage] = useState('');
-  const [verifyError, setVerifyError] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const cooldownRef = useRef(null);
-
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const id = setInterval(() => {
-      setResendCooldown((s) => {
-        if (s <= 1) {
-          clearInterval(id);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [resendCooldown]);
-
-  useEffect(() => {
-    return () => {
-      if (cooldownRef.current) clearInterval(cooldownRef.current);
-    };
-  }, []);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -115,12 +85,15 @@ const RegisterDocente = () => {
       });
 
       if (response.data) {
-        // El correo requiere verificación: mostrar la pantalla de verificación
-        setRegisteredEmail(formData.email);
-        setCode('');
-        setVerifyMessage('');
-        setVerifyError('');
-        setResendCooldown(60);
+        // El correo requiere verificación: llevamos al docente a la pantalla
+        // de verificación del código, igual que Login.jsx al detectar
+        // EMAIL_NOT_VERIFIED.
+        navigate('/verificar-correo', {
+          state: {
+            email: formData.email,
+            emailSent: response.data.data?.emailSent !== false,
+          },
+        });
       }
     } catch (err) {
       const backendMessage = err.response?.data?.message || '';
@@ -133,111 +106,6 @@ const RegisterDocente = () => {
       setIsLoading(false);
     }
   };
-
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setVerifyMessage('');
-    setVerifyError('');
-    setVerifyLoading(true);
-
-    try {
-      const response = await api.post('/auth/verify-email', {
-        email: registeredEmail,
-        code
-      });
-
-      setVerifyMessage(response.data?.message || '¡Correo verificado correctamente!');
-      setCode('');
-      // Redirigir al login después de verificar
-      setTimeout(() => navigate('/login'), 1500);
-    } catch (err) {
-      setVerifyError(err.response?.data?.message || 'No se pudo verificar el código.');
-    } finally {
-      setVerifyLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setResendLoading(true);
-    setVerifyError('');
-    setVerifyMessage('');
-
-    try {
-      await api.post('/auth/resend-code', { email: registeredEmail });
-      setVerifyMessage('Se envió un nuevo código a tu correo.');
-      setResendCooldown(60);
-    } catch (err) {
-      setVerifyError(err.response?.data?.message || 'No se pudo reenviar el código.');
-    } finally {
-      setResendLoading(false);
-    }
-  };
-
-  // ===== Vista de verificación de correo =====
-  if (registeredEmail) {
-    return (
-      <div className="register-container">
-        <ThemeToggle className="auth-theme-toggle" />
-        <div className="register-card">
-          <div className="register-header">
-            <div className="logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-            </div>
-            <h1>Verifica tu correo electrónico</h1>
-            <p>Enviamos un código de verificación a <strong>{registeredEmail}</strong>. Revisa tu bandeja de entrada e ingresa el código para continuar.</p>
-          </div>
-
-          {verifyMessage && <div className="success-message">{verifyMessage}</div>}
-          {verifyError && <div className="error-message">{verifyError}</div>}
-
-          <form onSubmit={handleVerify} className="register-form">
-            <div className="form-group">
-              <label>Código de verificación</label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  name="code"
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="Ingresa el código de 6 dígitos"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  required
-                />
-              </div>
-            </div>
-
-            <button type="submit" className="register-btn" disabled={verifyLoading || code.length !== 6}>
-              {verifyLoading ? 'Verificando...' : 'Verificar correo'}
-            </button>
-          </form>
-
-          <div className="resend-box">
-            <p>¿No recibiste el código?</p>
-            {resendCooldown > 0 ? (
-              <span className="resend-cooldown">Puedes solicitar otro código en {resendCooldown} segundos.</span>
-            ) : (
-              <button
-                type="button"
-                className="resend-btn"
-                onClick={handleResend}
-                disabled={resendLoading}
-              >
-                {resendLoading ? 'Enviando...' : 'Reenviar código'}
-              </button>
-            )}
-          </div>
-
-          <div className="register-footer">
-            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ===== Vista de formulario de registro =====
   return (

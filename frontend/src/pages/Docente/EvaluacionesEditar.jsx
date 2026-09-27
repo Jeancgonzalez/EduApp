@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -33,6 +33,14 @@ const EvaluacionesEditar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState('');
+
+  // Identificador local de cada pregunta. Sirve como clave de React y para
+  // editar/eliminar, porque las preguntas nuevas todavía no tienen id de la BD.
+  const uidRef = useRef(0);
+  const siguienteUid = () => {
+    uidRef.current += 1;
+    return `pregunta-${uidRef.current}`;
+  };
 
   useEffect(() => {
     const fetchEvaluacion = async () => {
@@ -80,9 +88,10 @@ const EvaluacionesEditar = () => {
         }
 
         setPreguntas(
-          data.preguntas?.map((pregunta) => ({
-            id: pregunta.id || pregunta._id, 
-            enunciado: pregunta.pregunta,
+          (data.preguntas || []).map((pregunta) => ({
+            uid: siguienteUid(),
+            id: pregunta.id || null,
+            enunciado: pregunta.pregunta || '',
             opciones: {
               A: pregunta.opcion_a || '',
               B: pregunta.opcion_b || '',
@@ -91,7 +100,7 @@ const EvaluacionesEditar = () => {
             },
             respuestaCorrecta: pregunta.respuesta_correcta?.toUpperCase() || '',
             retroalimentacion: pregunta.retroalimentacion || ''
-          })) || []
+          }))
         );
       } catch (err) {
         console.error('Error al cargar la evaluación:', err);
@@ -203,16 +212,34 @@ const EvaluacionesEditar = () => {
     }));
   };
 
-  const handlePreguntaChange = (questionId, field, value) => {
+  const handlePreguntaChange = (uid, field, value) => {
     setPreguntas((prev) =>
       prev.map((pregunta) =>
-        pregunta.id === questionId
+        pregunta.uid === uid
           ? field === 'opciones'
             ? { ...pregunta, opciones: { ...pregunta.opciones, ...value } }
             : { ...pregunta, [field]: value }
           : pregunta
       )
     );
+  };
+
+  const agregarPregunta = () => {
+    setPreguntas((prev) => [
+      ...prev,
+      {
+        uid: siguienteUid(),
+        id: null,
+        enunciado: '',
+        opciones: { A: '', B: '', C: '', D: '' },
+        respuestaCorrecta: '',
+        retroalimentacion: ''
+      }
+    ]);
+  };
+
+  const eliminarPregunta = (uid) => {
+    setPreguntas((prev) => (prev.length > 1 ? prev.filter((p) => p.uid !== uid) : prev));
   };
 
   const handleSubmit = async (event) => {
@@ -244,20 +271,28 @@ const EvaluacionesEditar = () => {
       }
     }
 
-    const preguntasValidas = preguntas.every((pregunta) => {
-      return (
-        pregunta.enunciado.trim() &&
-        pregunta.opciones.A.trim() &&
-        pregunta.opciones.B.trim() &&
-        pregunta.opciones.C.trim() &&
-        pregunta.opciones.D.trim() &&
-        pregunta.respuestaCorrecta
-      );
-    });
-
-    if (!preguntasValidas) {
-      setError('Completa todas las preguntas antes de guardar.');
+    if (preguntas.length === 0) {
+      setError('La evaluación debe tener al menos una pregunta.');
       return;
+    }
+
+    for (let i = 0; i < preguntas.length; i++) {
+      const pregunta = preguntas[i];
+
+      if (!pregunta.enunciado.trim()) {
+        setError(`La pregunta ${i + 1} necesita un enunciado.`);
+        return;
+      }
+
+      if (['A', 'B', 'C', 'D'].some((letra) => !pregunta.opciones[letra]?.trim())) {
+        setError(`La pregunta ${i + 1} necesita las cuatro opciones (A, B, C, D).`);
+        return;
+      }
+
+      if (!pregunta.respuestaCorrecta) {
+        setError(`La pregunta ${i + 1} necesita una respuesta correcta.`);
+        return;
+      }
     }
 
     setLoading(true);
@@ -265,8 +300,7 @@ const EvaluacionesEditar = () => {
     try {
       const updateData = {
         ...formValues,
-        preguntas: preguntas.map(({ id: preguntaId, enunciado, opciones, respuestaCorrecta, retroalimentacion }) => ({
-          id: preguntaId,
+        preguntas: preguntas.map(({ enunciado, opciones, respuestaCorrecta, retroalimentacion }) => ({
           enunciado,
           opciones,
           respuestaCorrecta,
@@ -309,7 +343,9 @@ const EvaluacionesEditar = () => {
     return <div className="detalle-mensaje">Cargando evaluación...</div>;
   }
 
-  if (error) {
+  // Solo es fatal si la evaluación no se pudo cargar. Los errores de validación
+  // del formulario se muestran dentro del propio formulario (ver más abajo).
+  if (error && !evaluacion) {
     return <div className="detalle-mensaje error">{error}</div>;
   }
 
@@ -462,17 +498,42 @@ const EvaluacionesEditar = () => {
           )}
 
           <div className="detalle-body">
-            <h3>Preguntas</h3>
+            <div className="preguntas-header">
+              <h3>Preguntas ({preguntas.length})</h3>
+              <button type="button" onClick={agregarPregunta} className="agregar-pregunta-btn">
+                + Agregar Pregunta
+              </button>
+            </div>
+
+            {preguntas.length === 0 && (
+              <p className="texto-ayuda">
+                Esta evaluación aún no tiene preguntas. Pulsa "Agregar Pregunta" para crear la primera.
+              </p>
+            )}
+
             {preguntas.map((pregunta, index) => (
-              <div key={pregunta.id} className="pregunta-card">
-                <h4>Pregunta {index + 1}</h4>
+              <div key={pregunta.uid} className="pregunta-card">
+                <div className="pregunta-header">
+                  <h4>Pregunta {index + 1}</h4>
+                  {preguntas.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => eliminarPregunta(pregunta.uid)}
+                      className="eliminar-pregunta-btn"
+                      title={`Eliminar la pregunta ${index + 1}`}
+                      aria-label={`Eliminar la pregunta ${index + 1}`}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
 
                 <div className="form-group">
                   <label>
                     Enunciado
                     <textarea
                       value={pregunta.enunciado}
-                      onChange={(e) => handlePreguntaChange(pregunta.id, 'enunciado', e.target.value)}
+                      onChange={(e) => handlePreguntaChange(pregunta.uid, 'enunciado', e.target.value)}
                       rows={2}
                       required
                     />
@@ -486,7 +547,7 @@ const EvaluacionesEditar = () => {
                       <input
                         value={pregunta.opciones[letra]}
                         onChange={(e) =>
-                          handlePreguntaChange(pregunta.id, 'opciones', { [letra]: e.target.value })
+                          handlePreguntaChange(pregunta.uid, 'opciones', { [letra]: e.target.value })
                         }
                         required
                       />
@@ -498,7 +559,7 @@ const EvaluacionesEditar = () => {
                   Respuesta correcta
                   <select
                     value={pregunta.respuestaCorrecta}
-                    onChange={(e) => handlePreguntaChange(pregunta.id, 'respuestaCorrecta', e.target.value)}
+                    onChange={(e) => handlePreguntaChange(pregunta.uid, 'respuestaCorrecta', e.target.value)}
                     required
                   >
                     <option value="">Seleccionar...</option>
@@ -513,7 +574,7 @@ const EvaluacionesEditar = () => {
                   Retroalimentación
                   <textarea
                     value={pregunta.retroalimentacion}
-                    onChange={(e) => handlePreguntaChange(pregunta.id, 'retroalimentacion', e.target.value)}
+                    onChange={(e) => handlePreguntaChange(pregunta.uid, 'retroalimentacion', e.target.value)}
                     placeholder="Explicación, recomendación o comentario sobre esta pregunta (opcional)"
                     rows={2}
                   />

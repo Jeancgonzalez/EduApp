@@ -9,7 +9,7 @@ const register = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios' });
     }
 
-    const newUser = await authService.registerUser({ name, email, password, role });
+    const { user: newUser, emailSent } = await authService.registerUser({ name, email, password, role });
 
     res.status(201).json({
       status: 'success',
@@ -19,7 +19,8 @@ const register = async (req, res, next) => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        emailVerified: false
+        emailVerified: false,
+        emailSent
       }
     });
   } catch (error) {

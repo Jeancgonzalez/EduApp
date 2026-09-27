@@ -19,7 +19,13 @@ const hashCode = (code) =>
 const generateCode = () =>
   crypto.randomInt(100000, 1000000).toString(); // 6 dígitos
 
-const generateAndStoreCode = async (user) => {
+// Genera y persiste el código de verificación.
+// `throwOnSendError` decide qué hacer si el envío del correo falla:
+//   - false (por defecto): solo se registra el fallo y se continúa, para que un
+//     problema puntual del SMTP no impida crear la cuenta.
+//   - true: se propaga el error (usado en el reenvío, donde el usuario espera
+//     recibir el correo y debe poder reintentar).
+const generateAndStoreCode = async (user, { throwOnSendError = false } = {}) => {
   const code = generateCode();
   const expiresAt = new Date(Date.now() + CODE_TTL_MS);
 
@@ -27,9 +33,18 @@ const generateAndStoreCode = async (user) => {
   user.emailVerificationExpires = expiresAt;
   await user.save();
 
-  await sendVerificationEmail(user.email, code);
+  let emailSent = true;
+  try {
+    await sendVerificationEmail(user.email, code);
+  } catch (err) {
+    emailSent = false;
+    console.error(
+      `[AuthService] No se pudo enviar el código de verificación a ${user.email}: ${err.message}`
+    );
+    if (throwOnSendError) throw err;
+  }
 
-  return { code, expiresAt };
+  return { code, expiresAt, emailSent };
 };
 
 const registerUser = async (userData) => {
@@ -60,10 +75,11 @@ const registerUser = async (userData) => {
     emailVerified: false,
   });
 
-  // Generar código y enviarlo al correo
-  await generateAndStoreCode(newUser);
+  // Generar código y enviarlo al correo. La cuenta se crea igual aunque el
+  // envío falle: el usuario podrá pedir un reenvío desde la pantalla de verificación.
+  const { emailSent } = await generateAndStoreCode(newUser);
 
-  return newUser;
+  return { user: newUser, emailSent };
 };
 
 const verifyEmail = async (email, code) => {
@@ -124,7 +140,7 @@ const resendVerificationCode = async (email) => {
   lastSentAt.set(email, now);
 
   // Generar un nuevo código (invalida el anterior al sobrescribir el hash)
-  await generateAndStoreCode(user);
+  await generateAndStoreCode(user, { throwOnSendError: true });
 
   return { email: user.email };
 };

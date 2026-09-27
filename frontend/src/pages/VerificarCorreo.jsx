@@ -9,6 +9,9 @@ const VerificarCorreo = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const initialEmail = location.state?.email || '';
+  // Si se llega desde /registroDocente y el backend no pudo enviar el correo
+  // (p. ej. SMTP caído en local), avisamos para que usen "Reenviar código".
+  const [emailSentWarning, setEmailSentWarning] = useState(location.state?.emailSent === false);
 
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState('');
@@ -58,6 +61,7 @@ const VerificarCorreo = () => {
     try {
       await api.post('/auth/resend-code', { email });
       setMessage('Se envió un nuevo código a tu correo.');
+      setEmailSentWarning(false);
       setResendCooldown(60);
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo reenviar el código.');
@@ -79,6 +83,11 @@ const VerificarCorreo = () => {
         </div>
 
         {message && <div className="success-message">{message}</div>}
+        {emailSentWarning && !message && (
+          <div className="error-message">
+            No pudimos enviar el código a tu correo. Usa &quot;Reenviar código&quot; para intentarlo de nuevo.
+          </div>
+        )}
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleVerify} className="verify-form">
