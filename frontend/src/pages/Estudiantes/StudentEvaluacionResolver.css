@@ -35,12 +35,33 @@
 }
 .empty-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; }
 .empty-state h3 { color: #64748b; margin-bottom: 0.5rem; }
+/* Boton "Volver a Evaluaciones". Antes solo fijaba color y gap: sin fondo, sin
+   padding y sin border, se veia como texto suelto. La regla de darkmode.css le
+   asigna background-color y border-color, pero no border-width ni border-style,
+   por lo que el borde no se dibujaba en ningun tema (con border-style:none por
+   defecto, border-color no produce nada). Aqui se declara el border completo. */
 .btn-back {
   display: inline-flex; align-items: center; gap: 0.5rem;
   color: #6366f1; text-decoration: none; font-weight: 500; margin-bottom: 1.5rem;
-  transition: gap 0.2s;
+  padding: 0.5rem 1rem;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.5rem;
+  transition: gap 0.2s, background-color 0.2s, border-color 0.2s;
 }
-.btn-back:hover { gap: 0.75rem; }
+.btn-back:hover {
+  gap: 0.75rem;
+  background: #e0e7ff;
+  border-color: #a5b4fc;
+}
+
+/* El hover en claro compite con la regla oscura de darkmode.css, que tiene mayor
+   especificidad y se llevaria el fondo. Se define aqui para que el hover siga
+   siendo visible en modo oscuro sin tocar el archivo compartido. */
+html[data-theme="dark"] .btn-back:hover {
+  background-color: #1e40af;
+  border-color: #3b82f6;
+}
 
 .tipo-badge, .modulo-badge {
   display: inline-flex; align-items: center; gap: 0.35rem;
