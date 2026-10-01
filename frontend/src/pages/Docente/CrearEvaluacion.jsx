@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import './CrearEvaluacion.css';
 
 const CrearEvaluacion = () => {
@@ -22,7 +22,7 @@ const CrearEvaluacion = () => {
     contenido_apoyo_id: '',
     limitarIntentos: false,
     max_intentos: '',
-    grupo_id: ''
+    grupo_ids: []
   });
 
   const [preguntas, setPreguntas] = useState([
@@ -259,9 +259,8 @@ const CrearEvaluacion = () => {
         delete evaluacionData.contenido_apoyo_id;
       }
 
-      if (!evaluacionData.grupo_id) {
-        delete evaluacionData.grupo_id;
-      }
+      // Array vacío = visible para todos los grupos.
+      evaluacionData.grupo_ids = Array.isArray(evaluacionData.grupo_ids) ? evaluacionData.grupo_ids : [];
 
       evaluacionData.max_intentos = formValues.limitarIntentos
         ? Number(formValues.max_intentos)
@@ -348,10 +347,10 @@ const CrearEvaluacion = () => {
             )}
           </div>
 
-          <GrupoSelect
-            value={formValues.grupo_id}
-            onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
-          />
+      <GrupoMultiSelect
+        value={formValues.grupo_ids}
+        onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
+      />
 
           <div className="form-group">
             <label className="checkbox-label">

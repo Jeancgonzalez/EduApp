@@ -2,10 +2,19 @@ const Game = require('../models/game.model');
 const Content = require('../models/content.model');
 const StudentProgress = require('../models/studentProgress.model');
 const Group = require('../models/grupo.model');
+const GrupoService = require('./grupo.service');
 const ProgressService = require('./progress.service');
 const NotificationService = require('./notification.service');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
+
+// Include estándar para exponer los grupos asignados (sustituye al antiguo as: 'grupo').
+const INCLUDE_GRUPOS = [{
+  model: Group,
+  as: 'grupos',
+  attributes: ['id', 'materia', 'nombre'],
+  through: { attributes: [] },
+}];
 
 class GameService {
   static async verificarContenidoModuloPublicado(modulo, docenteId, contentId = null) {
@@ -38,17 +47,33 @@ class GameService {
       if (data.publicado) {
         await this.verificarContenidoModuloPublicado(data.modulo, data.docente_id, data.modulo_content_id);
       }
-      const nuevoJuego = await Game.create(data);
-      if (data.publicado) {
-        await NotificationService.notifyNewGame(nuevoJuego.docente_id, nuevoJuego.titulo, nuevoJuego.modulo, data.grupo_id || null).catch(e => {
+      const { datos, grupoIds } = await GameService._prepararGrupos(data, data.docente_id);
+      const nuevoJuego = await Game.create(datos);
+      await GrupoService.sincronizarGruposRecurso('juego', nuevoJuego.id, grupoIds);
+      if (datos.publicado) {
+        await NotificationService.notifyNewGame(nuevoJuego.docente_id, nuevoJuego.titulo, nuevoJuego.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewGame (crearJuego):', e.message);
           console.error(e);
         });
       }
+      nuevoJuego.grupo_ids = grupoIds;
       return nuevoJuego;
     } catch (error) {
       throw new Error(`Error al crear el juego: ${error.message}`);
     }
+  }
+
+  /**
+   * Separa `grupo_ids` de los atributos del modelo y valida que los grupos
+   * pertenezcan al docente. Devuelve { datos, grupoIds }.
+   */
+  static async _prepararGrupos(data, docenteId) {
+    const pedido = GrupoService.parseGrupoIds(data.grupo_ids);
+    const datos = { ...data };
+    delete datos.grupo_ids;
+    delete datos.grupo_id; // campo obsoleto (ya no existe en el modelo)
+    const grupoIds = await GrupoService.validarGruposDelDocente(docenteId, pedido);
+    return { datos, grupoIds };
   }
 
   static parseConfig(juego) {
@@ -62,7 +87,7 @@ class GameService {
     try {
       const juegos = await Game.findAll({
         where: filtros,
-        include: [{ model: Group, as: 'grupo', attributes: ['id', 'materia', 'nombre'] }]
+        include: INCLUDE_GRUPOS
       });
       return juegos.map(j => this.parseConfig(j));
     } catch (error) {
@@ -78,7 +103,7 @@ class GameService {
       } else if (user && (user.role === 'student' || user.role === 'estudiante')) {
         where.docente_id = user.docente_id;
       }
-      const juego = await Game.findOne({ where });
+      const juego = await Game.findOne({ where, include: INCLUDE_GRUPOS });
       if (!juego) throw new Error('Juego no encontrado');
       return this.parseConfig(juego);
     } catch (error) {
@@ -93,16 +118,22 @@ class GameService {
       const juego = await Game.findOne({ where });
       if (!juego) throw new Error('Juego no encontrado');
 
-      const isOnlyPublishChange = Object.keys(data).length === 1 && data.publicado !== undefined;
+      const { datos, grupoIds } = await GameService._prepararGrupos(data, juego.docente_id);
+      const cambianGrupos = Object.prototype.hasOwnProperty.call(data, 'grupo_ids');
+      const isOnlyPublishChange = Object.keys(datos).length === 1 && datos.publicado !== undefined;
 
       if (isOnlyPublishChange) {
-        if (data.publicado === true) {
+        if (datos.publicado === true) {
           await this.verificarContenidoModuloPublicado(juego.modulo, juego.docente_id, juego.modulo_content_id);
         }
         const wasPublished = juego.publicado;
-        await juego.update({ publicado: data.publicado });
-        if (!wasPublished && data.publicado) {
-          await NotificationService.notifyNewGame(juego.docente_id, juego.titulo, juego.modulo, juego.grupo_id || null).catch(e => {
+        await juego.update({ publicado: datos.publicado });
+        if (cambianGrupos) {
+          await GrupoService.sincronizarGruposRecurso('juego', juego.id, grupoIds);
+          juego.grupo_ids = grupoIds;
+        }
+        if (!wasPublished && datos.publicado) {
+          await NotificationService.notifyNewGame(juego.docente_id, juego.titulo, juego.modulo, grupoIds).catch(e => {
             console.error('[Notificación] Error global en notifyNewGame (actualizarJuego-publish):', e.message);
             console.error(e);
           });
@@ -125,17 +156,21 @@ class GameService {
         throw new Error('No se puede modificar este juego porque ya está publicado.');
       }
 
-      if (data.publicado === true) {
+      if (datos.publicado === true) {
         await this.verificarContenidoModuloPublicado(
-          data.modulo !== undefined ? data.modulo : juego.modulo,
+          datos.modulo !== undefined ? datos.modulo : juego.modulo,
           juego.docente_id,
-          data.modulo_content_id !== undefined ? data.modulo_content_id : juego.modulo_content_id
+          datos.modulo_content_id !== undefined ? datos.modulo_content_id : juego.modulo_content_id
         );
       }
 
-      await juego.update(data);
-      if (data.publicado === true) {
-        await NotificationService.notifyNewGame(juego.docente_id, juego.titulo, juego.modulo, juego.grupo_id || null).catch(e => {
+      await juego.update(datos);
+      if (cambianGrupos) {
+        await GrupoService.sincronizarGruposRecurso('juego', juego.id, grupoIds);
+        juego.grupo_ids = grupoIds;
+      }
+      if (datos.publicado === true) {
+        await NotificationService.notifyNewGame(juego.docente_id, juego.titulo, juego.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewGame (actualizarJuego-update):', e.message);
           console.error(e);
         });
@@ -173,6 +208,9 @@ class GameService {
       });
 
       await juego.destroy({ transaction: t });
+
+      // Limpiar los vínculos de grupos (evita filas huérfanas en la pivote).
+      await GrupoService.sincronizarGruposRecurso('juego', id, [], t);
 
       if (modulo && affectedStudents.length > 0) {
         const estudianteIds = affectedStudents.map(s => s.estudiante_id);

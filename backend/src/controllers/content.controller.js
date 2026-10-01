@@ -3,6 +3,7 @@ const path = require('path');
 const ContentService = require('../services/content.service');
 const GrupoService = require('../services/grupo.service');
 const Content = require('../models/content.model');
+const Group = require('../models/grupo.model');
 const { sequelize } = require('../config/database');
 const { QueryTypes, Op } = require('sequelize');
 
@@ -69,7 +70,7 @@ class ContentController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido');
         filtros[Op.or] = condiciones;
       }
       const contenidos = await ContentService.obtenerContenidos(filtros);
@@ -97,12 +98,22 @@ class ContentController {
       where.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         where.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido');
         where[Op.or] = condiciones;
       }
-      const contenido = await Content.findOne({ where });
+      // Se incluye la lista de grupos para que el formulario de edición pueda
+      // mostrar los grupos ya asignados.
+      const contenido = await Content.findOne({
+        where,
+        include: [{
+          model: Group,
+          as: 'grupos',
+          attributes: ['id', 'materia', 'nombre'],
+          through: { attributes: [] },
+        }],
+      });
       if (!contenido) throw new Error('Contenido no encontrado');
-      
+
       res.status(200).json({
         success: true,
         data: contenido

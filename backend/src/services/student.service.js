@@ -22,7 +22,7 @@ class StudentService {
    * Si el módulo no posee contenido publicado, no existe requisito previo (true).
    */
   static async esContenidoModuloCompletado(estudianteId, modulo, docenteId) {
-    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'contenido');
     const publishedContents = await Content.findAll({
       where: { modulo, publicado: true, docente_id: docenteId, [Op.or]: condiciones },
       attributes: ['id'],
@@ -44,10 +44,14 @@ class StudentService {
   }
 
   static async getDashboardData(estudianteId, docenteId) {
-    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
-    const totalContents = await Content.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
-    const totalGames = await Game.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
-    const totalEvaluations = await Evaluation.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones } });
+    // Una sola consulta de grupos alimenta las condiciones de los 3 tipos de recurso.
+    const vis = await GrupoService.condicionesVisibilidad(estudianteId);
+    const condC = vis.contenido;
+    const condJ = vis.juego;
+    const condE = vis.evaluacion;
+    const totalContents = await Content.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condC } });
+    const totalGames = await Game.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condJ } });
+    const totalEvaluations = await Evaluation.count({ where: { publicado: true, docente_id: docenteId, [Op.or]: condE } });
 
     const progressRecords = await StudentProgress.findAll({
       where: { estudiante_id: estudianteId, completado: true },
@@ -59,22 +63,22 @@ class StudentService {
     const cvRecords = bestPerActivity.filter(r => r.contenido_id);
     const contentIds = cvRecords.map(r => r.contenido_id);
     const contentsViewed = contentIds.length > 0
-      ? await Content.count({ where: { id: contentIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      ? await Content.count({ where: { id: contentIds, publicado: true, docente_id: docenteId, [Op.or]: condC } })
       : 0;
 
     const gcRecords = bestPerActivity.filter(r => r.juego_id);
     const gameIds = gcRecords.map(r => r.juego_id);
     const gamesCompleted = gameIds.length > 0
-      ? await Game.count({ where: { id: gameIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      ? await Game.count({ where: { id: gameIds, publicado: true, docente_id: docenteId, [Op.or]: condJ } })
       : 0;
 
     const ecRecords = bestPerActivity.filter(r => r.evaluacion_id);
     const evalIds = ecRecords.map(r => r.evaluacion_id);
     const evaluationsCompleted = evalIds.length > 0
-      ? await Evaluation.count({ where: { id: evalIds, publicado: true, docente_id: docenteId, [Op.or]: condiciones } })
+      ? await Evaluation.count({ where: { id: evalIds, publicado: true, docente_id: docenteId, [Op.or]: condE } })
       : 0;
 
-    const moduleProgress = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, condiciones);
+    const moduleProgress = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, vis);
     const moduleEntries = Object.entries(moduleProgress);
     const overallProgress = moduleEntries.length > 0
       ? Math.round(moduleEntries.reduce((sum, [, m]) => sum + m.percentage, 0) / moduleEntries.length)
@@ -118,11 +122,15 @@ class StudentService {
     return [...map.values()];
   }
 
-  static async _getModuleProgress(estudianteId, bestPerActivity, docenteId, condicionesExtra = null) {
-    const condiciones = condicionesExtra || await GrupoService.recursoWhereEstudiante(estudianteId);
-    const allContents = await Content.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
-    const allGames = await Game.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
-    const allEvaluations = await Evaluation.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, raw: true });
+  /**
+   * @param {object} [vis] Set de condiciones ya calculado con
+   *   GrupoService.condicionesVisibilidad(estudianteId). Si se omite, se calcula.
+   */
+  static async _getModuleProgress(estudianteId, bestPerActivity, docenteId, vis = null) {
+    const v = vis || await GrupoService.condicionesVisibilidad(estudianteId);
+    const allContents = await Content.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: v.contenido }, raw: true });
+    const allGames = await Game.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: v.juego }, raw: true });
+    const allEvaluations = await Evaluation.findAll({ where: { publicado: true, docente_id: docenteId, [Op.or]: v.evaluacion }, raw: true });
 
     const modules = {};
     for (const c of allContents) {
@@ -231,19 +239,23 @@ class StudentService {
   }
 
   static async getDetailedProgress(estudianteId, docenteId) {
-    const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const vis = await GrupoService.condicionesVisibilidad(estudianteId);
+    // Las condiciones no dependen del alias, así que sirven igual en los `include`.
+    const condContenido = vis.contenido;
+    const condJuego = vis.juego;
+    const condEvaluacion = vis.evaluacion;
     const [rawContents, rawGames, rawEvals] = await Promise.all([
       StudentProgress.findAll({
         where: { estudiante_id: estudianteId, contenido_id: { [Op.ne]: null } },
-        include: [{ model: Content, as: 'contenido', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+        include: [{ model: Content, as: 'contenido', where: { publicado: true, docente_id: docenteId, [Op.or]: condContenido }, required: true }]
       }),
       StudentProgress.findAll({
         where: { estudiante_id: estudianteId, juego_id: { [Op.ne]: null } },
-        include: [{ model: Game, as: 'juego', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+        include: [{ model: Game, as: 'juego', where: { publicado: true, docente_id: docenteId, [Op.or]: condJuego }, required: true }]
       }),
       StudentProgress.findAll({
         where: { estudiante_id: estudianteId, evaluacion_id: { [Op.ne]: null } },
-        include: [{ model: Evaluation, as: 'evaluacion', where: { publicado: true, docente_id: docenteId, [Op.or]: condiciones }, required: true }]
+        include: [{ model: Evaluation, as: 'evaluacion', where: { publicado: true, docente_id: docenteId, [Op.or]: condEvaluacion }, required: true }]
       }),
     ]);
     const contentsViewed = [...rawContents
@@ -272,7 +284,7 @@ class StudentService {
       raw: true
     });
     const bestPerActivity = StudentService._deduplicateProgress(allProgress);
-    const moduleProgressObj = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, condiciones);
+    const moduleProgressObj = await StudentService._getModuleProgress(estudianteId, bestPerActivity, docenteId, vis);
 
     // Map to array format with fields expected by frontend
     const progressByModule = await Promise.all(

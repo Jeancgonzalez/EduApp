@@ -11,6 +11,104 @@
   color: #334155;
 }
 
+/* ---------- Selector múltiple de grupos ---------- */
+
+.grupo-select-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.grupo-select-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.grupo-select-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.grupo-select-acciones button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.grupo-select-acciones button:disabled {
+  color: #94a3b8;
+  cursor: default;
+  text-decoration: none;
+}
+
+.grupo-select-lista {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.5rem;
+  background: #fff;
+  max-height: 15rem;
+  overflow-y: auto;
+}
+
+.grupo-select-opcion {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.grupo-select-opcion:hover {
+  background: #f1f5f9;
+}
+
+.grupo-select-opcion.activa {
+  background: #eff6ff;
+}
+
+.grupo-select-opcion input {
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  accent-color: #007bff;
+}
+
+.grupo-select-opcion span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.grupo-select-opcion em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.grupo-select-error {
+  font-size: 0.78rem;
+  color: #b91c1c;
+  margin: 0;
+}
+
 .grupo-select-field select {
   width: 100%;
   padding: 0.6rem 0.75rem;
@@ -34,8 +132,31 @@
   margin: 0;
 }
 
-html[data-theme="dark"] .grupo-select-field label {
+html[data-theme="dark"] .grupo-select-field label,
+html[data-theme="dark"] .grupo-select-label {
   color: #cbd5e1;
+}
+
+html[data-theme="dark"] .grupo-select-lista {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .grupo-select-opcion:hover {
+  background: #334155;
+}
+
+html[data-theme="dark"] .grupo-select-opcion.activa {
+  background: #1d4ed8;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .grupo-select-opcion em {
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .grupo-select-error {
+  color: #fca5a5;
 }
 
 html[data-theme="dark"] .grupo-select-field select {

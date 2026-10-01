@@ -22,7 +22,7 @@ class GameController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'juego');
         filtros[Op.or] = condiciones;
       }
       const juegos = await GameService.obtenerJuegos(filtros);
@@ -37,7 +37,7 @@ class GameController {
       const { id } = req.params;
       const juego = await GameService.obtenerJuegoPorId(id, req.user);
       if (req.user && (req.user.role === 'student' || req.user.role === 'estudiante')) {
-        const acceso = await GrupoService.estudianteAccedeRecurso(req.user.id, juego);
+        const acceso = await GrupoService.estudianteAccedeRecurso(req.user.id, juego, 'juego');
         if (!acceso) {
           return res.status(404).json({
             success: false,

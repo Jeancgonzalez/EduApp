@@ -26,12 +26,12 @@ class ProgressService {
   }
 
   static async recalcularProgreso(estudianteId, modulo, transaction, docenteId) {
-    const condicionesGrupo = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const vis = await GrupoService.condicionesVisibilidad(estudianteId);
     const whereExtra = docenteId ? { docente_id: docenteId } : {};
     const [contents, games, evaluations] = await Promise.all([
-      Content.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction }),
-      Game.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction }),
-      Evaluation.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['id'], raw: true, transaction })
+      Content.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: vis.contenido }, attributes: ['id'], raw: true, transaction }),
+      Game.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: vis.juego }, attributes: ['id'], raw: true, transaction }),
+      Evaluation.findAll({ where: { modulo, publicado: true, ...whereExtra, [Op.or]: vis.evaluacion }, attributes: ['id'], raw: true, transaction })
     ]);
 
     const contentIds = contents.map(c => `content_${c.id}`);
@@ -129,13 +129,13 @@ class ProgressService {
     const student = await User.findByPk(estudianteId, { attributes: ['docente_id'], raw: true });
     const docenteId = student ? student.docente_id : null;
     const whereExtra = docenteId ? { docente_id: docenteId } : {};
-    const condicionesGrupo = await GrupoService.recursoWhereEstudiante(estudianteId);
+    const vis = await GrupoService.condicionesVisibilidad(estudianteId);
 
     const modulosSet = new Set();
     const [contents, games, evaluations] = await Promise.all([
-      Content.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true }),
-      Game.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true }),
-      Evaluation.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: condicionesGrupo }, attributes: ['modulo'], raw: true })
+      Content.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: vis.contenido }, attributes: ['modulo'], raw: true }),
+      Game.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: vis.juego }, attributes: ['modulo'], raw: true }),
+      Evaluation.findAll({ where: { publicado: true, ...whereExtra, [Op.or]: vis.evaluacion }, attributes: ['modulo'], raw: true })
     ]);
     for (const c of contents) if (c.modulo) modulosSet.add(c.modulo);
     for (const g of games) if (g.modulo) modulosSet.add(g.modulo);

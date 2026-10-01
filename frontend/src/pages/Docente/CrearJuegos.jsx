@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import './CrearJuegos.css';
 import GameTypeCard from '../../components/juegos/GameTypeCard';
 import DynamicGameForm from '../../components/juegos/DynamicGameForm';
@@ -21,7 +21,7 @@ const CrearJuegos = () => {
     descripcion: '',
     puntaje_max: 100,
     configuracion: null,
-    grupo_id: ''
+    grupo_ids: []
   });
 
   const [modulos, setModulos] = useState([]);
@@ -148,9 +148,8 @@ const CrearJuegos = () => {
         delete payload.modulo_content_id;
       }
 
-      if (!payload.grupo_id) {
-        delete payload.grupo_id;
-      }
+      // Array vacío = visible para todos los grupos.
+      payload.grupo_ids = Array.isArray(payload.grupo_ids) ? payload.grupo_ids : [];
 
       await api.post('/juegos', payload);
 
@@ -263,9 +262,9 @@ const CrearJuegos = () => {
               />
             </div>
 
-            <GrupoSelect
-              value={formValues.grupo_id}
-              onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
+            <GrupoMultiSelect
+              value={formValues.grupo_ids}
+              onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
             />
           </div>
 

@@ -3,21 +3,46 @@ const Evaluation = require('../models/evaluation.model');
 const Game = require('../models/game.model');
 const StudentProgress = require('../models/studentProgress.model');
 const Group = require('../models/grupo.model');
+const GrupoService = require('./grupo.service');
 const ProgressService = require('./progress.service');
 const NotificationService = require('./notification.service');
 const { sequelize } = require('../config/database');
 const { Op } = require('sequelize');
 
+// Include estándar para exponer los grupos asignados (sustituye al antiguo as: 'grupo').
+const INCLUDE_GRUPOS = [{
+  model: Group,
+  as: 'grupos',
+  attributes: ['id', 'materia', 'nombre'],
+  through: { attributes: [] },
+}];
+
 class ContentService {
+  /**
+   * Separa `grupo_ids` de los atributos del modelo y valida que los grupos
+   * pertenezcan al docente. Devuelve { datos, grupoIds }.
+   */
+  static async _prepararGrupos(data, docenteId) {
+    const pedido = GrupoService.parseGrupoIds(data.grupo_ids);
+    const datos = { ...data };
+    delete datos.grupo_ids;
+    delete datos.grupo_id; // campo obsoleto (ya no existe en el modelo)
+    const grupoIds = await GrupoService.validarGruposDelDocente(docenteId, pedido);
+    return { datos, grupoIds };
+  }
+
   static async crearContenido(data) {
     try {
-      const nuevoContenido = await Content.create(data);
-      if (data.publicado) {
-        await NotificationService.notifyNewContent(data.docente_id, nuevoContenido.titulo, nuevoContenido.modulo, data.grupo_id || null).catch(e => {
+      const { datos, grupoIds } = await ContentService._prepararGrupos(data, data.docente_id);
+      const nuevoContenido = await Content.create(datos);
+      await GrupoService.sincronizarGruposRecurso('contenido', nuevoContenido.id, grupoIds);
+      if (datos.publicado) {
+        await NotificationService.notifyNewContent(datos.docente_id, nuevoContenido.titulo, nuevoContenido.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewContent (crearContenido):', e.message);
           console.error(e);
         });
       }
+      nuevoContenido.grupo_ids = grupoIds;
       return nuevoContenido;
     } catch (error) {
       throw new Error(`Error al crear el contenido: ${error.message}`);
@@ -28,7 +53,7 @@ class ContentService {
     try {
       return await Content.findAll({
         where: filtros,
-        include: [{ model: Group, as: 'grupo', attributes: ['id', 'materia', 'nombre'] }]
+        include: INCLUDE_GRUPOS,
       });
     } catch (error) {
       throw new Error(`Error al obtener los contenidos: ${error.message}`);
@@ -37,7 +62,7 @@ class ContentService {
 
   static async obtenerContenidoPorId(id) {
     try {
-      const contenido = await Content.findByPk(id);
+      const contenido = await Content.findByPk(id, { include: INCLUDE_GRUPOS });
       if (!contenido) throw new Error('Contenido no encontrado');
       return contenido;
     } catch (error) {
@@ -51,11 +76,20 @@ class ContentService {
       if (docenteId) where.docente_id = docenteId;
       const contenido = await Content.findOne({ where });
       if (!contenido) throw new Error('Contenido no encontrado');
+
+      // El contenido debe existir para poder validar los grupos enviados.
+      const { datos, grupoIds } = await ContentService._prepararGrupos(data, contenido.docente_id);
+      const cambianGrupos = Object.prototype.hasOwnProperty.call(data, 'grupo_ids');
+
       if (contenido.publicado) {
-        const isOnlyPublishChange = Object.keys(data).length === 1 && data.publicado !== undefined;
+        const isOnlyPublishChange = Object.keys(datos).length === 1 && datos.publicado !== undefined;
         if (isOnlyPublishChange) {
           const wasPublished = contenido.publicado;
-          await contenido.update({ publicado: data.publicado });
+          await contenido.update({ publicado: datos.publicado });
+          if (cambianGrupos) {
+            await GrupoService.sincronizarGruposRecurso('contenido', contenido.id, grupoIds);
+            contenido.grupo_ids = grupoIds;
+          }
           if (wasPublished && !data.publicado) {
             await Evaluation.update(
               { publicado: false },
@@ -120,9 +154,13 @@ class ContentService {
         throw new Error('publicado: No se puede modificar este contenido porque ya está publicado.');
       }
       const estabaPublicado = contenido.publicado;
-      await contenido.update(data);
-      if (data.publicado === true && !estabaPublicado) {
-        await NotificationService.notifyNewContent(contenido.docente_id, contenido.titulo, contenido.modulo, contenido.grupo_id || null).catch(e => {
+      await contenido.update(datos);
+      if (cambianGrupos) {
+        await GrupoService.sincronizarGruposRecurso('contenido', contenido.id, grupoIds);
+        contenido.grupo_ids = grupoIds;
+      }
+      if (datos.publicado === true && !estabaPublicado) {
+        await NotificationService.notifyNewContent(contenido.docente_id, contenido.titulo, contenido.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewContent (actualizarContenido):', e.message);
           console.error(e);
         });
@@ -147,6 +185,9 @@ class ContentService {
         { publicado: false, contenido_apoyo_id: null },
         { where: { contenido_apoyo_id: id } }
       );
+
+      // Limpiar los vínculos de grupos (evita filas huérfanas en la pivote).
+      await GrupoService.sincronizarGruposRecurso('contenido', id, []);
 
       const modulo = contenido.modulo;
       const affectedStudents = await StudentProgress.findAll({

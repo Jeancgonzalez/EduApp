@@ -37,9 +37,13 @@ const Evaluaciones = () => {
       .catch(() => setAllGrupos([]));
   }, []);
 
+  // Sin grupos asignados = visible para todos, así que aparece siempre que
+  // hay un filtro activo. Con grupos, coincide si comparte alguno.
   const evaluacionesFiltradas = evaluaciones.filter(e => {
     if (!filterGrupo) return true;
-    return (e.grupo_id === parseInt(filterGrupo, 10)) || (!e.grupo_id && e.grupo_id !== 0);
+    const ids = Array.isArray(e.grupos) ? e.grupos.map(g => g.id) : (e.grupo_ids || []);
+    if (ids.length === 0) return true;
+    return ids.includes(parseInt(filterGrupo, 10));
   });
 
   const handleTogglePublicar = async (evaluacion) => {
@@ -149,7 +153,11 @@ const Evaluaciones = () => {
               <h3 className="card-titulo">{evaluacion.titulo}</h3>
               <div className="card-info">
                   <span className="badge badge-modulo"><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Módulo {evaluacion.modulo}</span>
-                  {evaluacion.grupo && <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupo: {evaluacion.grupo.materia} – {evaluacion.grupo.nombre}</span>}
+                  {Array.isArray(evaluacion.grupos) && evaluacion.grupos.length > 0 ? (
+                    <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupos: {evaluacion.grupos.map(g => `${g.materia} – ${g.nombre}`).join(' · ')}</span>
+                  ) : (
+                    <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Todos los estudiantes</span>
+                  )}
                   {evaluacion.requiere_contenido_apoyo && (
                       <span className="badge badge-tiempo" style={{ background: '#fef3c7', color: '#92400e' }}><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />Contenido de apoyo</span>
                     )}

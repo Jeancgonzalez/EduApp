@@ -26,7 +26,7 @@ class RespuestasController {
         return res.status(404).json({ success: false, message: 'Evaluación no encontrada o no disponible para tu docente.' });
       }
 
-      const acceso = await GrupoService.estudianteAccedeRecurso(estudianteId, evaluacion);
+      const acceso = await GrupoService.estudianteAccedeRecurso(estudianteId, evaluacion, 'evaluacion');
       if (!acceso) {
         return res.status(404).json({ success: false, message: 'Evaluación no encontrada o no disponible para ti.' });
       }
@@ -92,7 +92,7 @@ class RespuestasController {
         return res.status(404).json({ success: false, message: 'Juego no encontrado o no disponible para tu docente.' });
       }
 
-      const accesoJuego = await GrupoService.estudianteAccedeRecurso(estudianteId, juego);
+      const accesoJuego = await GrupoService.estudianteAccedeRecurso(estudianteId, juego, 'juego');
       if (!accesoJuego) {
         return res.status(404).json({ success: false, message: 'Juego no encontrado o no disponible para ti.' });
       }

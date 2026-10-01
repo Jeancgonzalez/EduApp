@@ -33,9 +33,13 @@ const Contenidos = () => {
       .catch(() => setAllGrupos([]));
   }, []);
 
+  // Sin grupos asignados = visible para todos, así que aparece siempre que
+  // hay un filtro activo. Con grupos, coincide si comparte alguno.
   const contenidosFiltrados = contenidos.filter(c => {
     if (!filterGrupo) return true;
-    return (c.grupo_id === parseInt(filterGrupo, 10)) || (!c.grupo_id && c.grupo_id !== 0);
+    const ids = Array.isArray(c.grupos) ? c.grupos.map(g => g.id) : (c.grupo_ids || []);
+    if (ids.length === 0) return true;
+    return ids.includes(parseInt(filterGrupo, 10));
   });
 
   if (loading) {
@@ -91,7 +95,11 @@ const Contenidos = () => {
               <div className="card-info">
                 <span className="badge badge-tipo">{({ video: 'Video', pdf: 'PDF', enlace: 'Enlace', texto: 'Lección', documento: 'Word' })[contenido.tipo] || contenido.tipo}</span>
                 <span className="badge badge-modulo"><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Módulo {contenido.modulo}</span>
-                {contenido.grupo && <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupo: {contenido.grupo.materia} – {contenido.grupo.nombre}</span>}
+                {Array.isArray(contenido.grupos) && contenido.grupos.length > 0 ? (
+                  <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupos: {contenido.grupos.map(g => `${g.materia} – ${g.nombre}`).join(' · ')}</span>
+                ) : (
+                  <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Todos los estudiantes</span>
+                )}
                 {contenido.publicado && <span className="badge badge-publicado"><MdCheckCircle style={{ marginRight: '0.25rem' }} /> Publicado</span>}
               </div>
               {contenido.descripcion && (

@@ -11,11 +11,6 @@ const Evaluation = sequelize.define('Evaluation', {
     allowNull: true
   },
   docente_id: { type: DataTypes.INTEGER, allowNull: false },
-  grupo_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: 'Grupo al que está dirigida la evaluación. NULL = visible para todos los estudiantes del docente'
-  },
   tiempoLimitado: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   tiempoMinutos: { type: DataTypes.INTEGER, allowNull: true },
   publicado: {

@@ -64,7 +64,7 @@ class EvaluationController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion');
         filtros[Op.or] = condiciones;
       }
       const evaluaciones = await EvaluationService.obtenerEvaluaciones(filtros);
@@ -122,7 +122,7 @@ class EvaluationController {
       where.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         where.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion');
         where[Op.or] = condiciones;
       }
       const evaluacion = await EvaluationService.obtenerEvaluacionPorId(id, where);

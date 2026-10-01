@@ -372,9 +372,16 @@ class TeacherController {
     }
 
     const [allContents, allGames, allEvaluations] = await Promise.all([
-      Content.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo', 'grupo_id'], raw: true }),
-      Game.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo', 'grupo_id', 'puntaje_max'], raw: true }),
-      Evaluation.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo', 'grupo_id'], raw: true })
+      Content.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo'], raw: true }),
+      Game.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo', 'puntaje_max'], raw: true }),
+      Evaluation.findAll({ where: { publicado: true, docente_id: docenteId }, attributes: ['id', 'modulo'], raw: true })
+    ]);
+
+    // Grupos asignados por recurso (muchos-a-muchos). Sin grupos = visible para todos.
+    const [mapaGruposC, mapaGruposJ, mapaGruposE] = await Promise.all([
+      GrupoService.mapaGruposPorRecurso('contenido', allContents.map(c => c.id)),
+      GrupoService.mapaGruposPorRecurso('juego', allGames.map(g => g.id)),
+      GrupoService.mapaGruposPorRecurso('evaluacion', allEvaluations.map(e => e.id)),
     ]);
 
     const contentToModule = {};
@@ -456,10 +463,11 @@ class TeacherController {
         const prog = studentProgress[mod] || {};
         const comp = studentCompletions[mod] || { contents: new Set(), games: new Set(), evals: new Set() };
 
-        // Totales por estudiante: solo recursos visibles para este estudiante (grupo_id null o en sus grupos)
-        const totContents = allContents.filter(c => c.modulo === mod && (c.grupo_id === null || estudianteGrupoIds.has(c.grupo_id)));
-        const totGames = allGames.filter(g => g.modulo === mod && (g.grupo_id === null || estudianteGrupoIds.has(g.grupo_id)));
-        const totEvals = allEvaluations.filter(e => e.modulo === mod && (e.grupo_id === null || estudianteGrupoIds.has(e.grupo_id)));
+        // Totales por estudiante: solo recursos visibles para este estudiante
+        // (sin grupos asignados, o con al menos uno de sus grupos).
+        const totContents = allContents.filter(c => c.modulo === mod && GrupoService.esVisibleParaGrupos(mapaGruposC, c.id, estudianteGrupoIds));
+        const totGames = allGames.filter(g => g.modulo === mod && GrupoService.esVisibleParaGrupos(mapaGruposJ, g.id, estudianteGrupoIds));
+        const totEvals = allEvaluations.filter(e => e.modulo === mod && GrupoService.esVisibleParaGrupos(mapaGruposE, e.id, estudianteGrupoIds));
 
         const contentsCount = totContents.length;
         const gamesCount = totGames.length;

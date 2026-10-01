@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import RichTextEditor from '../../components/RichTextEditor';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import './CrearContenido.css';
 
 const TIPO_CONFIG = {
@@ -48,7 +48,7 @@ const CrearContenido = () => {
     tipo: '',
     contenido: '',
     modulo: '',
-    grupo_id: ''
+    grupo_ids: []
   });
   const [archivo, setArchivo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -130,9 +130,9 @@ const CrearContenido = () => {
       formData.append('tipo', tipoActual);
       formData.append('contenido', formValues.contenido);
       formData.append('modulo', formValues.modulo);
-      if (formValues.grupo_id) {
-        formData.append('grupo_id', formValues.grupo_id);
-      }
+      // Array vacío = visible para todos. Se manda como JSON porque FormData
+      // solo admite strings y el backend acepta CSV o JSON en parseGrupoIds.
+      formData.append('grupo_ids', JSON.stringify(formValues.grupo_ids || []));
       formData.append('docente_id', user?.id || '');
       if (archivo) {
         formData.append('archivo', archivo);
@@ -141,7 +141,7 @@ const CrearContenido = () => {
       await api.post('/contenidos', formData);
 
       setSuccess('Contenido creado exitosamente.');
-      setFormValues({ titulo: '', descripcion: '', tipo: '', contenido: '', modulo: '', grupo_id: '' });
+      setFormValues({ titulo: '', descripcion: '', tipo: '', contenido: '', modulo: '', grupo_ids: [] });
       setArchivo(null);
       setTimeout(() => navigate('/contenidos'), 800);
     } catch (err) {
@@ -283,9 +283,9 @@ const CrearContenido = () => {
               />
             </label>
 
-            <GrupoSelect
-              value={formValues.grupo_id}
-              onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
+            <GrupoMultiSelect
+              value={formValues.grupo_ids}
+              onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
             />
 
             {error && <div className="form-error">{error}</div>}

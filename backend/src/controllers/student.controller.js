@@ -23,8 +23,8 @@ class StudentController {
 
   static async getContenidosPublicados(req, res) {
     try {
-      const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
-      const contenidos = await Content.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
+          const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido');
+          const contenidos = await Content.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
       res.status(200).json({ success: true, data: contenidos });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
@@ -33,8 +33,8 @@ class StudentController {
 
   static async getJuegosPublicados(req, res) {
     try {
-      const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
-      const juegos = await Game.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
+          const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'juego');
+          const juegos = await Game.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
       const progressRecords = await StudentProgress.findAll({
         where: { estudiante_id: req.user.id, juego_id: { [Op.ne]: null } },
         raw: true
@@ -64,8 +64,8 @@ class StudentController {
 
   static async getEvaluacionesPublicadas(req, res) {
     try {
-      const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id);
-      const evaluaciones = await Evaluation.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
+          const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion');
+          const evaluaciones = await Evaluation.findAll({ where: { publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones } });
       const progressRecords = await StudentProgress.findAll({
         where: { estudiante_id: req.user.id, evaluacion_id: { [Op.ne]: null } },
         raw: true
@@ -98,8 +98,8 @@ class StudentController {
       const estudianteId = req.user.id;
       const { id } = req.params;
 
-      const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
-      const contenido = await Content.findOne({ where: { id, docente_id: req.user.docente_id, publicado: true, [Op.or]: condiciones } });
+          const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'contenido');
+          const contenido = await Content.findOne({ where: { id, docente_id: req.user.docente_id, publicado: true, [Op.or]: condiciones } });
       if (!contenido) {
         return res.status(404).json({ success: false, message: 'Contenido no encontrado o no disponible para ti.' });
       }
@@ -161,7 +161,7 @@ class StudentController {
       const estudianteId = req.user.id;
       const { id } = req.params;
 
-      const evalCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+      const evalCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion');
       const evaluacion = await Evaluation.findOne({
         where: { id, publicado: true, docente_id: req.user.docente_id, [Op.or]: evalCondiciones }
       });
@@ -170,7 +170,7 @@ class StudentController {
         return res.status(404).json({ success: false, message: 'Esta evaluación no tiene contenido de apoyo.' });
       }
 
-      const contenidoCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+      const contenidoCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'contenido');
       const contenido = await Content.findOne({
         where: { id: evaluacion.contenido_apoyo_id, publicado: true, docente_id: req.user.docente_id, [Op.or]: contenidoCondiciones }
       });
@@ -201,7 +201,7 @@ class StudentController {
       const docenteId = req.user.docente_id;
       const { id } = req.params;
 
-      const evalCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+      const evalCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion');
       const evaluacion = await Evaluation.findOne({
         where: { id, publicado: true, docente_id: docenteId, [Op.or]: evalCondiciones }
       });
@@ -214,7 +214,7 @@ class StudentController {
         return res.status(400).json({ success: false, message: 'Esta evaluación no requiere contenido de apoyo.' });
       }
 
-      const contenidoCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+      const contenidoCondiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'contenido');
       const contenido = await Content.findOne({
         where: { id: evaluacion.contenido_apoyo_id, publicado: true, docente_id: docenteId, [Op.or]: contenidoCondiciones }
       });
@@ -244,7 +244,7 @@ class StudentController {
       const estudianteId = req.user.id;
       const { id } = req.params;
 
-      const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
+      const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion');
       const evaluacion = await Evaluation.findOne({
         where: { id, publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones }
       });
@@ -286,9 +286,9 @@ class StudentController {
       const estudianteId = req.user.id;
       const { id } = req.params;
 
-      const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId);
-      const evaluacion = await Evaluation.findOne({
-        where: { id, publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones },
+          const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion');
+          const evaluacion = await Evaluation.findOne({
+            where: { id, publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones },
         include: [{ model: Question, as: 'preguntas' }]
       });
 

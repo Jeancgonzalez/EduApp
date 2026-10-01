@@ -9,11 +9,6 @@ const Content = sequelize.define('Content', {
   contenido: { type: DataTypes.TEXT, allowNull: false, comment: 'URL o texto del contenido' },
   modulo: { type: DataTypes.STRING, allowNull: false },
   docente_id: { type: DataTypes.INTEGER, allowNull: false },
-  grupo_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: 'Grupo al que está dirigido el contenido. NULL = visible para todos los estudiantes del docente'
-  },
   publicado: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

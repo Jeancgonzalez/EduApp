@@ -10,25 +10,33 @@ const {
 class NotificationService {
   /**
    * Estudiantes vinculados al docente que reciben notificaciones.
-   * Si se indica grupoId, solo los estudiantes de ese grupo.
+   * Si se indican grupoIds, solo los estudiantes de esos grupos (unión, sin duplicados).
+   * Si se omite o va vacío, se notifica a todos los estudiantes del docente.
    * Se conserva la validación de correo verificado (emailVerified: true).
    */
-  static async _getStudents(docenteId, grupoId = null) {
-    let where = {
+  static async _getStudents(docenteId, grupoIds = null) {
+    const where = {
       role: 'student',
       docente_id: docenteId,
       email: { [Op.ne]: null },
     };
 
-    if (grupoId) {
+    const ids = (Array.isArray(grupoIds) ? grupoIds : grupoIds ? [grupoIds] : [])
+      .map((n) => Number(n))
+      .filter((n) => Number.isInteger(n) && n > 0);
+
+    const detalle = ids.length ? ` (grupos: ${[...new Set(ids)].join(', ')})` : ' (todos los grupos)';
+
+    if (ids.length > 0) {
       const filas = await GroupStudent.findAll({
-        where: { grupo_id: grupoId },
+        where: { grupo_id: { [Op.in]: [...new Set(ids)] } },
         attributes: ['estudiante_id'],
         raw: true,
       });
-      const ids = filas.map(f => f.estudiante_id);
-      if (ids.length === 0) return [];
-      where.id = { [Op.in]: ids };
+      // Un Set evita duplicar al estudiante que pertenece a varios grupos a la vez.
+      const studentIds = [...new Set(filas.map((f) => f.estudiante_id))];
+      if (studentIds.length === 0) return [];
+      where.id = { [Op.in]: studentIds };
     }
 
     const students = await User.findAll({
@@ -36,16 +44,16 @@ class NotificationService {
       attributes: ['id', 'name', 'email'],
       raw: true,
     });
-    console.log(`[Notificación] Estudiantes vinculados encontrados para docente ${docenteId}${grupoId ? ` (grupo ${grupoId})` : ''}: ${students.length}`);
+    console.log(`[Notificación] Estudiantes vinculados encontrados para docente ${docenteId}${detalle}: ${students.length}`);
     if (students.length > 0) {
       console.log(`[Notificación] Correos: ${students.map(s => s.email).join(', ')}`);
     }
     return students;
   }
 
-  static async notifyNewContent(docenteId, tituloContenido, modulo, grupoId = null) {
+  static async notifyNewContent(docenteId, tituloContenido, modulo, grupoIds = null) {
     console.log(`[Notificación] Iniciando notificación de NUEVO CONTENIDO "${tituloContenido}" (módulo: ${modulo}) para docente ${docenteId}`);
-    const students = await this._getStudents(docenteId, grupoId);
+    const students = await this._getStudents(docenteId, grupoIds);
     if (students.length === 0) {
       console.log('[Notificación] No hay estudiantes vinculados. No se envían correos.');
       return [];
@@ -71,9 +79,9 @@ class NotificationService {
     return results;
   }
 
-  static async notifyNewEvaluation(docenteId, tituloEvaluacion, modulo, grupoId = null) {
+  static async notifyNewEvaluation(docenteId, tituloEvaluacion, modulo, grupoIds = null) {
     console.log(`[Notificación] Iniciando notificación de NUEVA EVALUACIÓN "${tituloEvaluacion}" (módulo: ${modulo}) para docente ${docenteId}`);
-    const students = await this._getStudents(docenteId, grupoId);
+    const students = await this._getStudents(docenteId, grupoIds);
     if (students.length === 0) {
       console.log('[Notificación] No hay estudiantes vinculados. No se envían correos.');
       return [];
@@ -99,9 +107,9 @@ class NotificationService {
     return results;
   }
 
-  static async notifyNewGame(docenteId, tituloJuego, modulo, grupoId = null) {
+  static async notifyNewGame(docenteId, tituloJuego, modulo, grupoIds = null) {
     console.log(`[Notificación] Iniciando notificación de NUEVO JUEGO "${tituloJuego}" (módulo: ${modulo}) para docente ${docenteId}`);
-    const students = await this._getStudents(docenteId, grupoId);
+    const students = await this._getStudents(docenteId, grupoIds);
     if (students.length === 0) {
       console.log('[Notificación] No hay estudiantes vinculados. No se envían correos.');
       return [];

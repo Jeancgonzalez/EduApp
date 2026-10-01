@@ -301,49 +301,67 @@ const startServer = async () => {
       console.warn('⚠️ No se pudo verificar/agregar la columna iad_obligatorio:', migrateError.message);
     }
 
-    // Agregar grupo_id a contenidos si no existe
-    try {
-      const { QueryTypes } = require('sequelize');
-      const checkGrupoContent = await sequelize.query(
-        "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'contenidos' AND COLUMN_NAME = 'grupo_id'",
-        { type: QueryTypes.SELECT }
-      );
-      if (checkGrupoContent[0].cnt === 0) {
-        await sequelize.query("ALTER TABLE contenidos ADD COLUMN grupo_id INT NULL");
-        console.log('➕ Columna grupo_id agregada a contenidos.');
-      }
-    } catch (migrateError) {
-      console.warn('⚠️ No se pudo verificar/agregar la columna grupo_id a contenidos:', migrateError.message);
-    }
+    // --- Asignación de recursos a VARIOS grupos (pivotes) ----------------------
+    // Los recursos ya no guardan un único grupo_id: ahora cada uno puede dirigirse
+    // a varios grupos del docente mediante tablas pivote. "Sin grupos" = visible
+    // para todos los estudiantes del docente (equivalente al antiguo grupo_id NULL).
+    const PIVOTES_GRUPOS = [
+      { tabla: 'contenido_grupos', recursoTabla: 'contenidos', col: 'contenido_id' },
+      { tabla: 'juego_grupos', recursoTabla: 'juegos', col: 'juego_id' },
+      { tabla: 'evaluacion_grupos', recursoTabla: 'evaluaciones', col: 'evaluacion_id' },
+    ];
 
-    // Agregar grupo_id a juegos si no existe
-    try {
-      const { QueryTypes } = require('sequelize');
-      const checkGrupoJuego = await sequelize.query(
-        "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'juegos' AND COLUMN_NAME = 'grupo_id'",
-        { type: QueryTypes.SELECT }
-      );
-      if (checkGrupoJuego[0].cnt === 0) {
-        await sequelize.query("ALTER TABLE juegos ADD COLUMN grupo_id INT NULL");
-        console.log('➕ Columna grupo_id agregada a juegos.');
-      }
-    } catch (migrateError) {
-      console.warn('⚠️ No se pudo verificar/agregar la columna grupo_id a juegos:', migrateError.message);
-    }
+    for (const p of PIVOTES_GRUPOS) {
+      try {
+        const { QueryTypes } = require('sequelize');
+        const existe = await sequelize.query(
+          "SELECT COUNT(*) as cnt FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t",
+          { replacements: { t: p.tabla }, type: QueryTypes.SELECT }
+        );
+        if (existe[0].cnt === 0) {
+          // Se crea a mano (y no con sync) para poder declarar las FKs y el UNIQUE.
+          await sequelize.query(
+            `CREATE TABLE \`${p.tabla}\` (
+              id INT NOT NULL AUTO_INCREMENT,
+              \`${p.col}\` INT NOT NULL,
+              grupo_id INT NOT NULL,
+              PRIMARY KEY (id),
+              UNIQUE KEY \`${p.tabla}_${p.col}_grupo_id\` (\`${p.col}\`, grupo_id),
+              KEY \`${p.tabla}_grupo_id\` (grupo_id),
+              CONSTRAINT \`fk_${p.tabla}_grupo\` FOREIGN KEY (grupo_id)
+                REFERENCES \`grupos\` (id) ON DELETE CASCADE ON UPDATE CASCADE,
+              CONSTRAINT \`fk_${p.tabla}_recurso\` FOREIGN KEY (\`${p.col}\`)
+                REFERENCES \`${p.recursoTabla}\` (id) ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+          );
+          console.log(`➕ Tabla pivote ${p.tabla} creada.`);
+        }
 
-    // Agregar grupo_id a evaluaciones si no existe
-    try {
-      const { QueryTypes } = require('sequelize');
-      const checkGrupoEval = await sequelize.query(
-        "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'evaluaciones' AND COLUMN_NAME = 'grupo_id'",
-        { type: QueryTypes.SELECT }
-      );
-      if (checkGrupoEval[0].cnt === 0) {
-        await sequelize.query("ALTER TABLE evaluaciones ADD COLUMN grupo_id INT NULL");
-        console.log('➕ Columna grupo_id agregada a evaluaciones.');
+        // Backfill: mover el antiguo grupo_id a la pivote (solo si aún queda algo).
+        const colVieja = await sequelize.query(
+          "SELECT COUNT(*) as cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t AND COLUMN_NAME = 'grupo_id'",
+          { replacements: { t: p.recursoTabla }, type: QueryTypes.SELECT }
+        );
+        if (colVieja[0].cnt > 0) {
+          const conGrupo = await sequelize.query(
+            `SELECT COUNT(*) as cnt FROM \`${p.recursoTabla}\` WHERE grupo_id IS NOT NULL`,
+            { type: QueryTypes.SELECT }
+          );
+          if (conGrupo[0].cnt > 0) {
+            await sequelize.query(
+              `INSERT IGNORE INTO \`${p.tabla}\` (\`${p.col}\`, grupo_id)
+               SELECT id, grupo_id FROM \`${p.recursoTabla}\`
+               WHERE grupo_id IS NOT NULL
+                 AND grupo_id IN (SELECT id FROM \`grupos\`)`
+            );
+            console.log(`🔁 ${conGrupo[0].cnt} recurso(s) migrados de grupo_id a ${p.tabla}.`);
+          }
+          await sequelize.query(`ALTER TABLE \`${p.recursoTabla}\` DROP COLUMN grupo_id`);
+          console.log(`🗑️ Columna grupo_id eliminada de ${p.recursoTabla}.`);
+        }
+      } catch (pivotError) {
+        console.warn(`⚠️ No se pudo verificar la tabla pivote ${p.tabla}:`, pivotError.message);
       }
-    } catch (migrateError) {
-      console.warn('⚠️ No se pudo verificar/agregar la columna grupo_id a evaluaciones:', migrateError.message);
     }
 
     // 2. Si la conexión a DB fue exitosa, levantamos el servidor Express

@@ -44,12 +44,6 @@ const Game = sequelize.define('Game', {
     allowNull: false 
   },
 
-  grupo_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: 'Grupo al que está dirigido el juego. NULL = visible para todos los estudiantes del docente'
-  },
-
   puntaje_max: { 
     type: DataTypes.INTEGER, 
     allowNull: false, 

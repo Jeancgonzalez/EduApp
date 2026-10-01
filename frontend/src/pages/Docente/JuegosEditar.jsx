@@ -4,7 +4,7 @@ import api from '../../services/api';
 import GameTypeCard from '../../components/juegos/GameTypeCard';
 import DynamicGameForm from '../../components/juegos/DynamicGameForm';
 import GamePreview from '../../components/juegos/GamePreview';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import './JuegosEditar.css';
 import { MdSearch, MdGridOn, MdHelp, MdStyle, MdLink, MdSave } from 'react-icons/md';
 
@@ -26,7 +26,7 @@ const JuegosEditar = () => {
     modulo_content_id: '',
     descripcion: '',
     puntaje_max: 100,
-    grupo_id: ''
+    grupo_ids: []
   });
 
   useEffect(() => {
@@ -55,7 +55,9 @@ const JuegosEditar = () => {
           modulo_content_id: data.modulo_content_id ? String(data.modulo_content_id) : '',
           descripcion: data.descripcion || '',
           puntaje_max: data.puntaje_max || 100,
-          grupo_id: data.grupo_id ? String(data.grupo_id) : '',
+          grupo_ids: Array.isArray(data.grupos)
+            ? data.grupos.map(g => g.id)
+            : (data.grupo_ids || []),
         });
 
       } catch (err) {
@@ -123,9 +125,7 @@ const JuegosEditar = () => {
       if (!payload.modulo_content_id) {
         delete payload.modulo_content_id;
       }
-      if (!payload.grupo_id) {
-        delete payload.grupo_id;
-      }
+      payload.grupo_ids = Array.isArray(payload.grupo_ids) ? payload.grupo_ids : [];
       console.log('Enviando PUT /juegos/', id, payload);
       await api.put(`/juegos/${id}`, payload);
       setSuccess('Juego actualizado correctamente.');
@@ -243,10 +243,10 @@ const JuegosEditar = () => {
               />
             </div>
 
-            <GrupoSelect
-              value={formValues.grupo_id}
-              onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
-            />
+      <GrupoMultiSelect
+        value={formValues.grupo_ids}
+        onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
+      />
           </div>
 
           <div className="form-section">

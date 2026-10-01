@@ -5,7 +5,7 @@ import { FaTrashAlt } from 'react-icons/fa';
 import { MdLock, MdRocketLaunch } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import RichTextEditor from '../../components/RichTextEditor';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import LessonContent from '../../components/LessonContent';
 import './CrearContenido.css';
 
@@ -61,7 +61,7 @@ const ContenidoEditar = () => {
     tipo: '',
     modulo: '',
     contenido: '',
-    grupo_id: ''
+    grupo_ids: []
   });
   const [archivo, setArchivo] = useState(null);
 
@@ -86,7 +86,9 @@ const ContenidoEditar = () => {
           tipo: data.tipo || '',
           modulo: data.modulo || '',
           contenido: data.contenido || '',
-          grupo_id: data.grupo_id ? String(data.grupo_id) : '',
+          grupo_ids: Array.isArray(data.grupos)
+            ? data.grupos.map(g => g.id)
+            : (data.grupo_ids || []),
         });
 
       } catch (err) {
@@ -204,9 +206,9 @@ const ContenidoEditar = () => {
       formData.append('tipo', tipoActual);
       formData.append('contenido', formValues.contenido);
       formData.append('modulo', formValues.modulo);
-      if (formValues.grupo_id) {
-        formData.append('grupo_id', formValues.grupo_id);
-      }
+      // Siempre se envía: array vacío = visible para todos. Si se omitiera el
+      // campo, el backend no tocaría los grupos y no se podría desasignar.
+      formData.append('grupo_ids', JSON.stringify(formValues.grupo_ids || []));
       if (archivo) {
         formData.append('archivo', archivo);
       }
@@ -437,9 +439,9 @@ const ContenidoEditar = () => {
                 />
               </label>
 
-              <GrupoSelect
-                value={formValues.grupo_id}
-                onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
+              <GrupoMultiSelect
+                value={formValues.grupo_ids}
+                onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
               />
 
               {error && <div className="form-error">{error}</div>}

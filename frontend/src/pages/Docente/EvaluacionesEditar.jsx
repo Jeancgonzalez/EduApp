@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import GrupoSelect from '../../components/GrupoSelect';
+import GrupoMultiSelect from '../../components/GrupoMultiSelect';
 import './EvaluacionesEditar.css';
 
 const EvaluacionesEditar = () => {
@@ -27,7 +27,7 @@ const EvaluacionesEditar = () => {
     contenido_apoyo_id: '',
     limitarIntentos: false,
     max_intentos: '',
-    grupo_id: ''
+    grupo_ids: []
   });
   const [preguntas, setPreguntas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +68,9 @@ const EvaluacionesEditar = () => {
           contenido_apoyo_id: data.contenido_apoyo_id ? String(data.contenido_apoyo_id) : '',
           limitarIntentos: data.max_intentos !== null && data.max_intentos !== undefined,
           max_intentos: data.max_intentos ?? '',
-          grupo_id: data.grupo_id ? String(data.grupo_id) : ''
+          grupo_ids: Array.isArray(data.grupos)
+            ? data.grupos.map(g => g.id)
+            : (data.grupo_ids || [])
         });
 
         if (data.requiere_contenido_apoyo && data.modulo) {
@@ -316,9 +318,8 @@ const EvaluacionesEditar = () => {
         delete updateData.contenido_apoyo_id;
       }
 
-      if (!updateData.grupo_id) {
-        delete updateData.grupo_id;
-      }
+      // Array vacío = visible para todos los grupos.
+      updateData.grupo_ids = Array.isArray(updateData.grupo_ids) ? updateData.grupo_ids : [];
 
       updateData.max_intentos = formValues.limitarIntentos
         ? Number(formValues.max_intentos)
@@ -411,10 +412,10 @@ const EvaluacionesEditar = () => {
             )}
           </label>
 
-          <GrupoSelect
-            value={formValues.grupo_id}
-            onChange={(grupoId) => setFormValues((prev) => ({ ...prev, grupo_id: grupoId }))}
-          />
+      <GrupoMultiSelect
+        value={formValues.grupo_ids}
+        onChange={(grupoIds) => setFormValues((prev) => ({ ...prev, grupo_ids: grupoIds }))}
+      />
 
           <label className="checkbox-label">
             <input

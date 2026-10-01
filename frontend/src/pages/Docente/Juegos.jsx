@@ -43,9 +43,13 @@ const Juegos = () => {
     }
   };
 
+  // Sin grupos asignados = visible para todos, así que aparece siempre que
+  // hay un filtro activo. Con grupos, coincide si comparte alguno.
   const juegosFiltrados = juegos.filter(j => {
     if (!filterGrupo) return true;
-    return (j.grupo_id === parseInt(filterGrupo, 10)) || (!j.grupo_id && j.grupo_id !== 0);
+    const ids = Array.isArray(j.grupos) ? j.grupos.map(g => g.id) : (j.grupo_ids || []);
+    if (ids.length === 0) return true;
+    return ids.includes(parseInt(filterGrupo, 10));
   });
 
   const handleEliminar = async (juego) => {
@@ -142,7 +146,11 @@ const Juegos = () => {
               <div className="card-info">
                 <span className="badge badge-tipo">{juego.tipo?.replace(/_/g, ' ')}</span>
                 <span className="badge badge-modulo"><MdMenuBook style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Módulo {juego.modulo}</span>
-                {juego.grupo && <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> {juego.grupo.materia} – {juego.grupo.nombre}</span>}
+                {Array.isArray(juego.grupos) && juego.grupos.length > 0 ? (
+                  <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Grupos: {juego.grupos.map(g => `${g.materia} – ${g.nombre}`).join(' · ')}</span>
+                ) : (
+                  <span className="badge badge-grupo"><MdGroup style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} /> Todos los estudiantes</span>
+                )}
                 {juego.publicado && <span className="badge badge-publicado"><MdCheckCircle style={{ marginRight: '0.25rem' }} /> Publicado</span>}
               </div>
               {juego.descripcion && (

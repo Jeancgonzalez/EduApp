@@ -2,6 +2,7 @@ const Evaluation = require('../models/evaluation.model');
 const Content = require('../models/content.model');
 const Question = require('../models/question.model');
 const Group = require('../models/grupo.model');
+const GrupoService = require('./grupo.service');
 const NotificationService = require('./notification.service');
 const { sequelize } = require('../config/database');
 
@@ -62,6 +63,12 @@ static async crearEvaluacion(data) {
       const { preguntas, ...evaluacionData } = data;
 
       EvaluationService._normalizarMaxIntentos(evaluacionData);
+      const grupoIds = await GrupoService.validarGruposDelDocente(
+        evaluacionData.docente_id,
+        GrupoService.parseGrupoIds(evaluacionData.grupo_ids)
+      );
+      delete evaluacionData.grupo_ids;
+      delete evaluacionData.grupo_id; // campo obsoleto (ya no existe en el modelo)
 
       if (DEBUG) {
         console.log('📋 Datos recibidos:', JSON.stringify(data, null, 2));
@@ -70,6 +77,7 @@ static async crearEvaluacion(data) {
       
       // Creamos la evaluación primero
       const nuevaEvaluacion = await Evaluation.create(evaluacionData, { transaction: t });
+      await GrupoService.sincronizarGruposRecurso('evaluacion', nuevaEvaluacion.id, grupoIds, t);
       
       // Si hay preguntas, las creamos
       if (preguntas && preguntas.length > 0) {
@@ -96,12 +104,13 @@ static async crearEvaluacion(data) {
       await t.commit();
 
       if (data.publicado) {
-        await NotificationService.notifyNewEvaluation(nuevaEvaluacion.docente_id, nuevaEvaluacion.titulo, nuevaEvaluacion.modulo, data.grupo_id || null).catch(e => {
+        await NotificationService.notifyNewEvaluation(nuevaEvaluacion.docente_id, nuevaEvaluacion.titulo, nuevaEvaluacion.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewEvaluation (crearEvaluacion):', e.message);
           console.error(e);
         });
       }
 
+      nuevaEvaluacion.grupo_ids = grupoIds;
       return nuevaEvaluacion;
     } catch (error) {
       await t.rollback();
@@ -125,13 +134,29 @@ static async crearEvaluacion(data) {
       if (!evaluacion) {
         throw new Error('Evaluación no encontrada');
       }
+
+      const cambianGrupos = Object.prototype.hasOwnProperty.call(data, 'grupo_ids');
+      let grupoIds = null;
+      if (cambianGrupos) {
+        grupoIds = await GrupoService.validarGruposDelDocente(
+          evaluacion.docente_id,
+          GrupoService.parseGrupoIds(evaluacionData.grupo_ids)
+        );
+        delete evaluacionData.grupo_ids;
+      }
+      delete evaluacionData.grupo_id; // campo obsoleto (ya no existe en el modelo)
+
       // Si la evaluación ya está publicada, solo permitimos "despublicarla" (cambiar publicado a false)
       // No permitimos editar otros campos mientras esté publicada.
       if (evaluacion.publicado) {
-        const isOnlyPublishChange = Object.keys(data).length === 1 && data.publicado !== undefined;
+        const isOnlyPublishChange = Object.keys(evaluacionData).length === 1 && evaluacionData.publicado !== undefined;
 
         if (isOnlyPublishChange) {
-          await evaluacion.update({ publicado: data.publicado }, { transaction: t });
+          await evaluacion.update({ publicado: evaluacionData.publicado }, { transaction: t });
+          if (cambianGrupos) {
+            await GrupoService.sincronizarGruposRecurso('evaluacion', evaluacion.id, grupoIds, t);
+            evaluacion.grupo_ids = grupoIds;
+          }
           await t.commit();
           return evaluacion;
         }
@@ -176,6 +201,11 @@ static async crearEvaluacion(data) {
 
       await evaluacion.update(evaluacionData, { transaction: t });
 
+      if (cambianGrupos) {
+        await GrupoService.sincronizarGruposRecurso('evaluacion', evaluacion.id, grupoIds, t);
+        evaluacion.grupo_ids = grupoIds;
+      }
+
       if (preguntas && Array.isArray(preguntas)) {
         await Question.destroy({ where: { evaluacion_id: id }, transaction: t });
 
@@ -198,7 +228,10 @@ static async crearEvaluacion(data) {
 
       // Notificar solo cuando la evaluación pasó de despublicada a publicada.
       if (evaluacion.publicado) {
-        await NotificationService.notifyNewEvaluation(evaluacion.docente_id, evaluacion.titulo, evaluacion.modulo, evaluacion.grupo_id || null).catch(e => {
+        const gruposNotificar = grupoIds !== null
+          ? grupoIds
+          : await GrupoService.obtenerGruposDeRecurso('evaluacion', evaluacion.id).then(gs => gs.map(g => g.id));
+        await NotificationService.notifyNewEvaluation(evaluacion.docente_id, evaluacion.titulo, evaluacion.modulo, gruposNotificar).catch(e => {
           console.error('[Notificación] Error global en notifyNewEvaluation (actualizarEvaluacion):', e.message);
           console.error(e);
         });
@@ -208,6 +241,11 @@ static async crearEvaluacion(data) {
         include: [{
           model: Question,
           as: 'preguntas'
+        }, {
+          model: Group,
+          as: 'grupos',
+          attributes: ['id', 'materia', 'nombre'],
+          through: { attributes: [] }
         }]
       });
     } catch (error) {
@@ -224,7 +262,7 @@ static async crearEvaluacion(data) {
     try {
       const evaluaciones = await Evaluation.findAll({
         where: filtros,
-        include: [{ model: Group, as: 'grupo', attributes: ['id', 'materia', 'nombre'] }]
+        include: [{ model: Group, as: 'grupos', attributes: ['id', 'materia', 'nombre'], through: { attributes: [] } }]
       });
       return evaluaciones;
     } catch (error) {
@@ -239,12 +277,12 @@ static async crearEvaluacion(data) {
     try {
       const evaluacion = await Evaluation.findOne({
         where: { id, ...extraWhere },
-        include: [{
-          model: Question,
-          as: 'preguntas'
-        }]
+        include: [
+          { model: Group, as: 'grupos', attributes: ['id', 'materia', 'nombre'], through: { attributes: [] } },
+          { model: Question, as: 'preguntas' }
+        ]
       });
-      
+
       if (!evaluacion) {
         throw new Error('Evaluación no encontrada');
       }
@@ -265,6 +303,7 @@ static async crearEvaluacion(data) {
       if (evaluacion.publicado) {
         throw new Error('publicado: No se puede eliminar esta evaluación porque ya está publicada.');
       }
+      await GrupoService.sincronizarGruposRecurso('evaluacion', id, []);
       await evaluacion.destroy();
       return evaluacion;
     } catch (error) {

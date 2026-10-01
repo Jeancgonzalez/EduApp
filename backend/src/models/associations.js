@@ -5,6 +5,9 @@ const StudentProgress = require('./studentProgress.model');
 const User = require('./User');
 const Group = require('./grupo.model');
 const GroupStudent = require('./grupoEstudiante.model');
+const ContentGroup = require('./contenidoGrupo.model');
+const GameGroup = require('./juegoGrupo.model');
+const EvaluationGroup = require('./evaluacionGrupo.model');
 const DiagnosticoAplicacion = require('./diagnosticoAplicacion.model');
 const DiagnosticoPregunta = require('./diagnosticoPregunta.model');
 const DiagnosticoRespuesta = require('./diagnosticoRespuesta.model');
@@ -13,9 +16,22 @@ StudentProgress.belongsTo(Content, { foreignKey: 'contenido_id', as: 'contenido'
 StudentProgress.belongsTo(Game, { foreignKey: 'juego_id', as: 'juego' });
 StudentProgress.belongsTo(Evaluation, { foreignKey: 'evaluacion_id', as: 'evaluacion' });
 
-Content.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
-Game.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
-Evaluation.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
+// Un contenido/juego/evaluación puede dirigirse a VARIOS grupos del docente.
+// "Sin grupos" (pivote vacío) = visible para todos los estudiantes del docente.
+Content.belongsToMany(Group, { through: ContentGroup, foreignKey: 'contenido_id', otherKey: 'grupo_id', as: 'grupos' });
+Group.belongsToMany(Content, { through: ContentGroup, foreignKey: 'grupo_id', otherKey: 'contenido_id', as: 'contenidosDirigidos' });
+Content.hasMany(ContentGroup, { foreignKey: 'contenido_id', as: 'gruposVinculados' });
+Group.hasMany(ContentGroup, { foreignKey: 'grupo_id', as: 'contenidosVinculados' });
+
+Game.belongsToMany(Group, { through: GameGroup, foreignKey: 'juego_id', otherKey: 'grupo_id', as: 'grupos' });
+Group.belongsToMany(Game, { through: GameGroup, foreignKey: 'grupo_id', otherKey: 'juego_id', as: 'juegosDirigidos' });
+Game.hasMany(GameGroup, { foreignKey: 'juego_id', as: 'gruposVinculados' });
+Group.hasMany(GameGroup, { foreignKey: 'grupo_id', as: 'juegosVinculados' });
+
+Evaluation.belongsToMany(Group, { through: EvaluationGroup, foreignKey: 'evaluacion_id', otherKey: 'grupo_id', as: 'grupos' });
+Group.belongsToMany(Evaluation, { through: EvaluationGroup, foreignKey: 'grupo_id', otherKey: 'evaluacion_id', as: 'evaluacionesDirigidas' });
+Evaluation.hasMany(EvaluationGroup, { foreignKey: 'evaluacion_id', as: 'gruposVinculados' });
+Group.hasMany(EvaluationGroup, { foreignKey: 'grupo_id', as: 'evaluacionesVinculadas' });
 
 Evaluation.belongsTo(Content, { foreignKey: 'contenido_apoyo_id', as: 'contenidoApoyo' });
 Content.hasMany(Evaluation, { foreignKey: 'contenido_apoyo_id', as: 'evaluacionesApoyo' });
@@ -41,4 +57,4 @@ DiagnosticoAplicacion.hasMany(DiagnosticoRespuesta, { foreignKey: 'aplicacion_id
 
 DiagnosticoRespuesta.belongsTo(DiagnosticoPregunta, { foreignKey: 'pregunta_id', as: 'pregunta' });
 
-module.exports = { StudentProgress, Content, Game, Evaluation, User, Group, GroupStudent, DiagnosticoAplicacion, DiagnosticoPregunta, DiagnosticoRespuesta };
+module.exports = { StudentProgress, Content, Game, Evaluation, User, Group, GroupStudent, ContentGroup, GameGroup, EvaluationGroup, DiagnosticoAplicacion, DiagnosticoPregunta, DiagnosticoRespuesta };
