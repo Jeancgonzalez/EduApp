@@ -90,35 +90,44 @@ class TeacherController {
   static async getGroups(req, res) {
     try {
       const { Group, GroupStudent } = require('../models/associations');
+      const docenteId = req.user.id;
 
-      const grupos = await Group.findAll({
-        where: { docente_id: req.user.id },
-        raw: true,
-      });
+      const [grupos, estudiantes] = await Promise.all([
+        Group.findAll({ where: { docente_id: docenteId }, raw: true }),
+        User.findAll({
+          where: { role: 'student', docente_id: docenteId },
+          attributes: ['id', 'name', 'email'],
+          raw: true,
+        }),
+      ]);
 
-      if (grupos.length === 0) {
-        return res.json({ success: true, data: [] });
-      }
-
-      const grupoIds = grupos.map(g => g.id);
-      const counts = await GroupStudent.findAll({
-        where: { grupo_id: { [Op.in]: grupoIds } },
-        attributes: ['grupo_id', [fn('COUNT', col('estudiante_id')), 'total']],
-        group: ['grupo_id'],
-        raw: true,
-      });
+      const grupoIds = grupos.map((g) => g.id);
+      const asignaciones = grupoIds.length
+        ? await GroupStudent.findAll({
+            where: { grupo_id: { [Op.in]: grupoIds } },
+            attributes: ['grupo_id', 'estudiante_id'],
+            raw: true,
+          })
+        : [];
 
       const countMap = {};
-      counts.forEach(c => {
-        countMap[c.grupo_id] = Number(c.total);
-      });
+      const miembrosPorGrupo = {};
+      for (const a of asignaciones) {
+        countMap[a.grupo_id] = (countMap[a.grupo_id] || 0) + 1;
+        if (!miembrosPorGrupo[a.grupo_id]) miembrosPorGrupo[a.grupo_id] = [];
+        miembrosPorGrupo[a.grupo_id].push(Number(a.estudiante_id));
+      }
 
-      const data = grupos.map(g => ({
-        id: g.id,
-        nombre: g.nombre,
-        materia: g.materia,
-        totalEstudiantes: countMap[g.id] || 0,
-      }));
+      const data = {
+        grupos: grupos.map((g) => ({
+          id: g.id,
+          nombre: g.nombre,
+          materia: g.materia,
+          totalEstudiantes: countMap[g.id] || 0,
+          estudiante_ids: miembrosPorGrupo[g.id] || [],
+        })),
+        estudiantes: estudiantes.map((s) => ({ id: s.id, name: s.name, email: s.email })),
+      };
 
       res.json({ success: true, data });
     } catch (error) {

@@ -36,7 +36,8 @@ const FiltrosAnalitica = () => {
     api
       .get('/teacher/grupos')
       .then((r) => {
-        setGrupos(Array.isArray(r.data.data) ? r.data.data : []);
+        const raw = r.data?.data;
+        setGrupos(Array.isArray(raw) ? raw : (raw?.grupos || []));
       })
       .catch((err) => {
         console.error('No se pudieron cargar los grupos del filtro:', err);
