@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const TeacherController = require('../controllers/teacher.controller');
+const GrupoController = require('../controllers/grupo.controller');
 const { verifyToken, isTeacher } = require('../middlewares/authMiddleware');
 
 /**
@@ -36,6 +37,10 @@ router.get('/students',                  TeacherController.getStudents);
 /* --------------------------- Dashboard ---------------------------- */
 router.get('/dashboard',                 TeacherController.getDashboard);
 router.get('/grupos', TeacherController.getGroups);
+router.post('/grupos', GrupoController.crearGrupo);
+router.put('/grupos/:id', GrupoController.actualizarGrupo);
+router.put('/grupos/:id/estudiantes', GrupoController.asignarEstudiantes);
+router.delete('/grupos/:id', GrupoController.eliminarGrupo);
 router.get('/available-modules',         TeacherController.getAvailableModules);
 router.get('/grade-distribution',        TeacherController.getGradeDistribution);
 router.get('/performance-evolution',     TeacherController.getPerformanceEvolution);
