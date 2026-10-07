@@ -1,10 +1,12 @@
 const User = require('../models/User');
 const GroupStudent = require('../models/grupoEstudiante.model');
+const Notification = require('../models/notification.model');
 const { Op } = require('sequelize');
 const {
   sendNewContentEmail,
   sendNewEvaluationEmail,
   sendNewGameEmail,
+  sendProgressReportEmail,
 } = require('./mailer.service');
 
 class NotificationService {
@@ -133,6 +135,46 @@ class NotificationService {
     const fallidos = results.filter(r => !r.exito).length;
     console.log(`[Notificación] Resumen notificación de juego: ${exitosos} exitosos, ${fallidos} fallidos de ${students.length} totales`);
     return results;
+  }
+
+  /**
+   * Notificación interna del docente (lo que ve en la campana).
+   *
+   * `data` lleva el `run_id` para que el clic lleve directo al reporte, así que
+   * aquí solo se guarda: el archivo se genera bajo demanda y no se adjunta.
+   */
+  static async notificarReporte({ docenteId, titulo, mensaje, data = {} }) {
+    const fila = await Notification.create({
+      docente_id: docenteId,
+      tipo: 'reporte',
+      titulo,
+      mensaje: mensaje || null,
+      data: JSON.stringify(data),
+      leido: false,
+    });
+    console.log(`[Notificación] Guardada notificación de reporte para docente ${docenteId}`);
+    return fila;
+  }
+
+  /**
+   * Entrada que usa el reporte individual por estudiante. Delega en
+   * `notificarReporte` para que las dos rutas escriban el mismo tipo de
+   * notificación en vez de dos formatos distintos que la campana no sabría leer.
+   */
+  static async sendReportNotification(docenteId, estudianteId, scheduleId, format, sections, trigger) {
+    return this.notificarReporte({
+      docenteId,
+      titulo: 'Reporte de progreso',
+      mensaje: 'Se ha generado y enviado un reporte de progreso para un estudiante',
+      data: {
+        run_id: null,
+        schedule_id: scheduleId ?? null,
+        estudiante_id: estudianteId ?? null,
+        format,
+        sections,
+        trigger,
+      },
+    });
   }
 }
 

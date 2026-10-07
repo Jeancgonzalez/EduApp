@@ -14,7 +14,12 @@ const Content = sequelize.define('Content', {
     defaultValue: false,
     comment: 'Si es true, el contenido no puede editarse ni eliminarse'
   },
-  fecha_creacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+  fecha_creacion: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  // `contenidos` estaba declarado con timestamps:false, así que no había forma de
+  // saber cuándo se creó ni cuántas veces se editó. Estos dos campos cierran el
+  // indicador "actividades creadas/editadas" (agregado por migración 001).
+  created_at: { type: DataTypes.DATE, allowNull: true, defaultValue: null },
+  updated_at: { type: DataTypes.DATE, allowNull: true, defaultValue: null }
 }, {
   timestamps: false,
   tableName: 'contenidos'

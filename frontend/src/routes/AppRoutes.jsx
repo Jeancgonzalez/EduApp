@@ -5,6 +5,16 @@ import VerificarCorreo from '../pages/VerificarCorreo';
 import RecuperarPassword from '../pages/RecuperarPassword';
 import RegistrarEstudiante from '../pages/Docente/RegisterEstudiante';
 import DashboardDocente from '../pages/Docente/DashboardDocente';
+import DashboardDocenteAnalitica from '../pages/Docente/DashboardDocenteAnalitica';
+
+
+import ResumenGeneral from '../pages/Docente/ResumenGeneral';
+import VistaGrupo from '../pages/Docente/VistaGrupo';
+import ProgresoIndividual from '../pages/Docente/ProgresoIndividual';
+import ContenidosAnalitica from '../pages/Docente/ContenidosAnalitica';
+import Gamificacion from '../pages/Docente/Gamificacion';
+import ReportesNotificaciones from '../pages/Docente/ReportesNotificaciones'; 
+
 import Contenidos from '../pages/Docente/Contenidos';
 import ContenidoEditar from '../pages/Docente/ContenidoEditar';
 import CrearContenido from '../pages/Docente/CrearContenido';
@@ -17,7 +27,7 @@ import CrearJuegos from '../pages/Docente/CrearJuegos';
 import JuegosEditar from '../pages/Docente/JuegosEditar';
 import GestionAlumnos from '../pages/Docente/GestionAlumnos';
 import ProgresoEstudiantes from '../pages/Docente/ProgresoEstudiantes';
-
+import Notificaciones from '../pages/Docente/Notificaciones'; 
 import CuentasEstudiantes from '../pages/Docente/CuentasEstudiantes';
 import Grupos from '../pages/Docente/Grupos';
 
@@ -43,21 +53,56 @@ const AppRoutes = () => {
       <Route path="/recuperar-password" element={<RecuperarPassword />} />
 
       {/* Ruta protegida solo para profesores */}
-      <Route 
-        path="/registroEstudiante" 
+      <Route
+        path="/registroEstudiante"
         element={
           <ProtectedRoute>
             <RegistrarEstudiante />
           </ProtectedRoute>
-        } 
+        }
       />
 
-      {/* Dashboard Docente*/}
+      <Route
+        path="/dashboard/analitica"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <DashboardDocenteAnalitica />
+          </ProtectedRoute>
+        }
+      >
+
+        <Route path="resumen" element={<ResumenGeneral />} />
+        <Route path="vista-grupo" element={<VistaGrupo />} />
+        <Route path="progreso-individual" element={<ProgresoIndividual />} />
+        <Route path="contenidos" element={<ContenidosAnalitica />} />
+        <Route path="gamificacion" element={<Gamificacion />} />
+        <Route path="reportes" element={<ReportesNotificaciones />} />
+      </Route>
+
+      {/* Dashboard Docente Principal */}
       <Route
         path="/docente/dashboard"
         element={
           <ProtectedRoute>
             <DashboardDocente />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/docente/reportes-notificaciones"
+        element={
+          <ProtectedRoute>
+            <ReportesNotificaciones />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/docente/notificaciones"
+        element={
+          <ProtectedRoute requiredRole="teacher">
+            <Notificaciones />
           </ProtectedRoute>
         }
       />
@@ -71,16 +116,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/contenidos/:id"
         element={
           <ProtectedRoute>
-            <ContenidoEditar/>
+            <ContenidoEditar />
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/contenidos/:id/editar"
         element={
@@ -89,7 +132,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/crear-contenido"
         element={
@@ -108,7 +150,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/evaluaciones/:id"
         element={
@@ -117,7 +158,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      
       <Route
         path="/evaluaciones/:id/editar"
         element={
@@ -126,7 +166,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/crear-evaluacion"
         element={
@@ -137,7 +176,7 @@ const AppRoutes = () => {
       />
 
       {/* Rutas de Juegos */}
-      <Route 
+      <Route
         path="/juegos"
         element={
           <ProtectedRoute>
@@ -145,7 +184,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/crear-juegos"
         element={
@@ -154,7 +192,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/editar-juego/:id"
         element={
@@ -198,17 +235,7 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Ruta de resumen de progreso docente */}
-<Route
-        path="/gestion-alumnos/grupos"
-        element={
-          <ProtectedRoute requiredRole="teacher">
-            <Grupos />
-          </ProtectedRoute>
-        }
-      />
-
-{/* Rutas de Estudiante */}
+      {/* Rutas de Estudiante */}
       <Route
         path="/student/dashboard"
         element={
@@ -219,7 +246,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/contenidos"
         element={
@@ -230,7 +256,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/contenidos/:id"
         element={
@@ -241,7 +266,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/juegos"
         element={
@@ -252,7 +276,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/juegos/:id"
         element={
@@ -263,7 +286,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/evaluaciones"
         element={
@@ -274,7 +296,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/evaluaciones/:id"
         element={
@@ -285,7 +306,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/progreso"
         element={
@@ -296,7 +316,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/student/mision"
         element={
@@ -307,7 +326,7 @@ const AppRoutes = () => {
       />
 
       {/* Ruta 404 - No encontrada */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/docente/dashboard" replace />} />
     </Routes>
   );
 };

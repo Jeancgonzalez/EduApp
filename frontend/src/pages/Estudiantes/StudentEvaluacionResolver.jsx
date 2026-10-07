@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useIntentoActividad } from '../../hooks/useTelemetria';
 import { MdArrowBack, MdCheckCircle, MdError, MdStars, MdAccessTime, MdQuiz, MdMenuBook, MdVisibility, MdReplay, MdFeedback, MdStar, MdStarBorder } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import LessonContent from '../../components/LessonContent';
@@ -41,6 +42,10 @@ const StudentEvaluacionResolver = () => {
   const [mostrandoFeedback, setMostrandoFeedback] = useState(false);
   const [feedbackData, setFeedbackData] = useState(null);
   const [resumenEvaluaciones, setResumenEvaluaciones] = useState(null);
+
+  // El intento se abre al pulsar "Comenzar Evaluación" y no al cargar la página:
+  // así recargar o volver a entrar no infla el número de intentos del dashboard.
+  const intentoId = useIntentoActividad('evaluacion', id, iniciado);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -116,7 +121,12 @@ const StudentEvaluacionResolver = () => {
     setEnviando(true);
     try {
       const respuestasArray = Object.entries(respuestas).map(([pid, r]) => ({ pregunta_id: Number(pid), respuesta: r }));
-      const res = await api.post(`/student/evaluaciones/${id}/responder`, { respuestas: respuestasArray });
+      const res = await api.post(`/student/evaluaciones/${id}/responder`, {
+        respuestas: respuestasArray,
+        // Cierra el intento abierto al comenzar la evaluación; el backend calcula
+        // la duración. Si vale `null`, la calificación se guarda igual.
+        intento_id: intentoId,
+      });
       setResultado(res.data.data);
       try {
         const listaRes = await api.get('/student/evaluaciones/publicadas');

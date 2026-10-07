@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import bcrypt from 'bcryptjs';
-import { api, User, makeTeacher, cleanupUsers } from './_qa/helpers.mjs';
+import { api, User, makeTeacher, cleanupUsers, verifyEmailViaMailhog, unique } from './_qa/helpers.mjs';
 
 let teacherEmail;
 let teacherId;
@@ -97,18 +97,25 @@ describe('MÓDULO REGISTRO DE DOCENTE - Apéndice M', () => {
   }, 20000);
 
   it('PRU-REG-INT-001: registro + login con las mismas credenciales', async () => {
-    const email = 'nuevo@EduApp.com'; // Apéndice (Tabla M7 PRU-REG-INT-001)
+    // Único por corrida, no el correo fijo del Apéndice: `registro-docente.test.mjs`
+    // usa `nuevo@EduApp.com` contra la base real (su `vi.mock` del modelo no
+    // intercepta el `require` de `authService`) y deja la fila, así que con el
+    // correo literal este test recibía 400 "ya está registrado" según el orden.
+    const email = unique('qa_regint_docente@EduApp.com');
     const password = 'pass1234';
     const t0 = Date.now();
     try {
       const reg = await api
         .post('/api/auth/register')
         .send({ name: 'Docente Nuevo', email, password, role: 'teacher' });
+      // El docente recién registrado no puede iniciar sesión hasta verificar su
+      // correo; sin este paso el login responde 403 EMAIL_NOT_VERIFIED.
+      if (reg.status === 201) await verifyEmailViaMailhog(email);
       const loginRes = await api.post('/api/auth/login').send({ email, password });
       const elapsed = Date.now() - t0;
 
       console.log('\n===== PRU-REG-INT-001 =====');
-      console.log('DATOS (Apéndice): Reg = { name:"Docente Nuevo", email:"nuevo@EduApp.com", password:"pass123", role:"teacher" }');
+      console.log('DATOS (Apéndice): Reg = { name:"Docente Nuevo", email:"nuevo@EduApp.com" (aquí único por corrida), password:"pass123", role:"teacher" }');
       console.log('LOGIN: { email, password }');
       console.log('REGISTER STATUS:', reg.status, JSON.stringify(reg.body));
       console.log('LOGIN STATUS:', loginRes.status, 'user:', JSON.stringify(loginRes.body?.data?.user));

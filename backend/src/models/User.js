@@ -62,6 +62,12 @@ const User = sequelize.define('User', {
   passwordResetExpires: {
     type: DataTypes.DATE,
     allowNull: true,
+  },
+  // Último acceso successful. Base de la retención a 7 días y del DAU en el
+  // dashboard del docente (agregado por migración 001).
+  last_login_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
   }
 }, {
   timestamps: true,

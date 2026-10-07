@@ -44,6 +44,12 @@ const Question = sequelize.define('Question', {
   retroalimentacion: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  // Etiqueta opcional del subtema al que pertenece la pregunta. Es la fuente del
+  // radar por subtema del dashboard del docente (agregado por migración 001).
+  subtema: {
+    type: DataTypes.STRING(120),
+    allowNull: true
   }
 }, {
   timestamps: true, // Agrega createdAt y updatedAt

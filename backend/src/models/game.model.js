@@ -59,6 +59,13 @@ const Game = sequelize.define('Game', {
   created_at: { 
     type: DataTypes.DATE, 
     defaultValue: DataTypes.NOW 
+  },
+  // `juegos` está declarado con timestamps:false, así que no había forma de saber
+  // cuántas veces se editó. Agregado por migración 001.
+  updated_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: null
   }
   
 }, {

@@ -45,6 +45,13 @@ const DiagnosticoAplicacion = sequelize.define('DiagnosticoAplicacion', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  // 'pre' | 'post'. Permite medir la ganancia pre/post sobre el MISMO instrumento
+  // sin duplicar el modelo de datos (agregado por migración 001).
+  tipo: {
+    type: DataTypes.ENUM('pre', 'post'),
+    allowNull: false,
+    defaultValue: 'pre',
+  },
 }, {
   timestamps: true,
   tableName: 'diagnostico_aplicaciones',

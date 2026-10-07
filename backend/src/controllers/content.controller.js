@@ -70,7 +70,11 @@ class ContentController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido');
+        // `obtenerContenidos`/`obtenerContenidoPorId` hacen `include` a `grupos`, que
+        // también trae un `id`: sin calificar la columna, MariaDB responde
+        // "Column 'id' in IN/ALL/ANY subquery is ambiguous" y el listado del
+        // estudiante devolvía 500. El alias por defecto del modelo es `Content`.
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido', 'Content');
         filtros[Op.or] = condiciones;
       }
       const contenidos = await ContentService.obtenerContenidos(filtros);
@@ -98,7 +102,7 @@ class ContentController {
       where.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         where.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido');
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'contenido', 'Content');
         where[Op.or] = condiciones;
       }
       // Se incluye la lista de grupos para que el formulario de edición pueda

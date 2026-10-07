@@ -1,6 +1,6 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import bcrypt from 'bcryptjs';
-import { api, User, cleanupUsers } from './_qa/helpers.mjs';
+import { api, User, cleanupUsers, verifyEmailViaMailhog } from './_qa/helpers.mjs';
 
 const TEACHER = { name: 'Profesor Nuevo', email: 'profesor.nuevo@EduApp.com', password: 'Segura123' };
 const createdEmails = [];
@@ -8,15 +8,18 @@ const createdEmails = [];
 async function initTeacher() {
   await User.destroy({ where: { email: TEACHER.email } }).catch(() => {});
   const reg = await api.post('/api/auth/register').send({ ...TEACHER, role: 'teacher' });
+  // Sin verificar el correo, `loginUser` responde 403 EMAIL_NOT_VERIFIED y el
+  // token llega como undefined a todas las peticiones siguientes.
+  await verifyEmailViaMailhog(TEACHER.email);
   const loginRes = await api.post('/api/auth/login').send({ email: TEACHER.email, password: TEACHER.password });
   return { token: loginRes.body?.data?.token, userId: loginRes.body?.data?.user?.id, reg, loginRes };
 }
 
-async function registerStudent(teacherToken, { name, email, password }) {
+async function registerStudent(teacherToken, { name, email, password, iadObligatorio }) {
   return api
     .post('/api/cuentas/register')
     .set('Authorization', `Bearer ${teacherToken}`)
-    .send({ name, email, password });
+    .send({ name, email, password, ...(iadObligatorio === undefined ? {} : { iadObligatorio }) });
 }
 
 afterAll(async () => {
@@ -175,7 +178,9 @@ describe('MÓDULO REGISTRO DE ESTUDIANTES - Apéndice M', () => {
 
     try {
       // Apéndice: Docente registra estudiante "María López" (maria@estudiante.com, maria2024)
-      const reg = await registerStudent(teacher.token, { name: 'María López', email, password: 'maria2024' });
+      // `iadObligatorio: false`: `cuentas.service.js` lo activa por defecto y el
+      // middleware `requerirMisionCompletada` responde 403 en /api/student/*.
+      const reg = await registerStudent(teacher.token, { name: 'María López', email, password: 'maria2024', iadObligatorio: false });
       const loginRes = await api.post('/api/auth/login').send({ email, password: 'maria2024' });
       const stoken = loginRes.body?.data?.token;
       const dash = await api

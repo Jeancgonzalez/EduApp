@@ -43,3 +43,58 @@ html[data-theme="dark"] .lesson-video-error {
   border-color: #7f1d1d;
   color: #fca5a5;
 }
+
+/* ---------- Lecciones: legibilidad en modo oscuro ---------- */
+html[data-theme="dark"] .leccion-contenido {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .leccion-contenido p,
+html[data-theme="dark"] .leccion-contenido li {
+  color: #cbd5e1;
+}
+
+/* Los títulos y pies de imagen usan color en línea al guardarse la lección;
+   por eso la anulación necesita !important. */
+html[data-theme="dark"] .leccion-contenido h1,
+html[data-theme="dark"] .leccion-contenido h2,
+html[data-theme="dark"] .leccion-contenido h3,
+html[data-theme="dark"] .leccion-contenido h4 {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .leccion-contenido figcaption {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .leccion-contenido a {
+  color: #7dd3fc;
+}
+
+html[data-theme="dark"] .leccion-contenido blockquote {
+  border-left-color: #64748b;
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .leccion-contenido code {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .leccion-contenido table {
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .leccion-contenido th,
+html[data-theme="dark"] .leccion-contenido td {
+  border-color: #334155;
+}
+
+html[data-theme="dark"] .leccion-contenido th {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .leccion-contenido hr {
+  border-top-color: #334155;
+}

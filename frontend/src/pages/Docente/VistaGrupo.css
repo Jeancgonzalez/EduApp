@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Vista de Grupo — contenedor centrado con ancho máximo
+   ==========================================================================
+   Mantiene intacto el diseño y estilo del panel analítico (todos los
+   estilos vienen de DashboardDocenteAnalitica.css), pero acota el ancho
+   del contenido para que las tarjetas no se estiren de borde a borde en
+   pantallas grandes.
+
+   El diseño responsivo se preserva: en tablet y móvil el contenedor
+   ocupa el 100% del ancho con padding reducido.
+   ========================================================================== */
+
+.vista-grupo-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+  .vista-grupo-page {
+    padding: 0 1rem;
+  }
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px) {
+  .vista-grupo-page {
+    padding: 0 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   Centrado de leyendas
+   ==========================================================================
+   Todas las leyendas de la sección (`.dash-leyenda`) van centradas por
+   defecto. Es el mismo patrón de "leyenda bajo el gráfico" que usan las
+   vistas de Resumen y Gamificación, pero centrada para que no quede
+   pegada a la izquierda y se vea equilibrada.
+
+   Aplica a:
+   - Distribución por nivel (leyenda con botones por nivel)
+   - Mapa de calor (leyenda con estados)
+   ========================================================================== */
+
+.vista-grupo-page .dash-leyenda {
+  justify-content: center;
+}
+
+/* El componente `Legend` de Recharts (Participación semanal y Comparación
+   de grupos) también va centrado. Recharts lo pinta como un `<div>` fuera
+   del SVG, con `text-align` propio; se refuerza con flex para centrarlo. */
+.vista-grupo-page .recharts-legend-wrapper {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Filtro por nivel (Distribución por nivel → Ranking completo)
+   ==========================================================================
+   La leyenda de Distribución por nivel ahora filtra el ranking: el nivel
+   activo se resalta con borde de color y el resto se atenúa reutilizando
+   `.dash-leyenda-item-off`. En los controles del ranking aparece un chip
+   con el nivel activo, su conteo y la X para quitarlo.
+   ========================================================================== */
+
+.dash-leyenda-item-vista-sel {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.dash-filtro-nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem 0.2rem 0.3rem;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  background: var(--bg-input, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dash-filtro-nivel:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.dash-filtro-nivel:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Mapa de calor — tamaño amplio de la matriz
+   ==========================================================================
+   Con los títulos rotados en `position: absolute`, el `<th>` de cada
+   columna ya no recibe ancho de su contenido: colapsa al ancho mínimo
+   que le imponga `.dash-mapa-celda` del CSS base (26px) y la matriz se
+   ve apretada.
+
+   Aquí se le devuelve a cada columna el ancho de la versión original
+   (60px por celda) tanto al `<th>` como a la propia `<td>`, para que la
+   tabla se vea ancha como antes sin perder el centrado de los títulos.
+   ========================================================================== */
+
+.vista-grupo-page .dash-mapa-celda {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+/* El <th> del encabezado tiene que medir lo mismo que las celdas de abajo,
+   si no la retícula se desalinea (la tabla es `border-collapse: separate`
+   y cada columna mide lo que mida su celda más ancha). */
+.vista-grupo-page .dash-mapa thead th {
+  position: relative;
+  width: 60px;
+  min-width: 60px;
+  height: 78px;
+  vertical-align: bottom;
+  padding: 0;
+}
+
+/* La esquina superior izquierda (encima de los alias) puede ser más
+   angosta: no tiene título rotado, solo el texto accesible para lectores
+   de pantalla. */
+.vista-grupo-page .dash-mapa-esquina {
+  width: auto;
+  min-width: 0;
+}
+
+.vista-grupo-page .dash-mapa-columna {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform-origin: 0 100%;
+  transform: rotate(-45deg);
+  display: block;
+  width: max-content;
+  /* Con 160px entran ~22 caracteres antes del "…": suficiente para los
+     nombres reales sin que la etiqueta se corte enseguida. */
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+  line-height: 1;
+  height: auto;
+}
+
+/* ---------- Móvil ----------
+   Menos ancho disponible por columna. Las celdas se encogen a 40px, el
+   encabezado baja a 62px de alto y el título se corta antes. La matriz
+   sigue siendo desplazable en horizontal por `.dash-mapa-envoltura`
+   (el `overflow-x: auto` que ya trae del CSS base). */
+@media (max-width: 640px) {
+  .vista-grupo-page .dash-mapa-celda {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+  }
+
+  .vista-grupo-page .dash-mapa thead th {
+    width: 40px;
+    min-width: 40px;
+    height: 62px;
+  }
+
+  .vista-grupo-page .dash-mapa-columna {
+    max-width: 110px;
+    font-size: 0.65rem;
+    bottom: 3px;
+  }
+}

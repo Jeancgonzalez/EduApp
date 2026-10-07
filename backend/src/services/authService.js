@@ -264,6 +264,33 @@ const loginUser = async (email, password) => {
     throw err;
   }
 
+  // Último acceso: base de la retención a 7 días y del DAU en el dashboard del
+  // docente. Una falla aquí no debe impedir el login, así que no se propaga.
+  try {
+    await user.update({ last_login_at: new Date() });
+    if (user.role === 'student' && user.docente_id) {
+      await require('./telemetria.service').abrirSesion({
+        estudianteId: user.id,
+        docenteId: user.docente_id,
+        userAgent: null,
+      });
+    }
+  } catch (telemetryError) {
+    console.warn('[telemetría] No se pudo registrar el último acceso:', telemetryError.message);
+  }
+
+  // Reportes programados vencidos mientras el servidor estuvo apagado. Se
+  // ejecuta sin esperar (`catch` propio) para que un reporte roto nunca
+  // alargue ni tumbe el login: el docente entra igual y ve la notificación
+  // cuando el reporte esté listo.
+  if (user.role === 'teacher') {
+    require('./reportSchedule.service')
+      .procesarVencidasDelDocente(user.id)
+      .catch((reportsError) =>
+        console.warn('[Reportes] No se pudieron revisar los vencidos:', reportsError.message)
+      );
+  }
+
   // Generar Token JWT
   const token = jwt.sign(
     {

@@ -1,0 +1,1180 @@
+/**
+ * Panel analítico del docente — estilos.
+ *
+ * Todo se apoya en los tokens de `styles/variables.css`, que ya están
+ * redefinidos en `[data-theme='dark']`: por eso la mayoría de las reglas no
+ * necesita un bloque oscuro propio, cambiar de tema basta con que el atributo
+ * `data-theme` del <html> cambie.
+ *
+ * Solo lleva overrides `html[data-theme="dark"]` explícitos lo que los tokens
+ * NO cubren: los colores metálicos del podio (oro/plata/bronce) y los pares de
+ * las insignias de nivel, que son valores sueltos y no semánticos.
+ *
+ * Nota: antes se usaban `--color-primario` y `--color-superficie`, que no
+ * existen en `variables.css`; con sus fallbacks esos valores nunca cambiaban al
+ * cambiar de tema, por eso el panel se quedaba blanco en modo oscuro.
+ */
+
+.dash-analitica {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dash-analitica-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash-analitica-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-strong);
+}
+
+.dash-analitica-header h2 svg {
+  color: var(--primary);
+}
+
+.dash-analitica-nota {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 46ch;
+}
+
+/* --- Carga -------------------------------------------------------------- */
+
+.dash-cargando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 3.5rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-cargando-punto {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-soft);
+  border-top-color: var(--primary);
+  animation: dash-gira 0.8s linear infinite;
+}
+
+@keyframes dash-gira {
+  to { transform: rotate(360deg); }
+}
+
+/* --- KPIs ---------------------------------------------------------------
+ *
+ * Cuatro columnas fijas en vez de `auto-fit`: con `auto-fit` el número de
+ * columnas depende del ancho y la tarjeta de riesgo (que ocupa dos) empuja la
+ * retícula a una fila extra con huecos. Con 4/3/2/1 columnas explícitas la
+ * retícula siempre cuadra y nunca hay tarjetas solapadas ni descolgadas.
+ *
+ * `minmax(0, 1fr)` y no `1fr`: sin el `0` mínimo, el contenido largo (el nombre
+ * de un módulo, una etiqueta de detalle) ensancha la columna y empuja la
+ * siguiente fuera de la pantalla.
+ */
+
+.dash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.dash-kpi {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.dash-kpi-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* Icono en caja de color: un cuadrado redondeado con el glifo del tema del KPI. */
+.dash-kpi-icon {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.dash-kpi-icon[data-tono='info'] { background: var(--info-soft); color: var(--info); }
+.dash-kpi-icon[data-tono='exito'] { background: var(--success-soft); color: var(--success); }
+.dash-kpi-icon[data-tono='aviso'] { background: var(--warning-soft); color: var(--warning); }
+.dash-kpi-icon[data-tono='peligro'] { background: var(--danger-soft); color: var(--danger); }
+.dash-kpi-icon[data-tono='acento'] { background: var(--primary-soft); color: var(--primary); }
+
+.dash-kpi-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dash-kpi-valor {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-strong);
+  display: flex;
+  align-items: baseline;
+  gap: 0.1rem;
+}
+
+.dash-kpi-unidad,
+.dash-kpi-sufijo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Detalle bajo el número: quién compone el total, no otra métrica. */
+.dash-kpi-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* --- Variación vs. período anterior ------------------------------------- */
+
+.dash-kpi-dato {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dash-kpi-dato-icon {
+  font-size: 0.95rem;
+  flex: 0 0 auto;
+}
+
+/* La flecha no ocupa ancho cuando no hay dato: el hueco se ve igual de raro que
+   un icono suelto, así que se reserva el espacio con esta caja vacía. */
+.dash-kpi-dato > .dash-kpi-dato-icon:empty {
+  display: inline-block;
+  width: 0.95rem;
+}
+
+.dash-kpi-dato-favorable { color: var(--success); }
+.dash-kpi-dato-desfavorable { color: var(--danger); }
+.dash-kpi-dato-neutro { color: var(--text-muted); }
+
+.dash-kpi-vs {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* --- Tarjeta de riesgo: ocupa dos columnas ------------------------------ */
+
+.dash-kpi-riesgo {
+  grid-column: span 2;
+  gap: 0.7rem;
+}
+
+.dash-kpi-cuerpo {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dash-kpi-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 0 0 auto;
+  min-width: 7rem;
+}
+
+.dash-kpi-aliases {
+  flex: 1 1 15rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.dash-kpi-alias-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.dash-alias {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.dash-alias[data-motivo='inactivo'] { background: var(--warning-soft); color: var(--warning); }
+.dash-alias[data-motivo='ambos'] { background: var(--danger-soft); color: var(--danger); }
+
+.dash-alias-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 12rem;
+}
+
+.dash-alias-dato {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-alias-mas {
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.dash-kpi-aliases-vacio,
+.dash-kpi-criterio {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* --- Insignias de nivel de desempeño ------------------------------------
+ *
+ * Nivel Bajo / Básico / Alto / Superior, derivado del porcentaje de logro (los
+ * cortes exactos los devuelve el backend en `umbrales`).
+ *
+ * Aquí NO se usan los pares `--x-soft` + `--x` de los tokens: están pensados
+ * para texto grande y en claro, `#d97706` sobre `#fef3c3` da 2.86:1, por debajo
+ * del mínimo AA para un texto de 0.75rem en negrita. Se fijan los pares por
+ * modo, todos verificados >= 4.5:1.
+ */
+
+.dash-nivel {
+  flex: 0 0 auto;
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.dash-nivel[data-nivel='Superior'] { background: #dcfce7; color: #166534; }
+.dash-nivel[data-nivel='Alto'] { background: #dbeafe; color: #1e40af; }
+.dash-nivel[data-nivel='Básico'] { background: #fef3c7; color: #92400e; }
+.dash-nivel[data-nivel='Bajo'] { background: #fee2e2; color: #b91c1c; }
+
+html[data-theme='dark'] .dash-nivel { background: #1e293b; color: #94a3b8; }
+html[data-theme='dark'] .dash-nivel[data-nivel='Superior'] { background: #123a32; color: #6ee7b7; }
+html[data-theme='dark'] .dash-nivel[data-nivel='Alto'] { background: #123048; color: #7dd3fc; }
+html[data-theme='dark'] .dash-nivel[data-nivel='Básico'] { background: #3a2c17; color: #fcd34d; }
+html[data-theme='dark'] .dash-nivel[data-nivel='Bajo'] { background: #4a1d1d; color: #fca5a5; }
+
+/* --- Paneles ----------------------------------------------------------- */
+
+.dash-panel {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+
+.dash-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+  color: var(--text-strong);
+}
+
+.dash-panel h3 svg {
+  color: var(--primary);
+}
+
+.dash-panel-sub {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.dash-panel-error h3 svg {
+  color: var(--danger);
+}
+
+/* Cabecera con título a la izquierda y estado a la derecha. */
+.dash-panel-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.dash-panel-cabecera .dash-panel-sub {
+  margin-bottom: 0;
+}
+
+.dash-panel-pie {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Recharts mide el contenedor padre: sin un bloque con ancho acotado, dentro de
+   un `flex` el ancho puede quedar en 0 y el gráfico no se pinta. */
+.dash-grafico {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Usa `--text` y no `--text-muted`: sobre `--bg-sunken` en claro, `#64748b`
+   se queda en 3.93:1 y este texto de 0.9rem no alcanza el mínimo AA. */
+.dash-vacio {
+  padding: 1.75rem;
+  text-align: center;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background: var(--bg-sunken);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* --- Indicador de "en vivo" --------------------------------------------- */
+
+.dash-vivo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-sunken);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.dash-vivo-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: dash-latido 2s ease-in-out infinite;
+}
+
+@keyframes dash-latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.dash-vivo-error {
+  font-weight: 500;
+  color: var(--warning);
+}
+
+/* Se respeta `prefers-reduced-motion`: el latido es decorativo y en una lista
+   que se refresca sola el parpadeo puede molestar. */
+@media (prefers-reduced-motion: reduce) {
+  .dash-vivo-punto { animation: none; }
+  .dash-cargando-punto { animation: none; }
+}
+
+/* --- Ranking (Top 5) --------------------------------------------------- */
+
+.dash-ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dash-ranking li {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  min-width: 0;
+}
+
+.dash-ranking-pos {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: var(--border);
+  color: var(--text);
+}
+
+.dash-ranking-nombre {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-ranking-nota {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--text-strong);
+  min-width: 3.5ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Leyenda interactiva ------------------------------------------------ */
+
+.dash-leyenda {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.85rem;
+}
+
+.dash-leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.3rem 0.7rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.dash-leyenda-item:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.dash-leyenda-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Tema apagado: el punto se atenúa en vez de desaparecer, para que se sepa
+   qué serie se ocultó y no solo que falta una. */
+.dash-leyenda-item-off {
+  opacity: 0.5;
+}
+
+.dash-leyenda-item-off .dash-punto {
+  background: var(--border-strong) !important;
+}
+
+.dash-punto {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* --- Enlaces a otras vistas --------------------------------------------- */
+
+.dash-enlace-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dash-enlace-boton:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.dash-enlace-boton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.dash-enlace-boton svg {
+  font-size: 1rem;
+}
+
+/* --- Overrides que los tokens no cubren --------------------------------- */
+
+/* El podio usa tonos metálicos que no son colores semánticos del sistema, así
+   que en oscuro se invierten a fondo oscuro con el mismo acento en el texto;
+   el dorado claro sobre fondo casi negro directamente no se leería. Todos los
+   pares están verificados >= 4.5:1. */
+.dash-ranking-pos-1 { background: #fde68a; color: #92400e; }
+.dash-ranking-pos-2 { background: var(--bg-elevated); color: var(--text); }
+.dash-ranking-pos-3 { background: #fed7aa; color: #9a3412; }
+
+html[data-theme='dark'] .dash-ranking-pos-1 { background: #4a3208; color: #fcd34d; }
+html[data-theme='dark'] .dash-ranking-pos-3 { background: #4a2412; color: #fdba74; }
+
+/* Recharts escribe sus ejes como atributos SVG en línea, que ningún token
+   puede alcanzar desde CSS, así que el color llega desde JS con `useTheme()`. */
+
+/* --- Responsive ---------------------------------------------------------
+ *
+ * Los cortes bajan de 4 a 3, 2 y 1 columna. El `span 2` de la tarjeta de riesgo
+ * se vuelve `span 1` en la última: con `grid-template-columns: 1fr`, un
+ * `span 2` abre una columna implícita y el tarjeta se sale de la pantalla.
+ */
+
+/* --- Barra de filtros globales ------------------------------------------
+ *
+ * Vive fuera de `.dash-analitica` a propósito: es del shell, no de una sección,
+ * y meterla dentro haría que cada vista que ya trae su propio envoltorio
+ * duplicara el margen superior. Por eso el bloque siguiente al que la acompaña
+ * (`+ .dash-analitica`) sube un poco para que la separación siga siendo la
+ * misma que entre dos paneles.
+ */
+
+.dash-filtros {
+  margin-top: 2rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.dash-filtros + .dash-analitica,
+.dash-filtros + .dash-vacio { margin-top: 1.25rem; }
+
+.dash-filtros-icono {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  font-size: 1.25rem;
+  padding-bottom: 0.3rem;
+}
+
+.dash-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.dash-filtro-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.dash-filtro-select {
+  appearance: none;
+  min-width: 190px;
+  max-width: 100%;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--text-strong);
+  background-color: var(--bg-input, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 0.4rem);
+  cursor: pointer;
+  /* La flecha se dibuja con un gradiente: un `select` nativo no la deja
+     cambiar de color y en modo oscuro se quedaba gris sobre blanco. */
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) calc(50% + 1px),
+    calc(100% - 10px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.dash-filtro-select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.dash-filtro-select:disabled { opacity: 0.6; cursor: progress; }
+
+.dash-filtros-resumen {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding-bottom: 0.5rem;
+}
+
+.dash-filtros-error { color: var(--danger); font-weight: 600; }
+
+.dash-filtros-limpiar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.45rem 0.8rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: transparent;
+  border: 1px solid var(--primary-soft, var(--border));
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.dash-filtros-limpiar:hover { background: var(--primary-soft); }
+
+/* --- Piezas de la Vista de Grupo --------------------------------------- */
+
+.dash-panel-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.dash-panel-nota {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.dash-panel-pie-suelto {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* Controles del ranking: buscador + conmutador de orden. */
+
+.dash-ranking-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.dash-buscador {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  color: var(--text-muted);
+  background: var(--bg-input, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+}
+
+.dash-buscador input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text-strong);
+  width: 11ch;
+}
+
+.dash-segmentos {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--bg-input, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+}
+
+.dash-segmentos button {
+  padding: 0.3rem 0.75rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.dash-segmento-activo {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+
+/* --- Tablas -------------------------------------------------------------- */
+
+.dash-tabla-envoltura {
+  overflow-x: auto;
+  margin: 0 -0.25rem;
+}
+
+.dash-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.dash-tabla th,
+.dash-tabla td {
+  padding: 0.55rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.dash-tabla thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.dash-tabla tbody tr:last-child td { border-bottom: 0; }
+
+.dash-tabla tbody tr:hover { background: var(--bg-hover, transparent); }
+
+.dash-tabla-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.dash-tabla-pos { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.dash-tabla-alias {
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-right: 0.5rem;
+}
+
+.dash-tabla-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* --- Mapa de calor --------------------------------------------------------
+ *
+ * Una `<table>` y no una rejilla de `div`: es una tabla de verdad (filas ×
+ * columnas con encabezado en dos ejes) y el lector de pantalla la recorre bien.
+ * El color va en `style` porque lo decide `useTheme()`; el `data-estado` queda
+ * como respaldo para el borde y para inspeccionar en las herramientas de
+ * desarrollo.
+ */
+
+.dash-mapa-envoltura {
+  overflow-x: auto;
+  margin: 0 -0.25rem 0.9rem;
+}
+
+.dash-mapa {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 0.78rem;
+}
+
+.dash-mapa-titulo {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.dash-mapa-esquina { background: transparent; }
+
+/* Rotulo de la esquina: solo lo lee el lector de pantalla. */
+.dash-mapa-esquina-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* El nombre de la actividad se recorta a lo ancho de la celda; el `title` del
+   `th` lleva el texto completo para el hover. */
+.dash-mapa-columna {
+  display: block;
+  max-width: 74px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transform: rotate(-45deg);
+  transform-origin: center;
+  height: 78px;
+  text-align: right;
+}
+
+.dash-mapa-fila {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 0.25rem 0.6rem 0.25rem 0.25rem;
+  background: var(--bg-card);
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.dash-mapa-alias { margin-right: 0.4rem; }
+
+.dash-mapa-pct {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-mapa-celda {
+  width: 26px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.dash-mapa-celda[data-estado='pendiente'] {
+  /* El pendiente es el único que necesita textura: es el único color que no
+     dice nada por sí solo, y sin borde parecería una celda sin datos. */
+  background-image: linear-gradient(135deg, rgba(127, 127, 127, 0.18) 25%, transparent 25%);
+  background-size: 6px 6px;
+}
+
+/* La leyenda del mapa de calor es informative: no filtra nada, asi que no
+   hereda el puntero ni el hover del boton. */
+.dash-leyenda-estatica {
+  cursor: default;
+  background: transparent;
+  border-color: var(--border);
+}
+
+.dash-leyenda-estatica:hover {
+  background: transparent;
+  border-color: var(--border);
+}
+
+.dash-leyenda-icono {
+  margin-left: 0.2rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.dash-leyenda-valor {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Tooltip de los gráficos -------------------------------------------- */
+
+.dash-tooltip {
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 0.4rem);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.12));
+  font-size: 0.8rem;
+  color: var(--text-strong);
+}
+
+.dash-tooltip-titulo {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+
+.dash-tooltip-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0;
+}
+
+.dash-tooltip-punto {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.dash-tooltip-nombre { flex: 1 1 auto; }
+
+.dash-tooltip-valor {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Responsive ---------------------------------------------------------
+ *
+ * Los cortes bajan de 4 a 3, 2 y 1 columna. El `span 2` de la tarjeta de riesgo
+ * se vuelve `span 1` en la última: con `grid-template-columns: 1fr`, un
+ * `span 2` abre una columna implícita y la tarjeta se sale de la pantalla.
+ */
+
+@media (max-width: 1100px) {
+  .dash-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 860px) {
+  .dash-analitica { margin-top: 1.25rem; gap: 1.1rem; }
+  .dash-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-panel { padding: 1.1rem; }
+  /* El título deja de competir con el estado "en vivo" por el ancho. */
+  .dash-panel-cabecera { flex-direction: column; align-items: flex-start; }
+  .dash-filtros { margin-top: 1.25rem; gap: 0.7rem; }
+  .dash-filtro-select { min-width: 160px; }
+  .dash-ranking-controles { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 640px) {
+  .dash-kpi-grid { grid-template-columns: 1fr; }
+  .dash-kpi-riesgo { grid-column: span 1; }
+  .dash-kpi-valor { font-size: 1.6rem; }
+  .dash-kpi { padding: 0.95rem 1rem; }
+  .dash-kpi-cuerpo { gap: 0.85rem; }
+  /* El nombre del alias deja de recortarse: la tarjeta ya tiene una columna. */
+  .dash-alias-nombre { max-width: 100%; }
+  .dash-panel-pie { justify-content: stretch; }
+  .dash-panel-pie .dash-enlace-boton { justify-content: center; width: 100%; }
+  .dash-analitica-header h2 { font-size: 1.1rem; }
+  .dash-panel-meta { white-space: normal; }
+
+  /* La barra de filtros se apila: dos selectores en línea no caben. */
+  .dash-filtros { flex-direction: column; align-items: stretch; }
+  .dash-filtros-icono { display: none; }
+  .dash-filtro-select { width: 100%; }
+  .dash-filtros-resumen { padding-bottom: 0; }
+  .dash-filtros-limpiar { margin-left: 0; justify-content: center; }
+
+  .dash-buscador { flex: 1 1 auto; }
+  .dash-buscador input { width: 100%; }
+  .dash-segmentos { flex: 0 0 auto; }
+  /* En el mapa se ven menos actividades por pantalla: la columna rotada se
+     acorta para que el desplazamiento horizontal siga siendo utilizable. */
+  .dash-mapa-columna { max-width: 56px; height: 62px; }
+  .dash-mapa-celda { width: 22px; height: 20px; }
+
+  /* Las dos listas de insignias se apilan: en una columna el "x de N" y la
+     etiqueta de rareza ya no caben en paralelo con el nombre. */
+  .gam-listas { grid-template-columns: 1fr; }
+}
+
+/* --- Gamificación: insignias más y menos obtenidas ---------------------- */
+
+/* Las dos listas van en paralelo porque el docente las lee comparando: la que
+   se reparte arriba y la que se queda abajo, del mismo grupo y del mismo
+   período. */
+.gam-listas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.gam-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.gam-subtitulo svg {
+  font-size: 1rem;
+}
+
+.gam-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.gam-insignia {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 0.4rem);
+  font-size: 0.84rem;
+}
+
+/* El punto de rareza va antes del nombre y no se encoge con `flex`: si el
+   nombre es largo tiene que recortar él, no el código de color. */
+.gam-insignia-punto {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+}
+
+.gam-insignia-nombre {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* "x de N" es el dato que el docente busca, así que el número va en negrita y
+   con cifras tabulares para que las columnas de las dos listas alineen. */
+.gam-insignia-cuenta {
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gam-insignia-cuenta strong {
+  color: var(--text-strong);
+  font-size: 0.92rem;
+}
+
+.gam-insignia-pct {
+  opacity: 0.75;
+}
+
+.gam-insignia-rar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex: 0 0 auto;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.gam-insignia-rar svg {
+  font-size: 0.85rem;
+}
+
+.gam-insignia-rar[data-rareza='comun'] {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.gam-insignia-rar[data-rareza='poco_comun'] {
+  background: rgba(245, 158, 11, 0.16);
+  color: #92400e;
+}
+
+.gam-insignia-rar[data-rareza='rara'] {
+  background: rgba(124, 58, 237, 0.14);
+  color: #5b21b6;
+}
+
+html[data-theme='dark'] .gam-insignia-rar[data-rareza='comun'] { color: #6ee7b7; }
+html[data-theme='dark'] .gam-insignia-rar[data-rareza='poco_comun'] { color: #fcd34d; }
+html[data-theme='dark'] .gam-insignia-rar[data-rareza='rara'] { color: #c4b5fd; }
+
+/* La leyenda de rareza no filtra nada, así que no hereda puntero ni hover del
+   `.dash-leyenda-item`, que está hecho para ser botón. */
+.gam-leyenda-rar {
+  cursor: default;
+}
+
+.gam-leyenda-rar svg {
+  margin-left: 0.15rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}

@@ -179,7 +179,7 @@ html[data-theme="dark"] .btn-back:hover {
   border-radius: 0.5rem; font-weight: 600;
 }
 .enlace-btn:hover { background: #1d4ed8; }
-.texto-container { line-height: 1.8; color: #334155; white-space: pre-wrap; }
+.texto-container { line-height: 1.8; color: var(--text); white-space: pre-wrap; }
 .acceso-confirmado {
   display: flex; align-items: center; gap: 0.5rem;
   padding: 1rem; background: #ecfdf5; color: #059669; border-radius: 0.75rem; font-weight: 500;
@@ -411,7 +411,7 @@ html[data-theme="dark"] .btn-back:hover {
 
 .leccion-contenido {
   line-height: 1.8;
-  color: #334155;
+  color: var(--text);
   max-width: 100%;
   overflow-x: auto;
 }

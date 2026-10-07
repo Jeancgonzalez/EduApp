@@ -11,6 +11,14 @@ const EvaluationGroup = require('./evaluacionGrupo.model');
 const DiagnosticoAplicacion = require('./diagnosticoAplicacion.model');
 const DiagnosticoPregunta = require('./diagnosticoPregunta.model');
 const DiagnosticoRespuesta = require('./diagnosticoRespuesta.model');
+const ActividadIntento = require('./actividadIntento.model');
+const EstudianteSesion = require('./estudianteSesion.model');
+const MedallaObtenida = require('./medallaObtenida.model');
+const DocenteActividadAuditoria = require('./docenteActividadAuditoria.model');
+const FeedbackDocente = require('./feedbackDocente.model');
+const Notification = require('./notification.model');
+const ReportSchedule = require('./reportSchedule.model');
+const ReportRun = require('./reportRun.model');
 
 StudentProgress.belongsTo(Content, { foreignKey: 'contenido_id', as: 'contenido' });
 StudentProgress.belongsTo(Game, { foreignKey: 'juego_id', as: 'juego' });
@@ -57,4 +65,38 @@ DiagnosticoAplicacion.hasMany(DiagnosticoRespuesta, { foreignKey: 'aplicacion_id
 
 DiagnosticoRespuesta.belongsTo(DiagnosticoPregunta, { foreignKey: 'pregunta_id', as: 'pregunta' });
 
-module.exports = { StudentProgress, Content, Game, Evaluation, User, Group, GroupStudent, ContentGroup, GameGroup, EvaluationGroup, DiagnosticoAplicacion, DiagnosticoPregunta, DiagnosticoRespuesta };
+// --- Telemetría del dashboard del docente -------------------------------------
+// Todas estas relaciones son de lectura para el dashboard; no se usan `include`
+// en las consultas agregadas (que resuelven en SQL puro para no inflar el
+// payload), por eso se declaran solo como belongsTo del lado del telemetry.
+
+ActividadIntento.belongsTo(User, { foreignKey: 'estudiante_id', as: 'estudiante' });
+User.hasMany(ActividadIntento, { foreignKey: 'estudiante_id', as: 'intentos' });
+ActividadIntento.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
+
+EstudianteSesion.belongsTo(User, { foreignKey: 'estudiante_id', as: 'estudiante' });
+User.hasMany(EstudianteSesion, { foreignKey: 'estudiante_id', as: 'sesiones' });
+
+MedallaObtenida.belongsTo(User, { foreignKey: 'estudiante_id', as: 'estudiante' });
+User.hasMany(MedallaObtenida, { foreignKey: 'estudiante_id', as: 'medallas' });
+
+FeedbackDocente.belongsTo(User, { foreignKey: 'estudiante_id', as: 'estudiante' });
+User.hasMany(FeedbackDocente, { foreignKey: 'estudiante_id', as: 'feedbackRecibido' });
+FeedbackDocente.belongsTo(User, { foreignKey: 'docente_id', as: 'docente' });
+
+Notification.belongsTo(User, { foreignKey: 'docente_id', as: 'docente' });
+User.hasMany(Notification, { foreignKey: 'docente_id', as: 'notificaciones' });
+
+ReportSchedule.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
+ReportSchedule.hasMany(ReportRun, { foreignKey: 'schedule_id', as: 'ejecuciones' });
+ReportRun.belongsTo(ReportSchedule, { foreignKey: 'schedule_id', as: 'schedule' });
+ReportRun.belongsTo(Group, { foreignKey: 'grupo_id', as: 'grupo' });
+
+module.exports = {
+  StudentProgress, Content, Game, Evaluation, User, Group, GroupStudent,
+  ContentGroup, GameGroup, EvaluationGroup,
+  DiagnosticoAplicacion, DiagnosticoPregunta, DiagnosticoRespuesta,
+  ActividadIntento, EstudianteSesion, MedallaObtenida,
+  DocenteActividadAuditoria, FeedbackDocente, Notification,
+  ReportSchedule, ReportRun,
+};

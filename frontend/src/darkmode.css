@@ -205,6 +205,16 @@ html[data-theme="dark"] select {
   color: #e2e8f0;
 }
 
+/* Una casilla o un radio no es un campo de texto: la regla de arriba les pintaba
+   un cuadro negro opaco encima del control nativo y en modo oscuro se perdían
+   el marcado y el foco. Se dejan transparentes y con el color de acento. */
+html[data-theme="dark"] input[type="checkbox"],
+html[data-theme="dark"] input[type="radio"] {
+  background-color: transparent;
+  border-color: #475569;
+  accent-color: #8b5cf6;
+}
+
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
   color: #64748b;

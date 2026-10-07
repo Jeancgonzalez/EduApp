@@ -1,3 +1,6 @@
+/* ============================================================
+   NAVBAR PRINCIPAL
+   ============================================================ */
 .navbar {
   position: sticky;
   top: 0;
@@ -14,7 +17,7 @@
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
 }
 
-/* Brand */
+/* ---------- Brand ---------- */
 .navbar-brand {
   display: flex;
   align-items: center;
@@ -42,7 +45,7 @@
   letter-spacing: -0.5px;
 }
 
-/* Links */
+/* ---------- Links ---------- */
 .navbar-links {
   display: flex;
   align-items: center;
@@ -54,7 +57,7 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 0.85rem;
-  border-radius: 8px;
+  border-radius: 10px;
   text-decoration: none;
   color: #64748b;
   font-size: 0.9rem;
@@ -69,7 +72,12 @@
 }
 
 .navbar-link.active {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.75), rgba(124, 58, 237, 0.75), rgba(79, 70, 229, 0.75));
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.75),
+    rgba(124, 58, 237, 0.75),
+    rgba(79, 70, 229, 0.75)
+  );
   color: #ffffff;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
@@ -85,7 +93,7 @@
   align-items: center;
 }
 
-/* Actions */
+/* ---------- Acciones ---------- */
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -93,14 +101,66 @@
   flex-shrink: 0;
 }
 
-.navbar-user {
+.navbar-bell-btn {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.navbar-bell-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.navbar-bell-btn.active {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.75),
+    rgba(124, 58, 237, 0.75),
+    rgba(79, 70, 229, 0.75)
+  );
+  color: #ffffff;
+}
+
+.navbar-bell-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: 2px solid #ffffff;
+}
+
+html[data-theme='dark'] .navbar-bell-badge {
+  border-color: #111827;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  padding: 0.4rem 0.85rem;
 }
 
 .navbar-user-name {
@@ -113,6 +173,10 @@
   text-overflow: ellipsis;
 }
 
+/* ============================================================
+   Botón de cerrar sesión
+   ============================================================ */
+.navbar .navbar-logout-btn,
 .navbar-logout-btn {
   display: flex;
   align-items: center;
@@ -120,7 +184,7 @@
   background: #fee2e2;
   color: #ef4444;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   width: 36px;
   height: 36px;
   cursor: pointer;
@@ -128,16 +192,31 @@
   transition: all 0.2s;
 }
 
+.navbar .navbar-logout-btn:hover,
+.navbar-logout-btn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
 .navbar-logout-label {
   display: none;
 }
 
-.navbar-logout-btn:hover {
-  background: #fecaca;
-  transform: scale(1.08);
+/* Modo oscuro — forzado */
+html[data-theme='dark'] .navbar .navbar-logout-btn,
+html[data-theme='dark'] .navbar-teacher .navbar-logout-btn,
+html[data-theme='dark'] .navbar-student .navbar-logout-btn {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
 }
 
-/* Hamburger (hidden on desktop) */
+html[data-theme='dark'] .navbar .navbar-logout-btn:hover,
+html[data-theme='dark'] .navbar-teacher .navbar-logout-btn:hover,
+html[data-theme='dark'] .navbar-student .navbar-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+}
+
+/* ---------- Hamburger (oculto en escritorio) ---------- */
 .navbar-hamburger {
   display: none;
   background: none;
@@ -145,9 +224,18 @@
   font-size: 1.6rem;
   cursor: pointer;
   color: #475569;
+  border-radius: 10px;
+  padding: 0.15rem 0.35rem;
+  transition: background 0.15s ease;
 }
 
-/* Mobile / Tablet */
+.navbar-hamburger:hover {
+  background: #f1f5f9;
+}
+
+/* ============================================================
+   RESPONSIVE — Móvil / Tablet (≤ 1024px)
+   ============================================================ */
 @media (max-width: 1024px) {
   .navbar {
     flex-wrap: wrap;
@@ -156,15 +244,8 @@
     gap: 0.5rem;
   }
 
-  .navbar-hamburger {
-    display: flex;
-    align-items: center;
-  }
-
-  /* Fila superior: la marca ocupa el espacio sobrante (y se trunca si hace
-     falta) para que los iconos (tema, perfil, salir) queden SIEMPRE a la
-     derecha del logo, en la misma barra, sin bajar a otra fila. */
   .navbar-brand {
+    order: 1;
     flex: 1 1 auto;
     min-width: 0;
   }
@@ -176,21 +257,32 @@
   }
 
   .navbar-actions {
+    order: 2;
     margin-left: auto;
     flex-shrink: 0;
   }
 
-  /* Menú desplegable: fondo sólido para diferenciarlo de la página.
-     En escritorio el contenedor no lleva fondo (sigue siendo inline). */
+  .navbar-hamburger {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-user-name {
+    display: none;
+  }
+
   .navbar-links {
+    order: 3;
     display: none;
     width: 100%;
+    flex-basis: 100%;
     flex-direction: column;
     align-items: stretch;
     gap: 0.25rem;
+    margin-top: 0.25rem;
     padding: 0.75rem;
     border-top: 1px solid #e2e8f0;
-    border-radius: 0 0 12px 12px;
+    border-radius: 12px;
     background: #ffffff;
     box-shadow: 0 16px 32px -12px rgba(15, 23, 42, 0.35);
     animation: slideDown 0.2s ease;
@@ -204,15 +296,13 @@
     padding: 0.75rem 1rem;
     border-radius: 10px;
     font-size: 1rem;
-  }
-
-  .navbar-user-name {
-    display: none;
+    justify-content: flex-start;
+    width: 100%;
   }
 }
 
 @media (max-width: 1024px) {
-  html[data-theme="dark"] .navbar-links {
+  html[data-theme='dark'] .navbar-links {
     background: #111827;
     border-top-color: #1f2937;
     box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
@@ -221,11 +311,12 @@
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Pantallas muy angostas (ej. 360px): compactar la fila superior del navbar
-   para que marca + acciones nunca se encimen ni desborden del ancho. */
+/* ============================================================
+   MÓVIL MUY ANGOSTO (≤ 420px)
+   ============================================================ */
 @media (max-width: 420px) {
   .navbar {
     padding: 0.6rem 0.75rem;
@@ -251,18 +342,71 @@
   }
 
   .navbar-user {
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.55rem;
   }
 }
 
 /* ==========================================================================
-   Modo Aventura (SULO apartado estudiante).
-   La clase base .navbar no cambia: el docente conserva su aspecto actual.
-   Estas reglas (2 clases de especificidad) SOLO aplican bajo .navbar-student.
+   MODO OSCURO
+   ========================================================================== */
+
+html[data-theme='dark'] .navbar {
+  background: rgba(17, 24, 39, 0.92);
+  border-bottom-color: #1f2937;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme='dark'] .navbar-title {
+  color: #f1f5f9;
+}
+
+html[data-theme='dark'] .navbar-link {
+  color: #94a3b8;
+}
+
+html[data-theme='dark'] .navbar-link:hover {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .navbar-link.active {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.8),
+    rgba(124, 58, 237, 0.8),
+    rgba(109, 40, 217, 0.8)
+  );
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .navbar-user {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme='dark'] .navbar-user-name {
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .navbar-bell-btn:hover {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .navbar-hamburger {
+  color: #cbd5e1;
+}
+
+html[data-theme='dark'] .navbar-hamburger:hover {
+  background: #1e293b;
+}
+
+/* ==========================================================================
+   Modo Aventura (SOLO apartado estudiante).
    ========================================================================== */
 
 .navbar-student .navbar-link {
-  border-radius: var(--radius-pill);
+  border-radius: 10px;
   padding: 0.5rem 1.05rem;
   gap: 0.45rem;
   font-weight: 600;
@@ -292,7 +436,7 @@
   color: #ffffff;
 }
 
-/* Tipografia retro pixel — navbar estudiante */
+/* Tipografía retro pixel — navbar estudiante */
 .navbar.navbar-student .navbar-title,
 .navbar-student .navbar-title {
   font-family: var(--font-display);
@@ -300,12 +444,14 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
+
 .navbar-student .navbar-link,
 .navbar.navbar-student .navbar-link {
   font-family: var(--font-display);
   font-size: 0.48rem;
   letter-spacing: 0.06em;
 }
+
 .navbar-student .navbar-user-name,
 .navbar.navbar-student .navbar-user-name {
   font-family: var(--font-display);
@@ -317,8 +463,89 @@
   .navbar.navbar-student .navbar-title {
     font-size: 0.9rem;
   }
+
   .navbar-student .navbar-link {
     justify-content: flex-start;
     width: 100%;
   }
+}
+
+/* ==========================================================================
+   OVERRIDE FINAL — FORZAR FORMAS CUADRADAS
+   ==========================================================================
+   El archivo `cartoon-area` (o el tema "Modo Aventura") aplica
+   `border-radius: var(--radius-pill) !important` sobre `.navbar-link`,
+   `.navbar-user` y demás. Este bloque va al final del bundle con
+   `html body` delante (mayor especificidad) + `!important` para ganar
+   la cascada y forzar las esquinas de 10px en ambos navbars.
+
+   Va al final a propósito: si algo lo pisa, debe quedar ANTES en el
+   bundle o tener aún más especificidad.
+   ========================================================================== */
+
+/* ---- Navbar principal: links de navegación ---- */
+html body .navbar .navbar-link,
+html body .navbar.navbar-teacher .navbar-link,
+html body .navbar.navbar-student .navbar-link {
+  border-radius: 10px !important;
+}
+
+/* Link activo: misma forma, mantiene el gradiente morado */
+html body .navbar .navbar-link.active,
+html body .navbar.navbar-teacher .navbar-link.active,
+html body .navbar.navbar-student .navbar-link.active {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar principal: tarjeta del usuario ---- */
+html body .navbar .navbar-user,
+html body .navbar.navbar-teacher .navbar-user,
+html body .navbar.navbar-student .navbar-user {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar principal: botón de campana ---- */
+html body .navbar .navbar-bell-btn,
+html body .navbar.navbar-teacher .navbar-bell-btn,
+html body .navbar.navbar-student .navbar-bell-btn {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar principal: botón de logout ---- */
+html body .navbar .navbar-logout-btn,
+html body .navbar.navbar-teacher .navbar-logout-btn,
+html body .navbar.navbar-student .navbar-logout-btn {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar principal: hamburguesa ---- */
+html body .navbar .navbar-hamburger {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar de Analítica: links ---- */
+html body .analitica-navbar .analitica-link,
+html body .analitica-navbar .analitica-link.active {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar de Analítica: tarjeta del usuario ---- */
+html body .analitica-navbar .analitica-user {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar de Analítica: logout ---- */
+html body .analitica-navbar .analitica-logout-btn {
+  border-radius: 10px !important;
+}
+
+/* ---- Navbar de Analítica: hamburguesa ---- */
+html body .analitica-navbar .analitica-hamburger {
+  border-radius: 10px !important;
+}
+
+/* ---- Excepción: el badge de notificaciones sigue siendo un círculo ---- */
+html body .navbar .navbar-bell-badge,
+html body .analitica-navbar .analitica-bell-badge {
+  border-radius: 999px !important;
 }

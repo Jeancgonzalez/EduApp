@@ -30,8 +30,13 @@ process.on('exit', (code) => {
 // Señales del sistema / terminal: apagado graceful.
 const gracefulShutdown = (signal) => {
   console.log(`\n[Proceso] Señal ${signal} recibida. Cerrando servidor gracefully...`);
-  if (global._server) {
-    global._server.close(() => {
+if (global._server) {
+      // El cron sigue vivo después de cerrar el HTTP: sin esta parada seguiría
+      // consultando la base mientras el proceso se desconecta.
+      try {
+        require('./services/reportSchedule.service').detenerScheduler();
+      } catch { /* ignorar */ }
+      global._server.close(() => {
       console.log('[Proceso] Servidor HTTP cerrado.');
       const { sequelize } = require('./config/database');
       sequelize.close().then(() => {
@@ -60,6 +65,18 @@ const startServer = async () => {
     // 1. Verificamos la conexión a la base de datos MySQL
     await testConnection();
     
+    // Migraciones SQL versionadas y reversibles (backend/migrations/*.sql).
+    // Se ejecutan ANTES de sequelize.sync() para que el SQL sea la fuente de
+    // verdad del esquema: sync() solo crea las tablas que falten, así que
+    // cualquier tabla declarada aquí se conserva tal cual (con sus índices y FKs).
+    try {
+      const MigrationService = require('./services/migration.service');
+      await MigrationService.aplicarPendientes();
+    } catch (migrateError) {
+      console.error('❌ Error aplicando migraciones:', migrateError);
+      throw migrateError;
+    }
+
     // Sincronizar los modelos con la base de datos (Crea las tablas si no existen)
     const { sequelize } = require('./config/database');
     // Cargar asociaciones entre modelos
@@ -372,6 +389,15 @@ const startServer = async () => {
 
     // Guardar referencia global para graceful shutdown.
     global._server = server;
+
+    // Planificador de reportes programados: revisa cada hora las programaciones
+    // vencidas. El teacher.controller también las ejecuta al iniciar sesión,
+    // que es la red de seguridad cuando el proceso estuvo apagado.
+    try {
+      require('./services/reportSchedule.service').iniciarScheduler();
+    } catch (schedulerError) {
+      console.warn('⚠️ No se pudo iniciar el planificador de reportes:', schedulerError.message);
+    }
 
     // Manejar errores a nivel de servidor HTTP (EADDRINUSE, ECONNRESET, etc.)
     server.on('error', (err) => {

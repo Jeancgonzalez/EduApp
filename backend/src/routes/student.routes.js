@@ -60,4 +60,15 @@ router.get('/progreso', StudentController.getProgresoDetallado);
 router.get('/gamificacion', StudentController.getGamificacion);
 router.get('/completados', StudentController.getCompletados);
 
+// Telemetría: el cliente abre el intento antes de resolver y manda el
+// `intento_id` de vuelta al enviar. Si nunca lo abre (cliente antiguo), el
+// resolver registra el intento igualmente, sin perder datos.
+router.post('/actividad/:tipo/:id/iniciar', RespuestasController.iniciarActividad);
+
+// Sesión del estudiante: alimenta tiempo activo, DAU y retención a 7 días.
+// El frontend envía un heartbeat cada pocos minutos; el que abra la sesión
+// aparte es opcional porque el propio heartbeat la crea si no existe.
+router.post('/sesion/heartbeat', StudentController.heartbeat);
+router.post('/sesion/cerrar', StudentController.cerrarSesion);
+
 module.exports = router;

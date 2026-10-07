@@ -35,6 +35,10 @@ router.use('/teacher', teacherRoutes);
 const cuentasRoutes = require('./cuentas.routes');
 router.use('/cuentas', cuentasRoutes);
 
+// Panel analítico del docente (Fase 3).
+const dashboardRoutes = require('./dashboard.routes');
+router.use('/dashboard', dashboardRoutes);
+
 const respuestasController = require('../controllers/respuestas.controller');
 const { verifyToken, isStudent } = require('../middlewares/authMiddleware');
 

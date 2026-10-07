@@ -225,12 +225,12 @@ const StudentContenidoDetalle = () => {
         
         .texto-container {
           line-height: 1.8;
-          color: #334155;
+          color: var(--text);
         }
 
         .leccion-contenido {
           line-height: 1.8;
-          color: #334155;
+          color: var(--text);
           max-width: 100%;
           overflow-x: auto;
         }

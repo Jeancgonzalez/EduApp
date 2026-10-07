@@ -1,0 +1,603 @@
+/* ==========================================================================
+   Contenidos y Actividades — contenedor centrado con ancho máximo
+   ========================================================================== */
+
+.contenidos-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Grid de dos paneles: Estado global + Creadas por ti
+   ========================================================================== */
+
+.con-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+}
+
+/* ==========================================================================
+   Dona de estado global
+   ========================================================================== */
+
+.con-dona {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.con-dona-grafico {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  flex: 0 0 auto;
+}
+
+.con-dona-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.con-dona-centro strong {
+  font-family: var(--font-display, var(--font-body));
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-strong, #111827);
+  line-height: 1.1;
+}
+
+.con-dona-centro span {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748b);
+}
+
+.con-dona-leyenda {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ==========================================================================
+   Panel "Creadas por ti"
+   ========================================================================== */
+
+.con-creadas-numero {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0.15rem 0 1rem;
+  font-family: var(--font-display, var(--font-body));
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary, #7c3aed);
+  line-height: 1;
+}
+
+.con-creadas-numero span {
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+}
+
+.con-creadas-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.con-creadas-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border, #e2e8f0);
+  font-size: 0.92rem;
+  color: var(--text, #334155);
+}
+
+.con-creadas-lista li:first-child {
+  border-top: none;
+}
+
+.con-creadas-cuenta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.con-creadas-cuenta strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-strong, #111827);
+}
+
+/* ==========================================================================
+   Controles de la tabla: chips de tipo + leyenda de dificultad
+   ========================================================================== */
+
+.con-tabla-controles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.65rem;
+}
+
+/* --- CAMBIO: La leyenda ahora está al final y centrada --- */
+.con-dif-leyenda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.con-dif-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.con-dif-chip-mudo {
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Tabla "Detalle por actividad"
+   ========================================================================== */
+
+.dash-tabla-envoltura {
+  position: relative;
+  overflow: visible;
+}
+
+.con-tabla {
+  min-width: 820px;
+}
+
+.con-tabla .con-titulo {
+  color: var(--text-strong, #111827);
+  font-weight: 600;
+}
+
+.con-cab-sup {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.con-tipo {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border-strong, #cbd5e1);
+  border-radius: var(--radius-pill, 999px);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  background: var(--bg-elevated, #eef2ff);
+  white-space: nowrap;
+}
+
+/* ---------- Botones de orden en las cabeceras ---------- */
+
+.con-orden {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.con-orden svg {
+  font-size: 0.95rem;
+  transition: transform 0.15s ease;
+}
+
+.con-orden:hover {
+  color: var(--text-strong, #111827);
+}
+
+.con-orden-activo {
+  color: var(--primary, #7c3aed);
+}
+
+/* ---------- Cabecera de dificultad con el botón "i" ---------- */
+
+.con-cab-dificultad {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.con-i {
+  position: relative;
+  display: inline-flex;
+}
+
+.con-i-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border-strong, #cbd5e1);
+  border-radius: var(--radius-pill, 999px);
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.con-i-boton:hover,
+.con-i-boton[aria-expanded='true'] {
+  background: var(--primary-soft, #ede9fe);
+  border-color: var(--primary, #7c3aed);
+  color: var(--primary, #7c3aed);
+}
+
+/* Ocultar el label móvil por defecto (se muestra solo en @media) */
+.con-dificultad-label-mobile {
+  display: none;
+}
+
+/* ==========================================================================
+   Popover de Criterio de Dificultad (MODAL AMPLIADO Y CORREGIDO)
+   ========================================================================== */
+
+/* Fondo oscuro para el efecto modal */
+.con-i-backdrop {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+}
+
+/* La ventana modal centrada y más grande */
+.con-i-popover {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  
+  /* Tamaño y espacio */
+  width: 90vw !important;
+  max-width: 800px !important;
+  max-height: 90vh !important;
+  box-sizing: border-box !important;
+  padding: 2rem !important;
+  
+  /* Comportamiento */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 10001 !important;
+  
+  /* Estética */
+  border: 1px solid var(--border, #e2e8f0) !important;
+  border-radius: var(--radius-sm, 12px) !important;
+  background: var(--bg-card, #ffffff) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  color: var(--text, #334155) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  text-align: left !important;
+  
+  /* CLAVES PARA QUE EL TEXTO NO SE CORTE */
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Forzar a todos los elementos internos a que respeten el ancho y bajen de línea */
+.con-i-popover * {
+  white-space: normal !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.con-i-popover strong {
+  color: var(--text-strong, #111827);
+  font-size: 1.05rem;
+}
+
+.con-i-popover p {
+  margin: 0.5rem 0;
+}
+
+.con-i-popover ul {
+  margin: 0.4rem 0 0.6rem;
+  padding-left: 1.3rem;
+}
+
+.con-i-popover li {
+  margin-bottom: 0.25rem;
+}
+
+/* Botón de cerrar dentro del modal */
+.con-i-cerrar {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1.5rem;
+  background: var(--primary, #7c3aed);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.con-i-cerrar:hover {
+  background: #6d28d9;
+}
+
+/* ==========================================================================
+   CORRECCIÓN: Alineación de la columna % Acierto
+   ========================================================================== */
+
+.con-col-acierto {
+  text-align: center !important;
+}
+
+.con-col-acierto .con-orden {
+  justify-content: center;
+  width: 100%;
+}
+
+.con-col-acierto .con-acierto {
+  justify-content: center;
+}
+
+.con-acierto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.con-acierto-pct {
+  font-variant-numeric: tabular-nums;
+}
+
+.con-acierto-alto {
+  color: var(--danger, #dc2626);
+  font-size: 1rem;
+}
+
+/* ==========================================================================
+   CAMBIO: Alineación de la columna Tiempo promedio de finalización
+   ========================================================================== */
+
+/* En PC (Escritorio) centramos los datos de la columna Tiempo promedio */
+.con-col-tiempo {
+  text-align: center !important;
+}
+
+.con-col-tiempo .con-orden {
+  justify-content: center;
+  width: 100%;
+}
+
+/* ---------- KPI de dificultad dominante ---------- */
+
+.con-kpi-dificultad {
+  font-family: var(--font-display, var(--font-body));
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Modo oscuro para el modal
+   ========================================================================== */
+
+html[data-theme='dark'] .con-i-popover {
+  background: var(--bg-card, #171a2b) !important;
+  border-color: var(--border, #2b3048) !important;
+}
+
+html[data-theme='dark'] .con-tipo {
+  background: var(--bg-elevated, #20243a);
+  border-color: var(--border-strong, #3b4160);
+  color: var(--text-muted, #94a3b8);
+}
+
+/* ==========================================================================
+   RESPONSIVIDAD (Tablet y Móvil)
+   ========================================================================== */
+
+/* Tabletas (≤ 1024px) */
+@media (max-width: 1024px) {
+  .contenidos-page {
+    padding: 0 1rem;
+  }
+
+  .con-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tabletas pequeñas y Móviles (≤ 820px) */
+@media (max-width: 820px) {
+  /* --- Convertir Tabla en Tarjetas --- */
+  .con-tabla {
+    min-width: 100%;
+  }
+
+  .con-tabla thead {
+    display: none;
+  }
+
+  .con-tabla tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: var(--radius-sm, 10px);
+    padding: 0.5rem 1rem;
+    background: var(--bg-card, #ffffff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  }
+
+  .con-tabla tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--border, #e2e8f0);
+    text-align: right;
+  }
+
+  .con-tabla tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* Etiqueta de la celda usando data-label */
+  .con-tabla tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* Ajuste especial para la primera columna (Actividad) */
+  .con-tabla tbody td:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .con-tabla tbody td:first-child::before {
+    margin-bottom: 0.25rem;
+  }
+
+  .con-tabla tbody td:first-child .con-titulo {
+    font-size: 1rem;
+  }
+
+  /* --- CORRECCIÓN: Mostrar el botón de info en la fila de Dificultad --- */
+  .con-tabla tbody td[data-label="Dificultad"]::before {
+    display: none;
+  }
+
+  .con-dificultad-label-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
+    text-align: left;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* --- CORRECCIÓN: Mantener % Acierto a la derecha en móviles --- */
+  .con-col-acierto .con-acierto {
+    justify-content: flex-end !important;
+  }
+
+  /* --- CAMBIO: Mantener Tiempo promedio a la derecha en móviles --- */
+  .con-col-tiempo {
+    justify-content: flex-end !important;
+  }
+
+  /* Ajuste del modal en pantallas pequeñas */
+  .con-i-popover {
+    padding: 1.5rem !important;
+    font-size: 0.9rem !important;
+    width: 95vw !important;
+  }
+}
+
+/* Móviles (≤ 640px) */
+@media (max-width: 640px) {
+  .contenidos-page {
+    padding: 0 0.75rem;
+  }
+
+  .con-dona {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .con-dona-grafico {
+    width: 210px;
+    height: 210px;
+  }
+
+  .con-dona-leyenda {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .con-creadas-numero {
+    font-size: 2rem;
+  }
+
+  /* --- CORRECCIÓN DE LOS FILTROS EN MÓVILES --- */
+  .con-tabla-controles {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dash-segmentos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    border-radius: var(--radius-sm, 10px);
+  }
+  
+  .dash-segmentos button {
+    flex: 1 1 auto;
+    min-width: 80px;
+    border-radius: var(--radius-sm, 8px) !important;
+    padding: 0.5rem 0.5rem;
+  }
+
+  .con-dif-leyenda {
+    justify-content: center; /* Aseguramos que siga centrada en móviles */
+  }
+}

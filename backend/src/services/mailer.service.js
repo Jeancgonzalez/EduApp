@@ -5,6 +5,15 @@ const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || '';
 const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
 const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '465', 10);
 
+// Tope de espera de la conexión SMTP, configurable con `EMAIL_TIMEOUT_MS`.
+//
+// Sin esto, con el servidor de correo caído cada envío se queda esperando a los
+// valores por defecto de nodemailer (2 min de conexión, 30 s de saludo) y una
+// petición que solo falla al avisar al docente se queda medio minuto colgada
+// antes de devolver su respuesta. Los registros de la suite QA sin MailHog
+// encendido tardaban 52 s cada uno por esto.
+const EMAIL_TIMEOUT_MS = parseInt(process.env.EMAIL_TIMEOUT_MS || '10000', 10);
+
 // Si no hay credenciales SMTP configuradas, el envío se simula en consola
 // (permitiendo el desarrollo y las pruebas locales sin credenciales reales).
 const mailConfigured = Boolean(EMAIL_USER && EMAIL_PASSWORD);
@@ -16,6 +25,9 @@ if (mailConfigured) {
     host: EMAIL_HOST,
     port: EMAIL_PORT,
     secure: EMAIL_PORT === 465,
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS,
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASSWORD,

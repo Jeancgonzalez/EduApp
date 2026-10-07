@@ -240,10 +240,20 @@ class StudentService {
 
   static async getDetailedProgress(estudianteId, docenteId) {
     const vis = await GrupoService.condicionesVisibilidad(estudianteId);
-    // Las condiciones no dependen del alias, así que sirven igual en los `include`.
-    const condContenido = vis.contenido;
-    const condJuego = vis.juego;
-    const condEvaluacion = vis.evaluacion;
+    // Un JOIN trae `id` de varias tablas a la vez, así que la columna del recurso
+    // tiene que ir qualificada. `vis` (sin calificar) sirve para las consultas
+    // directas sobre el modelo, que van a `_getModuleProgress`; `visInclude`
+    // califica con el alias que usan estos tres `include`. Sin esto Sequelize
+    // genera `(... WHERE (id NOT IN (...)))` y MariaDB responde
+    // "Column 'id' in IN/ALL/ANY subquery is ambiguous" -> 500.
+    const visInclude = await GrupoService.condicionesVisibilidad(estudianteId, {
+      contenido: 'contenido',
+      juego: 'juego',
+      evaluacion: 'evaluacion',
+    });
+    const condContenido = visInclude.contenido;
+    const condJuego = visInclude.juego;
+    const condEvaluacion = visInclude.evaluacion;
     const [rawContents, rawGames, rawEvals] = await Promise.all([
       StudentProgress.findAll({
         where: { estudiante_id: estudianteId, contenido_id: { [Op.ne]: null } },

@@ -1,0 +1,195 @@
+/**
+ * Campana global de notificaciones.
+ *
+ * Se apoya en los tokens de `styles/variables.css`, así que el panel funciona
+ * igual en claro y en oscuro sin bloques propios. Va en `position: relative`
+ * sobre el contenedor para que el desplegable se ancle a la campana y no al
+ * `body`, y se cierra con clic fuera o con Escape.
+ */
+
+.campana {
+  position: relative;
+  display: inline-flex;
+}
+
+.campana-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  font-size: 1.25rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.campana-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.campana-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.campana-globo {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.05rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.28rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.campana-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 60;
+  width: min(22rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.campana-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-strong);
+}
+
+.campana-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: transparent;
+  border: 1px solid var(--primary-soft);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.campana-accion:hover {
+  background: var(--primary-soft);
+}
+
+.campana-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.campana-lista li + li {
+  border-top: 1px solid var(--border);
+}
+
+.campana-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.campana-item:hover {
+  background: var(--bg-elevated);
+}
+
+.campana-item-nueva {
+  border-left-color: var(--primary);
+  background: var(--bg-elevated);
+}
+
+.campana-item-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.campana-item-mensaje {
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.campana-item-fecha {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.campana-vacio {
+  margin: 0;
+  padding: 1.4rem 0.85rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.campana-error {
+  color: var(--danger);
+}
+
+.campana-pie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.6rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--bg-sunken);
+  border: 0;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.campana-pie:hover {
+  background: var(--primary-soft);
+}
+
+@media (max-width: 480px) {
+  .campana-panel {
+    position: fixed;
+    top: 4.2rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+  }
+}

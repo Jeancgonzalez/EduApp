@@ -11,8 +11,9 @@ import {
   MdLogout,
   MdMenu,
   MdClose,
-  MdSchool
+  MdSchool,
 } from 'react-icons/md';
+import CampanaNotificaciones from '../CampanaNotificaciones';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -68,16 +69,23 @@ const Navbar = () => {
 
       <div className="navbar-actions">
         <ThemeToggle />
+        {/* La campana va solo para el docente: las notificaciones son del panel
+            de Analítica, no del campus del estudiante. */}
+        {isTeacher && <CampanaNotificaciones />}
         {user && (
           <div className="navbar-user">
             <span className="navbar-user-role">{isTeacher ? '👨‍🏫' : '🎓'}</span>
             <span className="navbar-user-name">{user.name || 'Usuario'}</span>
           </div>
         )}
-        <button className="navbar-logout-btn" onClick={handleLogout} title="Cerrar sesión">
-          <MdLogout />
-          <span className="navbar-logout-label"></span>
-        </button>
+         <button
+                   type="button"
+                   className="navbar-logout-btn"
+                   onClick={handleLogout}
+                   title="Cerrar sesión"
+                 >
+                   <MdLogout />
+                 </button>
         <button
           className="navbar-hamburger"
           onClick={() => setMenuOpen(!menuOpen)}

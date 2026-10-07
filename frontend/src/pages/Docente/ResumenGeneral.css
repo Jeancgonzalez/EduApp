@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Resumen General — contenedor centrado con ancho máximo
+   ==========================================================================
+   Mantiene intacto el diseño y estilo del panel analítico (todos los
+   estilos vienen de DashboardDocenteAnalitica.css), pero acota el ancho
+   del contenido para que las tarjetas no se estiren de borde a borde en
+   pantallas grandes.
+
+   El diseño responsivo se preserva: en tablet y móvil el contenedor
+   ocupa el 100% del ancho con padding reducido.
+   ========================================================================== */
+
+.resumen-general-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+  .resumen-general-page {
+    padding: 0 1rem;
+  }
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px) {
+  .resumen-general-page {
+    padding: 0 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   Resumen General — contenedor centrado con ancho máximo
+   ==========================================================================
+   Mantiene intacto el diseño y estilo del panel analítico (todos los
+   estilos vienen de DashboardDocenteAnalitica.css), pero acota el ancho
+   del contenido para que las tarjetas no se estiren de borde a borde en
+   pantallas grandes.
+
+   El diseño responsivo se preserva: en tablet y móvil el contenedor
+   ocupa el 100% del ancho con padding reducido.
+   ========================================================================== */
+
+.resumen-general-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1024px) {
+  .resumen-general-page {
+    padding: 0 1rem;
+  }
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px) {
+  .resumen-general-page {
+    padding: 0 0.75rem;
+  }
+}
+
+/* ==========================================================================
+   Centrado de leyendas
+   ==========================================================================
+   Todas las leyendas de la sección (`.dash-leyenda`) van centradas por
+   defecto. Es el mismo patrón de "leyenda bajo el gráfico" que usan las
+   vistas de Vista de Grupo y Gamificación, pero centrada para que no quede
+   pegada a la izquierda y se vea equilibrada.
+   ========================================================================== */
+
+.resumen-general-page .dash-leyenda {
+  justify-content: center;
+}
+
+/* El componente `Legend` de Recharts (si en el futuro se añade uno nativo)
+   también va centrado. */
+.resumen-general-page .recharts-legend-wrapper {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,353 @@
+/* ============================================================
+   NAVBAR DE ANALÍTICA
+   ============================================================ */
+
+.analitica-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  height: 64px;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* ---------- Brand ---------- */
+.analitica-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.analitica-logo {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #007bff 0%, #00b050 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.4rem;
+}
+
+.analitica-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+/* ---------- Links ---------- */
+.analitica-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.analitica-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;                /* ← cuadrada */
+  text-decoration: none;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.analitica-link:hover:not(.active) {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.analitica-link.active {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.75),
+    rgba(124, 58, 237, 0.75),
+    rgba(79, 70, 229, 0.75)
+  );
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+
+.analitica-link.active .analitica-icon {
+  color: #ffffff;
+}
+
+.analitica-icon {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ---------- Acciones ---------- */
+.analitica-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* La tarjeta del usuario: cuadrada */
+.analitica-user {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;                /* ← cuadrada */
+  padding: 0.4rem 0.85rem;
+}
+
+.analitica-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analitica-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 10px;                /* ← cuadrada */
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.15rem;
+  transition: all 0.2s;
+}
+
+.analitica-logout-btn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+/* Hamburger: cuadrada */
+.analitica-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #475569;
+  border-radius: 10px;
+  padding: 0.15rem 0.35rem;
+  transition: background 0.15s ease;
+}
+
+.analitica-hamburger:hover {
+  background: #f1f5f9;
+}
+
+/* ============================================================
+   TABLET — solo iconos
+   ============================================================ */
+@media (max-width: 1200px) {
+  .analitica-label {
+    display: none;
+  }
+  .analitica-link {
+    padding: 0.55rem 0.7rem;
+  }
+}
+
+/* ============================================================
+   MÓVIL (≤ 900px)
+   ============================================================ */
+@media (max-width: 900px) {
+  .analitica-navbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    border-radius: 14px;
+  }
+
+  .analitica-brand {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .analitica-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .analitica-actions {
+    order: 2;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .analitica-hamburger {
+    display: flex;
+    align-items: center;
+  }
+
+  .analitica-user-name {
+    display: none;
+  }
+
+  .analitica-links {
+    order: 3;
+    display: none;
+    width: 100%;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+    padding: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 16px 32px -12px rgba(15, 23, 42, 0.35);
+    animation: analiticaSlideDown 0.2s ease;
+    justify-content: flex-start;
+  }
+
+  .analitica-links.open {
+    display: flex;
+  }
+
+  .analitica-link {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .analitica-label {
+    display: inline-block;
+  }
+}
+
+/* ============================================================
+   MÓVIL MUY ANGOSTO (≤ 420px)
+   ============================================================ */
+@media (max-width: 420px) {
+  .analitica-navbar {
+    padding: 0.6rem 0.75rem;
+    gap: 0.25rem;
+  }
+  .analitica-brand {
+    gap: 0.5rem;
+  }
+  .analitica-logo {
+    width: 34px;
+    height: 34px;
+    font-size: 1.2rem;
+  }
+  .analitica-title {
+    font-size: 1rem;
+  }
+  .analitica-actions {
+    gap: 0.4rem;
+  }
+  .analitica-user {
+    padding: 0.3rem 0.55rem;
+  }
+}
+
+/* ============================================================
+   ANIMACIÓN
+   ============================================================ */
+@keyframes analiticaSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   MODO OSCURO
+   ============================================================ */
+html[data-theme='dark'] .analitica-navbar {
+  background: rgba(17, 24, 39, 0.92);
+  border-color: #1f2937;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme='dark'] .analitica-title {
+  color: #f1f5f9;
+}
+
+html[data-theme='dark'] .analitica-link {
+  color: #94a3b8;
+}
+
+html[data-theme='dark'] .analitica-link:hover:not(.active) {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .analitica-link.active {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.8),
+    rgba(124, 58, 237, 0.8),
+    rgba(109, 40, 217, 0.8)
+  );
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .analitica-user {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+html[data-theme='dark'] .analitica-user-name {
+  color: #e2e8f0;
+}
+
+html[data-theme='dark'] .analitica-logout-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+html[data-theme='dark'] .analitica-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+html[data-theme='dark'] .analitica-hamburger {
+  color: #cbd5e1;
+}
+
+html[data-theme='dark'] .analitica-hamburger:hover {
+  background: #1e293b;
+}
+
+html[data-theme='dark'] .analitica-links {
+  background: #111827;
+  border-top-color: #1f2937;
+  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+}

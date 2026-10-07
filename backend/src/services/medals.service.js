@@ -77,6 +77,25 @@ const MEDALLAS = [
 ];
 
 class MedalsService {
+  /**
+   * Catálogo de insignias por id, sin las condiciones de otorgamiento.
+   *
+   * `medallas_obtenidas` guarda solo `medalla_id` y `categoria`: el nombre y el
+   * icono no se persisten. El panel de Analítica necesita el nombre para
+   * mostrar "más y menos obtenidas", y leerlo de aquí evita copiar las 50
+   * insignias en un segundo lugar donde se desincronizarían.
+   *
+   * @returns {Map<string, {id:string,nombre:string,categoria:string,icono:string}>}
+   */
+  static catalogo() {
+    if (!MedalsService._catalogo) {
+      MedalsService._catalogo = new Map(
+        MEDALLAS.map((m) => [m.id, { id: m.id, nombre: m.nombre, categoria: m.categoria, icono: m.icono }])
+      );
+    }
+    return MedalsService._catalogo;
+  }
+
   static async obtenerGamificacion(estudianteId, docenteId) {
     const [contents, games, evaluations] = await Promise.all([
       Content.findAll({ where: { publicado: true, docente_id: docenteId }, raw: true }),

@@ -1,0 +1,234 @@
+/**
+ * Página completa de notificaciones.
+ *
+ * Comparte tokens y radios con el resto del panel (`variables.css`), pero no
+ * reutiliza clases de `ReportesNotificaciones.css` a propósito: esa hoja solo
+ * se carga si el docente abre Reportes, y esta página tiene que verse igual
+ * cuando se entra directo por "Ver todas".
+ */
+
+.notif-page {
+  min-height: 100vh;
+  padding: 1.5rem 1rem 3rem;
+  background: var(--bg-app);
+}
+
+.notif-page-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notif-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  padding: 0.35rem 0.75rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.notif-volver:hover {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.notif-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.notif-cabecera h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-strong);
+}
+
+.notif-cabecera h1 svg {
+  color: var(--primary);
+}
+
+.notif-cabecera-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.notif-error {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.notif-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.notif-lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.notif-lista li.notif-sin-leer {
+  border-left: 5px solid var(--primary);
+}
+
+.notif-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.notif-item-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.notif-tipo {
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.notif-tipo[data-tipo='reporte'] {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.notif-tipo[data-tipo='exito'] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.notif-tipo[data-tipo='aviso'] {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* Grupo al que pertenece el reporte notificado. Se ve en la cabecera, al
+   lado del tipo, para que dos notificaciones del mismo reporte pero de
+   grupos distintos no se vean idénticas. */
+.notif-grupo {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+/* Empuja la fecha al borde derecho de la cabecera aunque haya chips. */
+.notif-fecha {
+  margin-left: auto;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.notif-titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.notif-mensaje {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.notif-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.8rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.notif-btn:hover:not(:disabled) {
+  background: var(--bg-elevated);
+}
+
+.notif-btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* Botón de descarga del reporte: dice el formato (PDF/CSV) en vez de un
+   genérico "Descargar", y usa el color primario suave para distinguirse de
+   las acciones neutras (marcar leída). */
+.notif-btn-descarga {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.notif-btn-descarga:hover:not(:disabled) {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+@media (max-width: 560px) {
+  .notif-lista li {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

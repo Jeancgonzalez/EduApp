@@ -14,9 +14,9 @@ const { sendGroupAssignedEmail } = require('./mailer.service');
  * su columna de recurso.
  */
 const RECURSOS_GRUPOS = {
-  contenido: { tabla: 'contenidos', pivote: 'contenido_grupos', col: 'contenido_id', modelo: ContentGroup },
-  juego: { tabla: 'juegos', pivote: 'juego_grupos', col: 'juego_id', modelo: GameGroup },
-  evaluacion: { tabla: 'evaluaciones', pivote: 'evaluacion_grupos', col: 'evaluacion_id', modelo: EvaluationGroup },
+  contenido: { tabla: 'contenidos', pivote: 'contenido_grupos', col: 'contenido_id', modelo: ContentGroup, alias: 'Content' },
+  juego: { tabla: 'juegos', pivote: 'juego_grupos', col: 'juego_id', modelo: GameGroup, alias: 'Game' },
+  evaluacion: { tabla: 'evaluaciones', pivote: 'evaluacion_grupos', col: 'evaluacion_id', modelo: EvaluationGroup, alias: 'Evaluation' },
 };
 
 // =========================
@@ -165,8 +165,12 @@ async function asignarEstudiantes(docenteId, grupoId, estudianteIds) {
  *
  * @param {string} tipo      'contenido' | 'juego' | 'evaluacion'
  * @param {number[]} grupoIds grupos del estudiante (solo enteros: evita inyección)
+ * @param {string} [alias]    alias de la tabla en la consulta. Por defecto el
+ *                            nombre del modelo (`Content`, `Game`, `Evaluation`),
+ *                            que es el que Sequelize usa cuando el `include` no
+ *                            declara `as`. Hace falta para desambiguar el `id`.
  */
-function condicionesVisibilidadPorTipo(tipo, grupoIds) {
+function condicionesVisibilidadPorTipo(tipo, grupoIds, alias) {
   const cfg = RECURSOS_GRUPOS[tipo];
   if (!cfg) throw new Error(`Tipo de recurso desconocido para grupos: ${tipo}`);
   const ids = (Array.isArray(grupoIds) ? grupoIds : [])
@@ -186,9 +190,16 @@ function condicionesVisibilidadPorTipo(tipo, grupoIds) {
     `WHERE \`ge\`.\`grupo_id\` IN (${listaIds}))`
   );
 
+  // Sin `alias` se deja la columna tal cual (`id`): funciona en la mayoría de las
+  // consultas y es lo que usan desde siempre estos call sites. Cuando la consulta
+  // hace JOIN con otra tabla que también trae `id` (p. ej. `include` a `grupos`),
+  // hay que pasar el alias o MariaDB responde
+  // "Column 'id' in IN/ALL/ANY subquery is ambiguous".
+  const columna = alias ? `\`${alias}\`.\`id\`` : '`id`';
+
   return [
-    where(literal('`id`'), Op.notIn, sinGrupos),
-    where(literal('`id`'), Op.in, conGruposDelEstudiante),
+    where(literal(columna), Op.notIn, sinGrupos),
+    where(literal(columna), Op.in, conGruposDelEstudiante),
   ];
 }
 
@@ -199,12 +210,12 @@ function condicionesVisibilidadPorTipo(tipo, grupoIds) {
  *
  * @returns {Promise<{contenido: object[], juego: object[], evaluacion: object[]}>}
  */
-async function condicionesVisibilidad(estudianteId) {
+async function condicionesVisibilidad(estudianteId, aliasPorTipo = {}) {
   const grupoIds = await getEstudianteGrupoIds(estudianteId);
   return {
-    contenido: condicionesVisibilidadPorTipo('contenido', grupoIds),
-    juego: condicionesVisibilidadPorTipo('juego', grupoIds),
-    evaluacion: condicionesVisibilidadPorTipo('evaluacion', grupoIds),
+    contenido: condicionesVisibilidadPorTipo('contenido', grupoIds, aliasPorTipo.contenido),
+    juego: condicionesVisibilidadPorTipo('juego', grupoIds, aliasPorTipo.juego),
+    evaluacion: condicionesVisibilidadPorTipo('evaluacion', grupoIds, aliasPorTipo.evaluacion),
   };
 }
 
@@ -213,17 +224,18 @@ async function condicionesVisibilidad(estudianteId) {
  *
  * @param {number} estudianteId
  * @param {string} tipo    'contenido' | 'juego' | 'evaluacion'
+ * @param {string} [alias] alias de la tabla en la consulta (ver arriba)
  */
-async function recursoWhereEstudiante(estudianteId, tipo) {
+async function recursoWhereEstudiante(estudianteId, tipo, alias) {
   const grupoIds = await getEstudianteGrupoIds(estudianteId);
-  return condicionesVisibilidadPorTipo(tipo, grupoIds);
+  return condicionesVisibilidadPorTipo(tipo, grupoIds, alias);
 }
 
 /**
  * Versión síncrona: dado un array de grupoIds ya conocidos, retorna las condiciones.
  */
-function recursoWherePorGrupoIds(grupoIds, tipo) {
-  return condicionesVisibilidadPorTipo(tipo, grupoIds);
+function recursoWherePorGrupoIds(grupoIds, tipo, alias) {
+  return condicionesVisibilidadPorTipo(tipo, grupoIds, alias);
 }
 
 /**

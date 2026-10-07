@@ -171,7 +171,7 @@ const Grupos = () => {
 
   return (
     <div className="grupos-container cartoon-area">
-      <button className="grupos-volver" onClick={() => navigate(-1)}>
+      <button className="grupos-volver" onClick={() => navigate('/gestion-alumnos')}>
         <MdArrowBack /> Volver
       </button>
 

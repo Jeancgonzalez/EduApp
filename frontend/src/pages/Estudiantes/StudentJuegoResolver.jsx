@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useIntentoActividad } from '../../hooks/useTelemetria';
 import { MdArrowBack, MdCheckCircle, MdError, MdRefresh, MdSportsEsports, MdMenuBook, MdStar, MdStarBorder } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import AdivinanzaGame from '../../components/games/AdivinanzaGame';
@@ -40,6 +41,10 @@ const StudentJuegoResolver = () => {
   const [enviando, setEnviando] = useState(false);
   const [resumenJuegos, setResumenJuegos] = useState(null);
 
+  // El intento solo se abre cuando el juego ya cargó, para no contar visitas a
+  // un juego inexistente.
+  const intentoId = useIntentoActividad('juego', id, !loading && !!juego && !error);
+
   useEffect(() => {
     api.get(`/juegos/${id}`)
       .then(res => {
@@ -53,7 +58,14 @@ const StudentJuegoResolver = () => {
   const handleGameComplete = async (datos) => {
     setEnviando(true);
     try {
-      const res = await api.post(`/student/juegos/${id}/responder`, { ...datos, juego_id: id });
+      const res = await api.post(`/student/juegos/${id}/responder`, {
+        ...datos,
+        juego_id: id,
+        // Cierra el intento de telemetría abierto al entrar al juego; el backend
+        // calcula la duración con el reloj del servidor. `intento_id` puede venir
+        // `null` si la telemetría falló: el juego se califica igual.
+        intento_id: intentoId,
+      });
       setResultado(res.data.data);
       try {
         const listaRes = await api.get('/student/juegos/publicados');

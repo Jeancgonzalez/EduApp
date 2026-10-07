@@ -7,6 +7,7 @@ const Evaluation = require('../models/evaluation.model');
 const Question = require('../models/question.model');
 const StudentProgress = require('../models/studentProgress.model');
 const ProgressService = require('../services/progress.service');
+const TelemetriaService = require('../services/telemetria.service');
 const { Op } = require('sequelize');
 
 class StudentController {
@@ -106,6 +107,23 @@ class StudentController {
 
       const record = await StudentService.registerContentView(estudianteId, id);
 
+      // Telemetría: un contenido no se "resuelve", se marca como visto. Se registra
+      // la visita para que el mapa de calor y la participación semanal cuenten los
+      // contenidos, no solo juegos y evaluaciones.
+      try {
+        await TelemetriaService.registrarIntentoDirecto({
+          estudianteId,
+          docenteId: req.user.docente_id,
+          tipo: 'contenido',
+          actividadId: Number(id),
+          modulo: contenido.modulo || null,
+          puntajeObtenido: 0,
+          puntajeMaximo: null,
+        });
+      } catch (telemetryError) {
+        console.warn('[telemetría] No se pudo registrar la visita al contenido:', telemetryError.message);
+      }
+
       if (contenido.modulo) {
         await ProgressService.recalcularProgreso(estudianteId, contenido.modulo, null, req.user.docente_id);
       }
@@ -130,9 +148,50 @@ class StudentController {
     try {
       const estudianteId = req.user.id;
       const data = await MedalsService.obtenerGamificacion(estudianteId, req.user.docente_id);
+
+      // Persiste la fecha de primera obtención de cada insignia. `medals.service`
+      // las calculaba en cada lectura sin guardar nada, así que el docente no tenía
+      // forma de saber cuándo se obtuvo cada una.
+      try {
+        await TelemetriaService.registrarMedallas({
+          estudianteId,
+          docenteId: req.user.docente_id,
+          medallas: (data.medallas || []).filter(m => m.obtenida),
+        });
+      } catch (medalError) {
+        console.warn('[telemetría] No se pudieron persistir las medallas:', medalError.message);
+      }
+
       res.status(200).json({ success: true, data });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  /**
+   * Heartbeat de sesión. El frontend lo envía periódicamente; con eso el backend
+   * puede medir tiempo activo, usuarios activos y retención a 7 días sin
+   * depender de un login por día.
+   */
+  static async heartbeat(req, res) {
+    try {
+      const data = await TelemetriaService.registrarHeartbeat({
+        estudianteId: req.user.id,
+        docenteId: req.user.docente_id,
+      });
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      // Nunca debe romper la navegación del estudiante: se responde 200 vacío.
+      res.status(200).json({ success: true, data: { duracion_seg: 0 } });
+    }
+  }
+
+  static async cerrarSesion(req, res) {
+    try {
+      await TelemetriaService.cerrarSesion({ estudianteId: req.user.id });
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(200).json({ success: true });
     }
   }
 

@@ -380,3 +380,82 @@ html[data-theme="dark"] .mobile-nav-toggle {
     padding: 1.25rem;
   }
 }
+
+/* --- Modo oscuro -------------------------------------------------------
+ * El resto de esta página (`.stat-card`, `.main-header`, `.sidebar`,
+ * `.nav-item`, `.user-badge`, `.logout-btn`) ya lo resuelve `darkmode.css`.
+ * Aquí solo queda lo que ese archivo no cubre.
+ */
+
+/* `#64748b` es un gris medio que sobre el fondo casi negro de `darkmode.css`
+   queda ilegible: en oscuro pasa al tono de texto secundario del tema. */
+html[data-theme="dark"] .loading {
+  color: var(--text-muted);
+}
+
+/* Evita el salto de color al conmutar el tema: los contenedores y tarjetas
+   heredan el cambio de fondo de `darkmode.css`, y la transición lo suaviza. */
+html[data-theme="dark"] .dashboard-container,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .main-header,
+html[data-theme="dark"] .sidebar {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ---------- Subdivisión del sidebar (Analítica) ---------- */
+.nav-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-section-title:hover {
+  background: var(--surface-hover, rgba(124, 58, 237, 0.08));
+  color: var(--primary, #7c3aed);
+}
+
+.nav-section-chevron {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.nav-section-body {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.25rem;
+}
+
+/* Los items dentro de la subdivisión quedan ligeramente indentados */
+.nav-section-body .nav-item {
+  padding-left: 1.75rem;
+}
+
+/* Estado activo coherente con el resto del menú */
+.nav-section-body .nav-item.active {
+  background: var(--primary-soft, rgba(124, 58, 237, 0.12));
+  color: var(--primary, #7c3aed);
+  font-weight: 600;
+}
