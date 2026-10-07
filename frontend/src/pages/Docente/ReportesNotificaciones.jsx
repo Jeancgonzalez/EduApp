@@ -145,7 +145,8 @@ const ReportesNotificaciones = () => {
         );
       }),
       api.get('/teacher/grupos').then((r) => {
-        if (vivo) setGrupos(Array.isArray(r.data?.data) ? r.data.data : []);
+        const raw = r.data?.data;
+        if (vivo) setGrupos(Array.isArray(raw) ? raw : (raw?.grupos || []));
       }),
       cargarSchedules(),
       cargarHistorial(),
