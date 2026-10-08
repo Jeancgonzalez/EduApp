@@ -2,7 +2,6 @@
   padding: 2rem;
   max-width: 700px;
   margin: 0 auto;
-
 }
 
 .crear-contenido-card {
@@ -24,16 +23,41 @@
   gap: 1rem;
 }
 
-.crear-contenido-form label {
+/* -------------------------------------------------------------------------
+   Labels del formulario
+   -------------------------------------------------------------------------
+   Solo los labels que son hijos DIRECTOS del formulario o del bloque
+   `.tipo-fields`. Los labels internos del componente `GrupoMultiSelect`
+   (los de cada opción de grupo) quedan fuera y mantienen su propio layout
+   flex.
+
+   El `:not(.file-label)` deja fuera la caja de subir archivo, que tiene
+   su propia regla con `display: flex` más abajo.
+   ------------------------------------------------------------------------- */
+.crear-contenido-form > label:not(.file-label),
+.tipo-fields > label:not(.file-label) {
   display: grid;
   gap: 0.5rem;
   font-weight: 600;
   color: #374151;
 }
 
-.crear-contenido-form input,
-.crear-contenido-form textarea,
-.crear-contenido-form select {
+/* -------------------------------------------------------------------------
+   Campos de texto del formulario
+   -------------------------------------------------------------------------
+   Con el combinador `>` se limita el alcance a los inputs/textarea/select
+   que son hijos directos de esos labels. Antes, `.crear-contenido-form
+   input` alcanzaba TAMBIÉN a los checkboxes y radios internos del
+   `GrupoMultiSelect`, y les aplicaba `width: 100%` + `padding` → el
+   componente se veía aplastado y con un scroll horizontal, muy distinto
+   a como se ve en `CrearJuegos`.
+   ------------------------------------------------------------------------- */
+.crear-contenido-form > label > input,
+.crear-contenido-form > label > textarea,
+.crear-contenido-form > label > select,
+.tipo-fields > label:not(.file-label) > input,
+.tipo-fields > label:not(.file-label) > textarea,
+.tipo-fields > label:not(.file-label) > select {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 0.75rem;
@@ -41,6 +65,7 @@
   font-size: 0.95rem;
   color: #111827;
   background: #f9fafb;
+  font-family: inherit;
 }
 
 .crear-contenido-form textarea {
@@ -101,15 +126,15 @@
   font-style: italic;
 }
 
+/* -------------------------------------------------------------------------
+   Caja de subir archivo
+   -------------------------------------------------------------------------
+   Mantiene su propio layout flex y no la toca la regla general de labels
+   porque está excluida con `:not(.file-label)` arriba. El `> .file-input`
+   de dentro sigue oculto.
+   ------------------------------------------------------------------------- */
 .file-label {
   cursor: pointer;
-}
-
-.file-label .file-input {
-  display: none;
-}
-
-.file-label {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -121,6 +146,10 @@
   color: #475569;
   transition: all 0.2s;
   background: #f1f5f9;
+}
+
+.file-label .file-input {
+  display: none;
 }
 
 .file-label:hover {
@@ -141,9 +170,12 @@
   word-break: break-all;
 }
 
+/* El campo del editor de texto enriquecido tiene su propio label y su
+   propio componente con estilos propios. */
 .rte-field {
   margin-bottom: 1rem;
 }
+
 .rte-field label {
   display: block;
   margin-bottom: 0.5rem;

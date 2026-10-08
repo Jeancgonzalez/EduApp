@@ -6,4 +6,5 @@ dist/
 Thumbs.db
 AppData/
 backend/uploads/
+remotion/
 *.zip
