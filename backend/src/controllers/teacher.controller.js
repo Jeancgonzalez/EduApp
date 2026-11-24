@@ -573,11 +573,23 @@ class TeacherController {
 
     const spRecords = await StudentProgress.findAll({
       where: { estudiante_id: { [Op.in]: studentIds }, completado: true },
-      attributes: ['estudiante_id', 'contenido_id', 'juego_id', 'evaluacion_id'],
+      attributes: ['estudiante_id', 'contenido_id', 'juego_id', 'evaluacion_id', 'puntaje'],
       raw: true
     });
 
     const studentModuleCompletions = {};
+    // Mejor puntaje por estudiante/actividad. La nota del módulo se calcula con
+    // estos registros (solo actividades hoy publicadas y visibles) en vez de
+    // leer el caché `progreso`, que puede quedar desactualizado al publicar o
+    // despublicar contenidos, juegos y evaluaciones.
+    const studentBestScores = {};
+    const guardarMejorPuntaje = (estudianteId, tipo, recursoId, puntaje) => {
+      const key = `${estudianteId}:${tipo}:${recursoId}`;
+      const valor = Number(puntaje) || 0;
+      if (!(key in studentBestScores) || valor > studentBestScores[key]) {
+        studentBestScores[key] = valor;
+      }
+    };
     for (const sp of spRecords) {
       let modulo = null;
       let type = null;
@@ -594,9 +606,15 @@ class TeacherController {
       if (!studentModuleCompletions[sp.estudiante_id][modulo]) {
         studentModuleCompletions[sp.estudiante_id][modulo] = { contents: new Set(), games: new Set(), evals: new Set() };
       }
-      if (type === 'contents') studentModuleCompletions[sp.estudiante_id][modulo].contents.add(sp.contenido_id);
-      else if (type === 'games') studentModuleCompletions[sp.estudiante_id][modulo].games.add(sp.juego_id);
-      else if (type === 'evals') studentModuleCompletions[sp.estudiante_id][modulo].evals.add(sp.evaluacion_id);
+      if (type === 'contents') {
+        studentModuleCompletions[sp.estudiante_id][modulo].contents.add(sp.contenido_id);
+      } else if (type === 'games') {
+        studentModuleCompletions[sp.estudiante_id][modulo].games.add(sp.juego_id);
+        guardarMejorPuntaje(sp.estudiante_id, 'game', sp.juego_id, sp.puntaje);
+      } else if (type === 'evals') {
+        studentModuleCompletions[sp.estudiante_id][modulo].evals.add(sp.evaluacion_id);
+        guardarMejorPuntaje(sp.estudiante_id, 'eval', sp.evaluacion_id, sp.puntaje);
+      }
     }
 
     const gruposPorEstudiante = {};
@@ -654,13 +672,24 @@ class TeacherController {
         const totalItems = contentsCount + gamesCount + evalsCount;
         const porcentaje_avance = totalItems > 0 ? Math.min(100, Math.round((completedCount / totalItems) * 100)) : 0;
 
-        const puntajeTotal = prog.puntaje_total ?? 0;
+        const puntajeTotal =
+          totGames.reduce((sum, g) => sum + (studentBestScores[`${student.id}:game:${g.id}`] || 0), 0) +
+          totEvals.reduce((sum, e) => sum + (studentBestScores[`${student.id}:eval:${e.id}`] || 0), 0);
         const puntajeMax = NotaService.maximaPuntuacion(totGames, totEvals);
         const nota = NotaService.calcularNota(puntajeTotal, puntajeMax);
+
+        // Logro en la misma escala 0-100 que el avance, pero derivado de la NOTA
+        // y no de cuántos ítems se abrieron: es lo que alimenta el radar de
+        // fortalezas/debilidades y la comparación diagnóstico vs. actual. `null`
+        // cuando el módulo no tiene nada puntuable (solo contenidos).
+        const porcentaje_logro = nota != null
+          ? Math.round((nota / NotaService.NOTA_MAX) * 100)
+          : null;
 
         return {
           modulo: mod,
           porcentaje_avance,
+          porcentaje_logro,
           puntaje_total: puntajeTotal,
           puntaje_max: puntajeMax,
           nota,
@@ -849,19 +878,25 @@ class TeacherController {
       const gamificacion = await medalsService.obtenerGamificacion(studentId, docenteId);
       const medallas = gamificacion.medallas || [];
 
+      // Solo los módulos con actividades puntuables entran al radar: un módulo
+      // de solo lectura no tiene nota contra la que comparar, y meterlo como 0
+      // inventaría una debilidad que no existe.
       const moduloNames = [...new Set(
-        progressData.flatMap(p => (p.modules || []).map(m => m.modulo))
+        progressData.flatMap(p => (p.modules || [])
+          .filter(m => m.puntaje_max > 0)
+          .map(m => m.modulo))
       )].filter(Boolean);
 
       const radarData = moduloNames.map(modulo => {
         const studentMod = studentProgress?.modules?.find(m => m.modulo === modulo);
-        const studentPct = studentMod ? Number(studentMod.porcentaje_avance) : 0;
+        const studentPct = studentMod && studentMod.porcentaje_logro != null
+          ? Number(studentMod.porcentaje_logro)
+          : 0;
 
         const pctsGrupo = progressData
           .map(p => (p.modules || []).find(m => m.modulo === modulo))
-          .filter(Boolean)
-          .map(m => Number(m.porcentaje_avance))
-          .filter(Number.isFinite);
+          .map(m => (m && m.porcentaje_logro != null ? Number(m.porcentaje_logro) : null))
+          .filter(v => v != null && Number.isFinite(v));
 
         const groupAvg = pctsGrupo.length > 0
           ? pctsGrupo.reduce((a, b) => a + b, 0) / pctsGrupo.length
@@ -886,7 +921,12 @@ class TeacherController {
 
       // ---------- Evolución XP ----------
       const evoRows = await StudentProgress.findAll({
-        where: { estudiante_id: studentId, puntaje: { [Op.gt]: 0 } },
+        where: {
+          estudiante_id: studentId,
+          puntaje: { [Op.gt]: 0 },
+          // La evolución de XP no debe sumar lo que el docente despublicó.
+          [Op.and]: literal(DashboardService._filtroPublicadoProgreso('StudentProgress')),
+        },
         attributes: [
           [fn('DATE_FORMAT', col('fecha'), '%Y-%m'), 'mes'],
           [fn('SUM', col('puntaje')), 'total_puntaje'],
@@ -922,14 +962,21 @@ class TeacherController {
       const progresoPorTema = (studentProgress?.modules || []).map(m => ({
         modulo: m.modulo,
         pct_inicial: pctInicialPorModulo[m.modulo] ?? 0,
-        pct_actual: Math.round(Number(m.porcentaje_avance) || 0),
+        // El "actual" es logro (0-100 a partir de la nota), no avance: el
+        // diagnóstico inicial es desempeño y comparar contra un % de ítems
+        // abiertos prometía una mejora que la nota no respaldaba.
+        pct_actual: m.porcentaje_logro != null ? Math.round(Number(m.porcentaje_logro)) : 0,
       }));
 
       // ---------- Primer intento ----------
       let primerIntentoPct = 0;
       try {
         const rows = await StudentProgress.findAll({
-          where: { estudiante_id: studentId, completado: true },
+          where: {
+            estudiante_id: studentId,
+            completado: true,
+            [Op.and]: literal(DashboardService._filtroPublicadoProgreso('StudentProgress')),
+          },
           attributes: ['intentos_realizados'],
           raw: true,
         });

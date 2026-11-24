@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DashboardController = require('../controllers/dashboard.controller');
-const { verifyToken, isTeacher } = require('../middlewares/authMiddleware');
+const { verifyToken, isTeacher, isStudent } = require('../middlewares/authMiddleware');
 
 // Panel analítico del docente (Fase 3 del dashboard).
 //
@@ -20,7 +20,6 @@ router.get('/conceptos-error', verifyToken, isTeacher, DashboardController.conce
 // blanco. Todos aceptan el mismo `?grupoId=` y `?semanas=` que la barra global.
 router.get('/distribucion-niveles', verifyToken, isTeacher, DashboardController.distribucionNiveles);
 router.get('/ranking-completo', verifyToken, isTeacher, DashboardController.rankingCompleto);
-router.get('/mapa-calor', verifyToken, isTeacher, DashboardController.mapaCalor);
 router.get('/participacion-semanal', verifyToken, isTeacher, DashboardController.participacionSemanal);
 router.get('/comparacion-grupos', verifyToken, isTeacher, DashboardController.comparacionGrupos);
 
@@ -28,6 +27,10 @@ router.get('/comparacion-grupos', verifyToken, isTeacher, DashboardController.co
 // constancia) porque los tres se leen siempre juntos: separarlos en tres
 // llamadas sería pedir tres veces la misma lista de estudiantes.
 router.get('/gamificacion', verifyToken, isTeacher, DashboardController.gamificacion);
+
+// Ranking del compañero de grupo: solo estudiantes, y siempre resuelto desde
+// el JWT + las matrices del propio alumno (nunca desde un id de la URL).
+router.get('/ranking-estudiante', verifyToken, isStudent, DashboardController.rankingEstudiante);
 
 // Contenidos y Actividades. Un solo endpoint con KPIs, dona y detalle porque
 // todo se lee de la misma ventana de intentos: el inventario del docente, el

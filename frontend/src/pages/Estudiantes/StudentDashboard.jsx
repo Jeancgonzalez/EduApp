@@ -5,7 +5,7 @@ import api from '../../services/api';
 import {
   MdSchool, MdHome, MdMenuBook, MdAssignment, MdSportsEsports, MdEmojiEvents,
   MdLogout, MdWavingHand, MdInsights, MdCheckCircle, MdStar, MdFlag,
-  MdMenu, MdClose
+  MdMenu, MdClose, MdLeaderboard
 } from 'react-icons/md';
 import { MEDAL_ICONS } from '../../utils/medalIcons';
 import ThemeToggle from '../../components/layout/ThemeToggle';
@@ -101,7 +101,8 @@ const StudentDashboard = () => {
           <Link to="/student/evaluaciones" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdAssignment /></span> Mis Evaluaciones</Link>
           <Link to="/student/juegos" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdSportsEsports /></span> Zona de Juegos</Link>
           <Link to="/student/progreso" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdEmojiEvents /></span> Mi Progreso</Link>
-          
+          <Link to="/student/ranking" className="nav-item" onClick={() => setMenuOpen(false)}><span><MdLeaderboard /></span> Ranking del Grupo</Link>
+
         </nav>
         <div className="sidebar-footer">
           <button onClick={handleLogout} className="logout-btn"><span><MdLogout /></span> Cerrar Sesión</button>

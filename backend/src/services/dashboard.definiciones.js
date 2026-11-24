@@ -56,19 +56,16 @@
  * El Resumen General y la Vista de Grupo trabajan sobre el PORCENTAJE de acierto,
  * porque es lo que sale de `actividad_intentos`. La calificación numérica del
  * Progreso Individual es otra magnitud: la nota de la escala del colegio. Son dos
- * medidas distintas, así que tienen dos juegos de cortes, pero los dos juegos
- * viven en este archivo para que no queden definiciones duplicadas por vista.
+ * medidas distintas, así que tienen dos juegos de cortes.
  *
- * Con la escala por defecto (1.0 - 5.0):
+ * La clasificación de la NOTA vive en `NotaService` para que el listado y la
+ * ficha del Progreso Individual, y las tarjetas del Progreso de Estudiantes,
+ * usen exactamente los mismos cortes y etiquetas:
  *
- *   Bajo      1.0 - 2.9
- *   Básico    3.0 - 3.9
- *   Alto      4.0 - 4.5
- *   Superior  4.6 - 5.0
- *
- *   DASHBOARD_NOTA_SUPERIOR  nota mínima para Superior (4.6)
- *   DASHBOARD_NOTA_ALTO      nota mínima para Alto     (4.0)
- *   DASHBOARD_NOTA_BASICO    nota mínima para Básico   (3.0)
+ *   Bajo       1.0 - 2.9
+ *   Regular    3.0 - 3.5
+ *   Bueno      3.6 - 4.4
+ *   Excelente  4.5 - 5.0
  *
  * Y los pesos del promedio ponderado de acierto, que solo se aplican cuando el
  * estudiante AÚN no tiene nota registrada (si existe nota, manda la nota):
@@ -78,10 +75,9 @@
  *   DASHBOARD_PESO_JUEGO       peso del % de acierto de los juegos      (1)
  *   DASHBOARD_PESO_EVALUACION  peso del % de acierto de las evaluaciones (1)
  *   DASHBOARD_PESO_CONTENIDO   peso del % de acierto de los contenidos  (1)
- *
- * Confirmar la escala con la del colegio antes de usar estos valores por defecto
- * en calificación real: se ajustan por `.env` sin tocar código.
  */
+
+const NotaService = require('./nota.service');
 
 /** Lee un número del entorno y lo acota; si no es válido, usa el valor por defecto. */
 const numero = (valor, porDefecto, min, max) => {
@@ -109,16 +105,12 @@ const VENTANA_ACTIVOS_HORAS = numero(process.env.DASHBOARD_ACTIVOS_HORAS, 24, 1,
 /* -------------------------------------------------------------------------- *
  *  Escala de calificación 1.0 - 5.0
  *
- *  Mismo criterio que arriba (el primero cuyo `minimo` supera la nota es el
- *  nivel) pero sobre la nota del colegio en vez del porcentaje de acierto.
+ *  Los cortes no se configuran aquí: son los de `NotaService` (única fuente),
+ *  para que la nota nunca se clasifique distinto según la vista que la lea.
  * -------------------------------------------------------------------------- */
 
-const NOTA_MAX = 5.0;
-const NOTA_MIN = 1.0;
-
-const NOTA_SUPERIOR = numero(process.env.DASHBOARD_NOTA_SUPERIOR, 4.6, NOTA_MIN, NOTA_MAX);
-const NOTA_ALTO = numero(process.env.DASHBOARD_NOTA_ALTO, 4.0, NOTA_MIN, NOTA_SUPERIOR);
-const NOTA_BASICO = numero(process.env.DASHBOARD_NOTA_BASICO, 3.0, NOTA_MIN, NOTA_ALTO);
+const NOTA_MAX = NotaService.NOTA_MAX;
+const NOTA_MIN = NotaService.NOTA_MIN;
 
 /**
  * Pesos del promedio ponderado de acierto por tipo de actividad.
@@ -203,13 +195,13 @@ const umbrales = () => ({
   ],
   riesgo: { pct_max: RIESGO_PCT_MAX, dias_sin_ingresar: RIESGO_DIAS_SIN_INGRESAR },
   activos_horas: VENTANA_ACTIVOS_HORAS,
-  // Segunda escala, la de la nota numérica del colegio.
+  // Segunda escala, la de la nota numérica del colegio. Los cortes salen de
+  // `NotaService` para que la interfaz rotule con los mismos números con los
+  // que el backend clasifica.
   nota: {
     min: NOTA_MIN,
     max: NOTA_MAX,
-    basico: NOTA_BASICO,
-    alto: NOTA_ALTO,
-    superior: NOTA_SUPERIOR,
+    ...NotaService.CORTES,
   },
   pesos_actividad: { ...PESOS_ACTIVIDAD },
   // Escala de dificultad de la sección de contenidos (invertida: más acierto
@@ -236,28 +228,20 @@ const nivelDeDesempeno = (porcentaje) => {
 };
 
 /**
- * Nivel de desempeño a partir de la calificación numérica (escala 1.0 - 5.0).
+ * Categoría de rendimiento a partir de la calificación numérica (escala 1.0 - 5.0).
  *
- * Mismo nombre de niveles que `nivelDeDesempeno` para que el chip de color, la
- * leyenda y el filtro de la interfaz sirvan para las dos medidas, pero el corte
- * es el de la nota y no el del porcentaje.
+ * Delega en `NotaService` (Bajo / Regular / Bueno / Excelente) para que el
+ * listado y la ficha del Progreso Individual coincidan con las tarjetas del
+ * Progreso de Estudiantes, que ya usan esa escala.
  *
  * Sin nota no se inventa una: se devuelve `null` y la interfaz muestra "Sin
  * datos". Poner "Bajo" haría creer al docente que el estudiante rinde mal cuando
  * en realidad todavía no hay nada evaluado.
  *
  * @param {number|null} nota
- * @returns {'Superior'|'Alto'|'Básico'|'Bajo'|null}
+ * @returns {'Bajo'|'Regular'|'Bueno'|'Excelente'|null}
  */
-const nivelDeNota = (nota) => {
-  if (nota == null || nota === '') return null;
-  const n = Number(nota);
-  if (!Number.isFinite(n)) return null;
-  if (n >= NOTA_SUPERIOR) return 'Superior';
-  if (n >= NOTA_ALTO) return 'Alto';
-  if (n >= NOTA_BASICO) return 'Básico';
-  return 'Bajo';
-};
+const nivelDeNota = (nota) => NotaService.etiquetaDeNota(nota);
 
 /**
  * Calificación numérica a partir del % de acierto de actividades evaluativas.
@@ -346,9 +330,6 @@ module.exports = {
   NIVEL_BASICO,
   NOTA_MIN,
   NOTA_MAX,
-  NOTA_BASICO,
-  NOTA_ALTO,
-  NOTA_SUPERIOR,
   PESOS_ACTIVIDAD,
   RIESGO_PCT_MAX,
   RIESGO_DIAS_SIN_INGRESAR,

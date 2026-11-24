@@ -259,7 +259,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
       <div className="charts-grid">
         <div className="chart-card">
           <h3 className="chart-card-title">Radar de fortalezas y debilidades por tema</h3>
-          <p className="chart-card-sub">Porcentaje de avance del estudiante frente al promedio del grupo (%)</p>
+          <p className="chart-card-sub">Nivel de logro del estudiante frente al promedio del grupo (%, según la calificación)</p>
 
           {radarData.length === 0 ? (
             <div className="grafico-vacio">Sin datos de temas para comparar.</div>
@@ -279,7 +279,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
                     tick={{ fill: paleta.tick, fontSize: 10 }}
                     stroke={paleta.grid}
                     axisLine={false}
-                    label={{ value: '% avance', fill: paleta.tick, fontSize: 10, position: 'insideStart' }}
+                    label={{ value: '% logro', fill: paleta.tick, fontSize: 10, position: 'insideStart' }}
                   />
                   <Radar
                     name="Estudiante"
@@ -305,7 +305,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
                 </RadarChart>
               </ResponsiveContainer>
               <div className="leyenda-item-extra">
-                Ejes: tema. Radio: porcentaje de avance (0–100 %).
+                Ejes: tema. Radio: nivel de logro derivado de la calificación (0–100 %).
               </div>
             </>
           ) : (
@@ -346,7 +346,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
                 <span className="leyenda-item">
                   <span className="leyenda-swatch rf-swatch-prom" /> Promedio del grupo
                 </span>
-                <span className="leyenda-unidad">Barras: % de avance (0–100 %)</span>
+                <span className="leyenda-unidad">Barras: nivel de logro (0–100 %)</span>
               </div>
             </div>
           )}
@@ -424,7 +424,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
       <div className="chart-card chart-card-full">
         <h3 className="chart-card-title">Progreso por tema: diagnóstico vs. actual</h3>
         <p className="chart-card-sub">
-          Porcentaje de avance en el diagnóstico inicial y en la actividad reciente (%)
+          Nivel de logro en el diagnóstico inicial y en la actividad reciente (%)
         </p>
         {temas.length === 0 ? (
           <div className="grafico-vacio">Sin datos de progreso por tema.</div>
@@ -448,7 +448,7 @@ const ProgresoIndividualDetalle = ({ estudianteId, grupoId = null, onCerrar }) =
                 <span className="leyenda-swatch swatch-actual" /> Nivel actual
               </span>
               <span className="leyenda-unidad">
-                Barras: % de avance. pp = puntos porcentuales.
+                Barras: nivel de logro. pp = puntos porcentuales.
               </span>
             </div>
           </>

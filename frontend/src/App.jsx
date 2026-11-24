@@ -16,6 +16,7 @@ const navbarRoutes = [
   '/student/juegos',
   '/student/evaluaciones',
   '/student/progreso',
+  '/student/ranking',
 ];
 
 const Layout = () => {

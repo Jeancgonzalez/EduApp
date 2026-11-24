@@ -22,7 +22,10 @@ class GameController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'juego');
+        // Alias 'Game': `obtenerJuegos` incluye `grupos` (JOIN con otra tabla que trae
+        // `id`); sin cualificar, MySQL responde "Column 'id' in IN/ALL/ANY subquery is
+        // ambiguous".
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'juego', 'Game');
         filtros[Op.or] = condiciones;
       }
       const juegos = await GameService.obtenerJuegos(filtros);

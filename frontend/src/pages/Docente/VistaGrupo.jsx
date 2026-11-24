@@ -2,9 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
-  MdGroups, MdError, MdBarChart, MdGridOn, MdTrendingUp, MdCompareArrows,
-  MdSearch, MdTouchApp, MdOpenInNew, MdCheckCircle, MdPlayCircle,
-  MdCancel, MdHourglassEmpty, MdEmojiEvents, MdClose,
+  MdGroups, MdError, MdBarChart, MdTrendingUp, MdCompareArrows,
+  MdSearch, MdTouchApp, MdOpenInNew, MdEmojiEvents, MdClose,
 } from 'react-icons/md';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -21,10 +20,6 @@ const PALETA = {
     tooltipFondo: '#ffffff', tooltipBorde: '#e2e8f0', tooltipTexto: '#0f172a',
     vacio: '#e2e8f0',
     nivel: { Bajo: '#ef4444', Básico: '#f59e0b', Alto: '#3b82f6', Superior: '#10b981' },
-    mapa: {
-      completado: '#16a34a', en_progreso: '#2563eb',
-      con_errores: '#ea580c', pendiente: '#e2e8f0',
-    },
   },
   dark: {
     grid: '#2b3048', eje: '#3b4160', tick: '#94a3b8',
@@ -32,18 +27,7 @@ const PALETA = {
     tooltipFondo: '#20243a', tooltipBorde: '#2b3048', tooltipTexto: '#f1f5f9',
     vacio: '#2b3048',
     nivel: { Bajo: '#f87171', Básico: '#fbbf24', Alto: '#60a5fa', Superior: '#34d399' },
-    mapa: {
-      completado: '#34d399', en_progreso: '#60a5fa',
-      con_errores: '#fb923c', pendiente: '#2b3048',
-    },
   },
-};
-
-const ICONO_ESTADO = {
-  completado: MdCheckCircle,
-  en_progreso: MdPlayCircle,
-  con_errores: MdCancel,
-  pendiente: MdHourglassEmpty,
 };
 
 const plural = (n, singular, pluralForma) => `${n} ${n === 1 ? singular : pluralForma}`;
@@ -91,7 +75,6 @@ const VistaGrupo = ({ grupoId, semanas }) => {
   const [error, setError] = useState('');
   const [distribucion, setDistribucion] = useState(null);
   const [ranking, setRanking] = useState(null);
-  const [mapa, setMapa] = useState(null);
   const [participacion, setParticipacion] = useState(null);
   const [comparacion, setComparacion] = useState(null);
   const [intento, setIntento] = useState(0);
@@ -120,7 +103,6 @@ const VistaGrupo = ({ grupoId, semanas }) => {
     const pedidos = [
       api.get(`/dashboard/distribucion-niveles?${qs.toString()}`),
       api.get(`/dashboard/ranking-completo?${qsRanking.toString()}`),
-      api.get(`/dashboard/mapa-calor?${qs.toString()}`),
       api.get(`/dashboard/participacion-semanal?${qs.toString()}`),
     ];
     if (!grupoId) pedidos.push(api.get(`/dashboard/comparacion-grupos?${qs.toString()}`));
@@ -130,9 +112,8 @@ const VistaGrupo = ({ grupoId, semanas }) => {
         if (!vigente) return;
         setDistribucion(respuestas[0].data.data);
         setRanking(respuestas[1].data.data);
-        setMapa(respuestas[2].data.data);
-        setParticipacion(respuestas[3].data.data);
-        setComparacion(respuestas[4]?.data.data ?? null);
+        setParticipacion(respuestas[2].data.data);
+        setComparacion(respuestas[3]?.data.data ?? null);
       })
       .catch((err) => {
         if (!vigente) return;
@@ -172,31 +153,6 @@ const VistaGrupo = ({ grupoId, semanas }) => {
     return (ranking?.filas ?? []).filter((f) => (f.nivel || null) === nivelActivo).length;
   }, [ranking, nivelActivo]);
 
-  const mapaEstudiantes = mapa?.estudiantes ?? [];
-  const mapaCeldas = mapa?.celdas ?? [];
-
-  const mapaEstudiantesFiltrados = useMemo(() => {
-    if (!nivelActivo) return mapaEstudiantes;
-    return mapaEstudiantes.filter((e) => (e.nivel || null) === nivelActivo);
-  }, [mapaEstudiantes, nivelActivo]);
-
-  const clavesMapaFiltradas = useMemo(
-    () => new Set(mapaEstudiantesFiltrados.map((e) => e.clave)),
-    [mapaEstudiantesFiltrados],
-  );
-
-  const celdasMapaFiltradas = useMemo(() => {
-    if (!nivelActivo) return mapaCeldas;
-    return mapaCeldas.filter((c) => clavesMapaFiltradas.has(c.e));
-  }, [mapaCeldas, clavesMapaFiltradas, nivelActivo]);
-
-  const celdaDe = useMemo(() => {
-    const mapaCeldas = new Map();
-    for (const c of mapa?.celdas ?? []) mapaCeldas.set(`${c.e}|${c.a}`, c);
-    return (claveEstudiante, claveActividad) =>
-      mapaCeldas.get(`${claveEstudiante}|${claveActividad}`) ?? null;
-  }, [mapa]);
-
   const serie = participacion?.serie ?? [];
   const gruposComparacion = comparacion?.grupos ?? [];
   const mostrarComparacion = !grupoId && gruposComparacion.length > 1;
@@ -205,9 +161,6 @@ const VistaGrupo = ({ grupoId, semanas }) => {
     const max = Math.max(0, ...serie.map((p) => p.brecha ?? 0));
     return max <= 5 ? 5 : Math.ceil(max / 5) * 5;
   }, [serie]);
-
-  const ocultosActividades = mapa?.ocultos?.actividades ?? 0;
-  const ocultosEstudiantes = mapa?.ocultos?.estudiantes ?? 0;
 
   /* ---------------- carga / error / vacío ---------------- */
 
@@ -375,7 +328,7 @@ const VistaGrupo = ({ grupoId, semanas }) => {
           ) : (
             <Vacio>
               Nadie tiene actividades calificadas en este período, así que todavía no
-              hay niveles que repartir. El mapa de abajo muestra qué falta.
+              hay niveles que repartir. El ranking de abajo muestra quién ya empezó.
             </Vacio>
           )}
         </Panel>
@@ -467,96 +420,6 @@ const VistaGrupo = ({ grupoId, semanas }) => {
                   : 'Este alcance todavía no tiene estudiantes que ordenar.'}
             </Vacio>
           )}
-        </Panel>
-
-        {/* ---------- Mapa de calor ---------- */}
-        <Panel
-          titulo="Mapa de calor"
-          icono={<MdGridOn />}
-          sub="Cada columna es una actividad del período y cada fila un estudiante. Pasa el cursor para ver el detalle. El filtro por nivel también acota las filas."
-          extra={ocultosActividades > 0 || ocultosEstudiantes > 0 ? (
-            <p className="dash-panel-meta">
-              {ocultosActividades > 0 && `${ocultosActividades} actividades fuera`}
-              {ocultosActividades > 0 && ocultosEstudiantes > 0 && ' · '}
-              {ocultosEstudiantes > 0 && `${ocultosEstudiantes} estudiantes fuera`}
-            </p>
-          ) : null}
-        >
-          {mapa && mapa.actividades.length > 0 && mapa.estudiantes.length > 0 ? (
-          mapaEstudiantesFiltrados.length > 0 ? (
-            <>
-              <div className="dash-mapa-envoltura">
-                <table className="dash-mapa">
-                  <caption className="dash-mapa-titulo">
-                    {mapa.actividades.length} actividades × {mapaEstudiantesFiltrados.length} estudiantes
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col" className="dash-mapa-esquina">
-                        <span className="dash-mapa-esquina-texto">Estudiante</span>
-                      </th>
-                      {mapa.actividades.map((a) => (
-                        <th key={a.clave} scope="col" title={a.nombre}>
-                          <span className="dash-mapa-columna">{a.nombre}</span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mapaEstudiantesFiltrados.map((e) => (
-                      <tr key={e.clave}>
-                        <th scope="row" className="dash-mapa-fila">
-                          <span className="dash-mapa-alias">{e.alias}</span>
-                          {e.pct != null && <span className="dash-mapa-pct">{e.pct}%</span>}
-                        </th>
-                        {mapa.actividades.map((a) => {
-                          const celda = celdaDe(e.clave, a.clave);
-                          const estado = celda?.estado ?? 'pendiente';
-                          return (
-                            <td
-                              key={a.clave}
-                              className="dash-mapa-celda"
-                              style={{ background: paleta.mapa[estado] }}
-                              title={`${e.alias} · ${a.nombre} · ${estado}`}
-                              data-estado={estado}
-                            />
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <ul className="dash-leyenda">
-                {(mapa.estados ?? []).map((estado) => {
-                  const Icono = ICONO_ESTADO[estado.clave];
-                  const total = celdasMapaFiltradas.filter((c) => c.estado === estado.clave).length;
-                  return (
-                    <li key={estado.clave}>
-                      <span className="dash-leyenda-item dash-leyenda-estatica">
-                        <i className="dash-punto" style={{ background: paleta.mapa[estado.clave] }} />
-                        {Icono && <Icono className="dash-leyenda-icono" aria-hidden="true" />}
-                        {estado.etiqueta}
-                        <span className="dash-leyenda-valor">{total}</span>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          ) : (
-            <Vacio>
-              No hay estudiantes con nivel {nivelActivo} entre los visibles de la matriz
-              en este período.
-            </Vacio>
-          )
-        ) : (
-          <Vacio>
-            No hay actividades publicadas ni intentos en este período. En cuanto
-            el grupo toque un contenido, un juego o una evaluación, la matriz se
-            llena sola.
-          </Vacio>
-        )}
         </Panel>
 
         {/* ---------- Participación semanal ---------- */}

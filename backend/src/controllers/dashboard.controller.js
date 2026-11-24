@@ -14,8 +14,8 @@ const TEMAS_POR_DEFECTO = 6;
 const MAX_TEMAS = 12;
 const RANKING_COMPLETO_POR_DEFECTO = 200;
 const MAX_RANKING_COMPLETO = 500;
-const MAPA_ACTIVIDADES_POR_DEFECTO = 12;
-const MAX_MAPA_ACTIVIDADES = 20;
+const RANKING_ESTUDIANTE_POR_DEFECTO = 5;
+const MAX_RANKING_ESTUDIANTE = 10;
 
 /**
  * Columnas por las que se puede ordenar el ranking completo.
@@ -191,20 +191,46 @@ class DashboardController {
     }
   }
 
-  static async mapaCalor(req, res) {
+  /**
+   * Ranking del grupo del estudiante autenticado.
+   *
+   * El `docente_id` sale del JWT y el grupo se resuelve contra las matrices del
+   * propio estudiante: un `?grupoId=` ajeno devuelve 404 en vez de filtrar datos
+   * de otro grupo. La métrica es la del ranking del docente; aquí solo se
+   * acorta el alias y se añade la posición de quien consulta.
+   */
+  static async rankingEstudiante(req, res) {
     try {
-      const { grupoId, error } = await DashboardController._grupo(req);
-      if (error) return res.status(404).json({ success: false, message: error });
+      const grupoId = req.query.grupoId ? Number(req.query.grupoId) : null;
+      if (grupoId && !Number.isInteger(grupoId)) {
+        return res.status(400).json({ success: false, message: 'Grupo inválido.' });
+      }
 
-      const data = await DashboardService.mapaCalor(req.user.id, {
-        grupoId,
-        semanas: DashboardController._semanas(req),
-        limite: DashboardController._entero(req, 'actividades', MAPA_ACTIVIDADES_POR_DEFECTO, MAX_MAPA_ACTIVIDADES),
-      });
+      const data = await DashboardService.rankingEstudiante(
+        req.user.id,
+        req.user.docente_id,
+        {
+          grupoId,
+          limite: DashboardController._entero(
+            req,
+            'limite',
+            RANKING_ESTUDIANTE_POR_DEFECTO,
+            MAX_RANKING_ESTUDIANTE
+          ),
+          semanas: DashboardController._semanas(req),
+        }
+      );
+
+      if (!data.grupo) {
+        return res.status(404).json({
+          success: false,
+          message: 'Todavía no perteneces a un grupo. Tu docente puede asignarte uno.',
+        });
+      }
       return res.status(200).json({ success: true, data });
     } catch (error) {
-      console.error('[dashboard] Error en mapaCalor:', error);
-      return res.status(500).json({ success: false, message: 'No se pudo cargar el mapa de calor.' });
+      console.error('[dashboard] Error en rankingEstudiante:', error);
+      return res.status(500).json({ success: false, message: 'No se pudo cargar el ranking.' });
     }
   }
 
@@ -252,7 +278,7 @@ class DashboardController {
    * entre constancia e insignias.
    *
    * No acepta más parámetros que `grupoId` y `semanas`, a diferencia de
-   * `ranking` o `mapaCalor`: esta sección no tiene paginación ni top-N
+   * `ranking` o `rankingCompleto`: esta sección no tiene paginación ni top-N
    * configurable, y un parámetro que se ignorase en silencio sería peor que no
    * ofrecerlo.
    */

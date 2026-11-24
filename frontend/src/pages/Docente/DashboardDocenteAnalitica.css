@@ -834,100 +834,8 @@ html[data-theme='dark'] .dash-ranking-pos-3 { background: #4a2412; color: #fdba7
   color: var(--text-muted);
 }
 
-/* --- Mapa de calor --------------------------------------------------------
- *
- * Una `<table>` y no una rejilla de `div`: es una tabla de verdad (filas ×
- * columnas con encabezado en dos ejes) y el lector de pantalla la recorre bien.
- * El color va en `style` porque lo decide `useTheme()`; el `data-estado` queda
- * como respaldo para el borde y para inspeccionar en las herramientas de
- * desarrollo.
- */
-
-.dash-mapa-envoltura {
-  overflow-x: auto;
-  margin: 0 -0.25rem 0.9rem;
-}
-
-.dash-mapa {
-  border-collapse: separate;
-  border-spacing: 3px;
-  font-size: 0.78rem;
-}
-
-.dash-mapa-titulo {
-  caption-side: top;
-  text-align: left;
-  padding-bottom: 0.5rem;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.dash-mapa-esquina { background: transparent; }
-
-/* Rotulo de la esquina: solo lo lee el lector de pantalla. */
-.dash-mapa-esquina-texto {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-/* El nombre de la actividad se recorta a lo ancho de la celda; el `title` del
-   `th` lleva el texto completo para el hover. */
-.dash-mapa-columna {
-  display: block;
-  max-width: 74px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  transform: rotate(-45deg);
-  transform-origin: center;
-  height: 78px;
-  text-align: right;
-}
-
-.dash-mapa-fila {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  padding: 0.25rem 0.6rem 0.25rem 0.25rem;
-  background: var(--bg-card);
-  text-align: left;
-  font-weight: 600;
-  color: var(--text-strong);
-  white-space: nowrap;
-}
-
-.dash-mapa-alias { margin-right: 0.4rem; }
-
-.dash-mapa-pct {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.dash-mapa-celda {
-  width: 26px;
-  height: 22px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-
-.dash-mapa-celda[data-estado='pendiente'] {
-  /* El pendiente es el único que necesita textura: es el único color que no
-     dice nada por sí solo, y sin borde parecería una celda sin datos. */
-  background-image: linear-gradient(135deg, rgba(127, 127, 127, 0.18) 25%, transparent 25%);
-  background-size: 6px 6px;
-}
-
-/* La leyenda del mapa de calor es informative: no filtra nada, asi que no
-   hereda el puntero ni el hover del boton. */
+/* Leyendas informativas: no filtran nada, así que no heredan el puntero ni
+   el hover de los botones. */
 .dash-leyenda-estatica {
   cursor: default;
   background: transparent;
@@ -937,12 +845,6 @@ html[data-theme='dark'] .dash-ranking-pos-3 { background: #4a2412; color: #fdba7
 .dash-leyenda-estatica:hover {
   background: transparent;
   border-color: var(--border);
-}
-
-.dash-leyenda-icono {
-  margin-left: 0.2rem;
-  font-size: 0.85rem;
-  opacity: 0.75;
 }
 
 .dash-leyenda-valor {
@@ -1036,10 +938,6 @@ html[data-theme='dark'] .dash-ranking-pos-3 { background: #4a2412; color: #fdba7
   .dash-buscador { flex: 1 1 auto; }
   .dash-buscador input { width: 100%; }
   .dash-segmentos { flex: 0 0 auto; }
-  /* En el mapa se ven menos actividades por pantalla: la columna rotada se
-     acorta para que el desplazamiento horizontal siga siendo utilizable. */
-  .dash-mapa-columna { max-width: 56px; height: 62px; }
-  .dash-mapa-celda { width: 22px; height: 20px; }
 
   /* Las dos listas de insignias se apilan: en una columna el "x de N" y la
      etiqueta de rareza ya no caben en paralelo con el nombre. */

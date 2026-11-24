@@ -14,7 +14,7 @@
 -- solo el MEJOR resultado por estudiante x actividad y sobrescribe `fecha` y
 -- `respuestas` en cada reintento), aquí se registra CADA intento.
 -- Habilita: acierto en primer intento, abandono, tiempo de resolución,
--- participación semanal, mapa de calor y series temporales consistentes.
+-- participación semanal, rankings y series temporales consistentes.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `actividad_intentos` (
   `id`                     INT UNSIGNED NOT NULL AUTO_INCREMENT,

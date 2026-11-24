@@ -2,8 +2,10 @@ const Evaluation = require('../models/evaluation.model');
 const Content = require('../models/content.model');
 const Question = require('../models/question.model');
 const Group = require('../models/grupo.model');
+const StudentProgress = require('../models/studentProgress.model');
 const GrupoService = require('./grupo.service');
 const NotificationService = require('./notification.service');
+const ProgressService = require('./progress.service');
 const { sequelize } = require('../config/database');
 
 const DEBUG = process.env.DEBUG_LOG === '1';
@@ -23,6 +25,24 @@ class EvaluationService {
       }
     }
     return data;
+  }
+
+  /**
+   * Recalcula el caché de progreso de los estudiantes con intentos en la
+   * evaluación. Se usa al publicar/despublicar para que la nota del módulo no
+   * quede desactualizada (el caché `progreso` solo suma recursos publicados).
+   */
+  static async _recalcularProgresoAfectados(evaluacion) {
+    if (!evaluacion || !evaluacion.modulo) return;
+    const afectados = await StudentProgress.findAll({
+      where: { evaluacion_id: evaluacion.id },
+      attributes: ['estudiante_id'],
+      group: ['estudiante_id'],
+      raw: true
+    });
+    for (const s of afectados) {
+      await ProgressService.recalcularProgreso(s.estudiante_id, evaluacion.modulo, null, evaluacion.docente_id);
+    }
   }
 
   /**
@@ -158,6 +178,9 @@ static async crearEvaluacion(data) {
             evaluacion.grupo_ids = grupoIds;
           }
           await t.commit();
+          if (evaluacionData.publicado === false) {
+            await EvaluationService._recalcularProgresoAfectados(evaluacion);
+          }
           return evaluacion;
         }
         throw new Error('No se puede modificar una evaluación que ya está publicada.');
@@ -225,6 +248,11 @@ static async crearEvaluacion(data) {
       }
 
       await t.commit();
+
+      // Al republicar, el caché de progreso debe volver a contar los intentos.
+      if (evaluacionData.publicado === true) {
+        await EvaluationService._recalcularProgresoAfectados(evaluacion);
+      }
 
       // Notificar solo cuando la evaluación pasó de despublicada a publicada.
       if (evaluacion.publicado) {

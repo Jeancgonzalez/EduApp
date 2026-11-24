@@ -11,7 +11,10 @@
     "migrate:status": "node scripts/migrate.js status",
     "migrate:down": "node scripts/migrate.js down",
     "seed:dashboard": "node scripts/seed-dashboard.js",
-    "seed:dashboard:reset": "node scripts/seed-dashboard.js --reset"
+    "seed:dashboard:reset": "node scripts/seed-dashboard.js --reset",
+    "seed:catalog": "node scripts/seed-catalog.js",
+    "seed:reset-students": "node scripts/seed-reset-students.js",
+    "seed:semester": "node scripts/seed-semester.js"
   },
   "keywords": [],
   "author": "",

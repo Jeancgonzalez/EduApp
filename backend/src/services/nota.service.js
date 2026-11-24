@@ -23,9 +23,32 @@
 const NOTA_MIN = 1.0;
 const NOTA_MAX = 5.0;
 
+/**
+ * Cortes de la categoría de rendimiento sobre la nota (1.0-5.0). Un valor
+ * corresponde a la categoría en la que EMPIEZA: `regular` desde 3.0, etc.
+ * Es la única definición de la escala; el resto de la app la consume para no
+ * volver a duplicar cortes.
+ */
+const CORTES = {
+  bajo: 0,
+  regular: 3.0,
+  bueno: 3.6,
+  excelente: 4.5,
+};
+
+/** Etiqueta visible de cada categoría, en el mismo orden que `CORTES`. */
+const ETIQUETAS = {
+  bajo: 'Bajo',
+  regular: 'Regular',
+  bueno: 'Bueno',
+  excelente: 'Excelente',
+};
+
 class NotaService {
   static get NOTA_MIN() { return NOTA_MIN; }
   static get NOTA_MAX() { return NOTA_MAX; }
+  static get CORTES() { return { ...CORTES }; }
+  static get ETIQUETAS() { return { ...ETIQUETAS }; }
 
   /**
    * Convierte puntos obtenidos a nota en escala 1.0-5.0 (1 decimal).
@@ -72,10 +95,25 @@ class NotaService {
    */
   static clasificarNota(nota) {
     const n = Number(nota);
-    if (!Number.isFinite(n) || n < 3.0) return 'bajo';
-    if (n < 3.6) return 'regular';
-    if (n < 4.5) return 'bueno';
+    if (!Number.isFinite(n) || n < CORTES.regular) return 'bajo';
+    if (n < CORTES.bueno) return 'regular';
+    if (n < CORTES.excelente) return 'bueno';
     return 'excelente';
+  }
+
+  /**
+   * Categoría de rendimiento como etiqueta visible (Bajo/Regular/Bueno/Excelente).
+   * Devuelve `null` cuando no hay nota: la interfaz muestra "Sin datos" en vez de
+   * inventar un "Bajo" que haría ver mal a un estudiante sin evaluar.
+   *
+   * @param {number|null} nota
+   * @returns {'Bajo'|'Regular'|'Bueno'|'Excelente'|null}
+   */
+  static etiquetaDeNota(nota) {
+    if (nota == null || nota === '') return null;
+    const n = Number(nota);
+    if (!Number.isFinite(n)) return null;
+    return ETIQUETAS[NotaService.clasificarNota(n)];
   }
 }
 

@@ -39,6 +39,10 @@ router.use('/cuentas', cuentasRoutes);
 const dashboardRoutes = require('./dashboard.routes');
 router.use('/dashboard', dashboardRoutes);
 
+// Diagnóstico por concepto con detalle por intento.
+const analiticaRoutes = require('./analitica.routes');
+router.use('/analitica', analiticaRoutes);
+
 const respuestasController = require('../controllers/respuestas.controller');
 const { verifyToken, isStudent } = require('../middlewares/authMiddleware');
 

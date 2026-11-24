@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import ConceptosError from '../../components/analitica/ConceptosError';
+import PanelConcepto from '../../components/analitica/PanelConcepto';
 import {
   MdBook, MdError, MdCheckCircle, MdWarningAmber, MdInfoOutline,
   MdArrowUpward, MdArrowDownward, MdEditNote, MdTimer, MdInsights,
@@ -78,6 +81,7 @@ const segATexto = (seg) => {
 const ContenidosAnalitica = ({ grupoId, semanas }) => {
   const { dark } = useTheme();
   const paleta = dark ? PALETA.dark : PALETA.light;
+  const [searchParams] = useSearchParams();
 
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -87,6 +91,17 @@ const ContenidosAnalitica = ({ grupoId, semanas }) => {
   const [tipoFiltro, setTipoFiltro] = useState('todos');
   const [orden, setOrden] = useState({ clave: 'intentos', dir: 'desc' });
   const [criterioAbierto, setCriterioAbierto] = useState(false);
+  const [concepto, setConcepto] = useState(null);
+
+  // Al llegar desde Resumen General con `?tipo=...&actividadId=...`, abrimos
+  // directamente el panel de diagnóstico de ese concepto.
+  useEffect(() => {
+    const tipo = searchParams.get('tipo');
+    const actividadId = Number(searchParams.get('actividadId'));
+    if ((tipo === 'evaluacion' || tipo === 'juego') && actividadId) {
+      setConcepto({ tipo, actividad_id: actividadId });
+    }
+  }, [searchParams]);
 
   const qs = useMemo(() => {
     const p = new URLSearchParams();
@@ -363,6 +378,19 @@ const ContenidosAnalitica = ({ grupoId, semanas }) => {
         </div>
 
         <Panel
+          titulo="Conceptos con mayor error"
+          icono={<MdError />}
+          sub="Pulsa una barra para abrir el diagnóstico: qué pregunta falla más, qué opción incorrecta se elige y qué estudiantes necesitan apoyo."
+          extra={<p className="dash-panel-meta">Pulsa para diagnosticar</p>}
+        >
+          <ConceptosError
+            grupoId={grupoId}
+            semanas={semanas}
+            onAbrir={(c) => setConcepto(c)}
+          />
+        </Panel>
+
+        <Panel
           titulo="Detalle por actividad"
           icono={<MdBook />}
           sub="Cada fila es una de tus actividades publicadas. La dificultad sale del % de acierto de los intentos; el tiempo, de la mediana de los que registraron duración."
@@ -538,6 +566,15 @@ const ContenidosAnalitica = ({ grupoId, semanas }) => {
             </button>
           </div>
         </>
+      )}
+
+      {concepto && (
+        <PanelConcepto
+          concepto={concepto}
+          grupoId={grupoId}
+          semanas={semanas}
+          onClose={() => setConcepto(null)}
+        />
       )}
     </div>
   );

@@ -64,7 +64,9 @@ class EvaluationController {
       filtros.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         filtros.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion');
+        // Alias 'Evaluation': la consulta incluye `grupos` (JOIN con otra tabla que
+        // trae `id`), así que el `id` de la subquery debe ir cualificado.
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion', 'Evaluation');
         filtros[Op.or] = condiciones;
       }
       const evaluaciones = await EvaluationService.obtenerEvaluaciones(filtros);
@@ -122,7 +124,10 @@ class EvaluationController {
       where.docente_id = esEstudiante ? req.user.docente_id : req.user.id;
       if (esEstudiante) {
         where.publicado = true;
-        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion');
+        // Alias 'Evaluation': `obtenerEvaluacionPorId` incluye `grupos` y `preguntas`
+        // (JOIN con tablas que también traen `id`); sin cualificar, MySQL responde
+        // "Column 'id' in IN/ALL/ANY subquery is ambiguous".
+        const condiciones = await GrupoService.recursoWhereEstudiante(req.user.id, 'evaluacion', 'Evaluation');
         where[Op.or] = condiciones;
       }
       const evaluacion = await EvaluationService.obtenerEvaluacionPorId(id, where);

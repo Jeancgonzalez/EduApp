@@ -41,7 +41,6 @@
 
    Aplica a:
    - Distribución por nivel (leyenda con botones por nivel)
-   - Mapa de calor (leyenda con estados)
    ========================================================================== */
 
 .vista-grupo-page .dash-leyenda {
@@ -98,88 +97,3 @@
   outline-offset: 2px;
 }
 
-/* ==========================================================================
-   Mapa de calor — tamaño amplio de la matriz
-   ==========================================================================
-   Con los títulos rotados en `position: absolute`, el `<th>` de cada
-   columna ya no recibe ancho de su contenido: colapsa al ancho mínimo
-   que le imponga `.dash-mapa-celda` del CSS base (26px) y la matriz se
-   ve apretada.
-
-   Aquí se le devuelve a cada columna el ancho de la versión original
-   (60px por celda) tanto al `<th>` como a la propia `<td>`, para que la
-   tabla se vea ancha como antes sin perder el centrado de los títulos.
-   ========================================================================== */
-
-.vista-grupo-page .dash-mapa-celda {
-  width: 60px;
-  min-width: 60px;
-  max-width: 60px;
-}
-
-/* El <th> del encabezado tiene que medir lo mismo que las celdas de abajo,
-   si no la retícula se desalinea (la tabla es `border-collapse: separate`
-   y cada columna mide lo que mida su celda más ancha). */
-.vista-grupo-page .dash-mapa thead th {
-  position: relative;
-  width: 60px;
-  min-width: 60px;
-  height: 78px;
-  vertical-align: bottom;
-  padding: 0;
-}
-
-/* La esquina superior izquierda (encima de los alias) puede ser más
-   angosta: no tiene título rotado, solo el texto accesible para lectores
-   de pantalla. */
-.vista-grupo-page .dash-mapa-esquina {
-  width: auto;
-  min-width: 0;
-}
-
-.vista-grupo-page .dash-mapa-columna {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform-origin: 0 100%;
-  transform: rotate(-45deg);
-  display: block;
-  width: max-content;
-  /* Con 160px entran ~22 caracteres antes del "…": suficiente para los
-     nombres reales sin que la etiqueta se corte enseguida. */
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-align: left;
-  line-height: 1;
-  height: auto;
-}
-
-/* ---------- Móvil ----------
-   Menos ancho disponible por columna. Las celdas se encogen a 40px, el
-   encabezado baja a 62px de alto y el título se corta antes. La matriz
-   sigue siendo desplazable en horizontal por `.dash-mapa-envoltura`
-   (el `overflow-x: auto` que ya trae del CSS base). */
-@media (max-width: 640px) {
-  .vista-grupo-page .dash-mapa-celda {
-    width: 40px;
-    min-width: 40px;
-    max-width: 40px;
-  }
-
-  .vista-grupo-page .dash-mapa thead th {
-    width: 40px;
-    min-width: 40px;
-    height: 62px;
-  }
-
-  .vista-grupo-page .dash-mapa-columna {
-    max-width: 110px;
-    font-size: 0.65rem;
-    bottom: 3px;
-  }
-}

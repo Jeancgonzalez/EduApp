@@ -1,5 +1,10 @@
 /* variables.css - Tokens de EduApp ("Modo Aventura", solo apartado estudiante) */
 :root {
+  /* Altura del navbar. Los componentes Navbar y NavbarAnalitica miden su alto
+     real y actualizan esta variable (ver hooks/useNavbarHeight.js). El valor
+     por defecto sirve como respaldo antes de que corra el efecto. */
+  --navbar-height: 64px;
+
   --bg-app: #f5f7ff;
   --bg-card: #ffffff;
   --bg-elevated: #eef2ff;
@@ -96,6 +101,11 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* El contenido deja sitio al navbar fijo al saltar a anclas. */
+html {
+  scroll-padding-top: calc(var(--navbar-height, 64px) + 1rem);
 }
 
 /* X-scroller para las píldoras de progreso cuando el contenedor es estrecho */

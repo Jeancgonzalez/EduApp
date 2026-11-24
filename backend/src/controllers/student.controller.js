@@ -108,7 +108,7 @@ class StudentController {
       const record = await StudentService.registerContentView(estudianteId, id);
 
       // Telemetría: un contenido no se "resuelve", se marca como visto. Se registra
-      // la visita para que el mapa de calor y la participación semanal cuenten los
+      // la visita para que el panel analítico y la participación semanal cuenten los
       // contenidos, no solo juegos y evaluaciones.
       try {
         await TelemetriaService.registrarIntentoDirecto({
@@ -345,7 +345,10 @@ class StudentController {
       const estudianteId = req.user.id;
       const { id } = req.params;
 
-          const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion');
+          // Alias 'Evaluation': la consulta incluye `preguntas` (JOIN con otra tabla
+          // que trae `id`); sin cualificar, MySQL responde
+          // "Column 'id' in IN/ALL/ANY subquery is ambiguous".
+          const condiciones = await GrupoService.recursoWhereEstudiante(estudianteId, 'evaluacion', 'Evaluation');
           const evaluacion = await Evaluation.findOne({
             where: { id, publicado: true, docente_id: req.user.docente_id, [Op.or]: condiciones },
         include: [{ model: Question, as: 'preguntas' }]

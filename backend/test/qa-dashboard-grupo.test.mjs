@@ -5,7 +5,7 @@ import { api, makeDocenteVerificado, registerStudentByTeacher, unique } from './
 /**
  * QA de la Vista de Grupo del panel del docente.
  *
- * Cubre los cinco endpoints nuevos y, sobre todo, los tres errores que esta vista
+ * Cubre los cuatro endpoints nuevos y, sobre todo, los dos errores que esta vista
  * hizo visibles y que son fáciles de reintroducir:
  *
  *  1. **Los contadores por nivel.** La distribución se armaba con un `Map`
@@ -13,16 +13,10 @@ import { api, makeDocenteVerificado, registerStudentByTeacher, unique } from './
  *     una sola clave y todos los niveles salían en 0 con `con_datos` correcto.
  *     Aquí los conteos se afirman de forma exacta, no solo que sumen.
  *
- *  2. **El nombre de la actividad del mapa de calor.** El `UNION ALL` de
- *     intentos y actividades trae `nombre = NULL` en la rama de intentos, y el
- *     `GROUP BY` se quedaba con esa fila: todos los encabezados salían como
- *     "Contenido #1741". Se comprueba que aparece el título real y que el
- *     placeholder solo aparece para la actividad borrada.
- *
- *  3. **El alias del estudiante que no tiene nota.** `_calificaciones()` parte
+ *  2. **El alias del estudiante que no tiene nota.** `_calificaciones()` parte
  *     de `actividad_intentos`, así que sin un respaldo de `users.name` el
  *     estudiante sin actividad se degradaba a `SIN_ALIAS`, que es justo el
- *     que el docente necesita ver en el ranking y en el mapa.
+ *     que el docente necesita ver en el ranking.
  *
  * Los puntajes son concretos para poder afirmar números exactos: con datos
  * aleatorios el test solo podría decir "no se rompe", que es lo que no alcanza
@@ -176,8 +170,8 @@ beforeAll(async () => {
     { estudiante_id: carla.id, docente_id: docenteA.userId, tipo: 'evaluacion', actividad_id: 700003, modulo: 'Algebra', puntaje_obtenido: 75, puntaje_maximo: 100, iniciado_en: AYER, completado: true },
     { estudiante_id: elena.id, docente_id: docenteA.userId, tipo: 'juego', actividad_id: 700002, modulo: 'Algebra', puntaje_obtenido: 60, puntaje_maximo: 100, iniciado_en: AYER, completado: true },
     { estudiante_id: bruno.id, docente_id: docenteA.userId, tipo: 'evaluacion', actividad_id: 700003, modulo: 'Algebra', puntaje_obtenido: 40, puntaje_maximo: 100, iniciado_en: AYER, completado: false },
-    // Actividad borrada: el mapa de calor tiene que conservar el intento pero
-    // caer al placeholder en la cabecera.
+    // Actividad borrada: el historial se conserva para el panel analítico,
+    // aunque ya no tenga fila en las tablas de recursos.
     { estudiante_id: bruno.id, docente_id: docenteA.userId, tipo: 'evaluacion', actividad_id: 700999, modulo: 'Algebra', puntaje_obtenido: null, puntaje_maximo: null, iniciado_en: AYER, completado: false },
     // Juego sin nota: intento sin calificar y sin completar -> en_progreso.
     { estudiante_id: carla.id, docente_id: docenteA.userId, tipo: 'juego', actividad_id: 700002, modulo: 'Algebra', puntaje_obtenido: null, puntaje_maximo: null, iniciado_en: AYER, completado: false },
@@ -254,12 +248,11 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
     const rutas = [
       '/api/dashboard/distribucion-niveles',
       '/api/dashboard/ranking-completo',
-      '/api/dashboard/mapa-calor',
       '/api/dashboard/participacion-semanal',
       '/api/dashboard/comparacion-grupos',
     ];
 
-    it('exige token en los cinco endpoints', async () => {
+    it('exige token en los cuatro endpoints', async () => {
       for (const ruta of rutas) {
         const res = await api.get(ruta);
         expect(res.status, `${ruta} sin token`).toBe(401);
@@ -376,118 +369,6 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
     });
   });
 
-  describe('mapa-calor', () => {
-    it('muestra el titulo real de la actividad y no el id', async () => {
-      const d = dato(await get('/api/dashboard/mapa-calor?semanas=8'));
-
-      const titulos = d.actividades.map((a) => a.nombre);
-      expect(titulos).toContain('Apuntes de algebra');
-      expect(titulos).toContain('Desafio de numeros');
-      expect(titulos).toContain('Evaluacion inicial');
-      expect(titulos).not.toContain('Oculto para QA');
-
-      // La unica actividad que cae al placeholder es la que ya no existe. El
-      // placeholder sale del mapa de tipos del servicio, con su acento.
-      const placeholder = d.actividades.find((a) => a.nombre.includes('#700999'));
-      expect(placeholder, 'la actividad borrada debe conservar su intento').toBeDefined();
-      expect(placeholder.nombre).toBe('Evaluación #700999');
-
-      for (const a of d.actividades) {
-        expect(a.clave).toMatch(/^a\d+$/);
-        expect(a.tipo).toBeTruthy();
-        expect(a.actividad_id).toBeTruthy();
-      }
-    });
-
-    it('ordena por movimiento y desempata alfabeticamente', async () => {
-      const d = dato(await get('/api/dashboard/mapa-calor?semanas=8'));
-
-      const movimiento = new Map();
-      for (const celda of d.celdas) {
-        if (celda.estado !== 'pendiente') {
-          movimiento.set(celda.a, (movimiento.get(celda.a) || 0) + 1);
-        }
-      }
-      const cuenta = d.actividades.map((a) => movimiento.get(a.clave) || 0);
-      for (let i = 1; i < cuenta.length; i += 1) {
-        expect(cuenta[i], 'la cantidad de movimiento no puede crecer').toBeLessThanOrEqual(cuenta[i - 1]);
-      }
-
-      // 700003 lo tocaron Ana, Bruno y Carla (3) y 700002 lo tocaron Carla y Elena (2):
-      // los dos de arriba son los que mas movieron la clase.
-      expect(cuenta).toEqual([3, 2, 1, 1, 1]);
-      expect(d.actividades.slice(0, 2).map((a) => a.actividad_id)).toEqual([700003, 700002]);
-
-      // Los tres que quedaron en 1 se ordenan por nombre ascendente. La
-      // comprobacion usa la misma collacion que el servicio a proposito: uno de
-      // los nombres es el placeholder "Evaluacion #700999" y el peso del "#"
-      // depende del ICU de cada maquina. Lo que se protege es el CRITERIO
-      // (ascendente); una lista literal fallaria en otro entorno sin que el
-      // codigo estuviese mal. Orden inverso, que era el bug, no pasa esto.
-      const cola = d.actividades.slice(2).map((a) => a.nombre);
-      expect(cola).toEqual([...cola].sort((a, b) => a.localeCompare(b)));
-    });
-
-    it('deduce los cuatro estados y no inventa celdas', async () => {
-      const d = dato(await get('/api/dashboard/mapa-calor?semanas=8'));
-
-      // `estados` viaja como leyenda para que el JSX no repita los textos: si el
-      // backend amplia los estados, la leyenda no puede quedar con la vieja.
-      expect(d.estados.map((e) => e.clave)).toEqual([
-        'completado', 'en_progreso', 'con_errores', 'pendiente',
-      ]);
-      for (const estado of d.estados) {
-        expect(estado.clave).toMatch(/^[a-z_]+$/);
-        expect(estado.etiqueta).toBeTruthy();
-      }
-
-      const claveDe = (nombre) => d.actividades.find((a) => a.nombre === nombre).clave;
-      const estadoDe = (alias, actividad) => {
-        const est = d.estudiantes.find((e) => e.alias === alias);
-        const celda = d.celdas.find(
-          (c) => c.e === est.clave && c.a === claveDe(actividad)
-        );
-        return celda ? celda.estado : null;
-      };
-
-      expect(estadoDe('Ana Ruiz', 'Apuntes de algebra')).toBe('completado');
-      expect(estadoDe('Ana Ruiz', 'Evaluacion inicial')).toBe('con_errores');
-      expect(estadoDe('Carla Paz', 'Desafio de numeros')).toBe('en_progreso');
-      expect(estadoDe('Elena Soto', 'Desafio de numeros')).toBe('completado');
-      expect(estadoDe('Bruno Diaz', 'Apuntes de algebra')).toBe('pendiente');
-      expect(estadoDe('Diego Rengifo', 'Apuntes de algebra')).toBe('pendiente');
-
-      const estados = d.celdas.reduce((m, c) => ({ ...m, [c.estado]: (m[c.estado] || 0) + 1 }), {});
-      // 5 estudiantes x 5 actividades = 25 celdas.
-      //   completado   Ana/700001, Carla/700003, Elena/700002
-      //   en_progreso  Carla/700002, Bruno/700999, Elena/700005
-      //   con_errores  Ana/700003, Bruno/700003
-      expect(estados.completado).toBe(3);
-      expect(estados.en_progreso).toBe(3);
-      expect(estados.con_errores).toBe(2);
-      expect(estados.pendiente).toBe(17);
-      expect(Object.values(estados).reduce((a, b) => a + b, 0)).toBe(25);
-
-      const validas = new Set(d.estudiantes.map((e) => e.clave));
-      const columnas = new Set(d.actividades.map((a) => a.clave));
-      const estadosValidos = d.estados.map((e) => e.clave);
-      expect(d.celdas.length).toBeLessThanOrEqual(d.estudiantes.length * d.actividades.length);
-      for (const c of d.celdas) {
-        expect(validas.has(c.e)).toBe(true);
-        expect(columnas.has(c.a)).toBe(true);
-        expect(estadosValidos).toContain(c.estado);
-      }
-    });
-
-    it('el estudiante sin actividad aparece con su alias, no desaparece', async () => {
-      const d = dato(await get('/api/dashboard/mapa-calor?semanas=8'));
-      expect(d.estudiantes).toHaveLength(5);
-      expect(d.estudiantes.map((e) => e.alias)).toContain('Diego Rengifo');
-      expect(d.estudiantes.find((e) => e.alias === 'Diego Rengifo').pct).toBeNull();
-      expect(d.ocultos).toEqual({ actividades: 0, estudiantes: 0 });
-    });
-  });
-
   describe('participacion-semanal', () => {
     it('devuelve un cubo por semana con denominador constante', async () => {
       const d = dato(await get('/api/dashboard/participacion-semanal?semanas=8'));
@@ -574,9 +455,6 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
       const alias = d.filas.map((f) => f.alias);
       expect(alias).not.toContain('Dante Ajeno');
 
-      const mapa = dato(await get('/api/dashboard/mapa-calor?semanas=8'));
-      expect(mapa.estudiantes.map((e) => e.alias)).not.toContain('Dante Ajeno');
-
       const dist = dato(await get('/api/dashboard/distribucion-niveles?semanas=8'));
       expect(dist.alcance.estudiantes).toBe(5);
 
@@ -599,7 +477,7 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
   });
 
   describe('docente sin estudiantes', () => {
-    it('los cinco endpoints responden vacios y sin NaN', async () => {
+    it('los cuatro endpoints responden vacios y sin NaN', async () => {
       const docente = await makeDocenteVerificado();
       creados.docentes.push(docente.userId);
       const token = docente.token;
@@ -616,12 +494,6 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
       expect(rk.filas).toEqual([]);
       expect(rk.truncado).toBe(false);
 
-      const mapa = dato(await get('/api/dashboard/mapa-calor?semanas=8', token));
-      expect(mapa.estudiantes).toEqual([]);
-      expect(mapa.actividades).toEqual([]);
-      expect(mapa.celdas).toEqual([]);
-      expect(mapa.ocultos).toEqual({ actividades: 0, estudiantes: 0 });
-
       const part = dato(await get('/api/dashboard/participacion-semanal?semanas=8', token));
       expect(part.serie).toHaveLength(8);
       for (const punto of part.serie) {
@@ -632,7 +504,7 @@ describe('QA-DASHBOARD-GRUPO · Vista de Grupo', () => {
       const comp = dato(await get('/api/dashboard/comparacion-grupos?semanas=8', token));
       expect(comp.grupos).toEqual([]);
 
-      const crudo = JSON.stringify([dist, rk, mapa, part, comp]);
+      const crudo = JSON.stringify([dist, rk, part, comp]);
       expect(crudo).not.toMatch(/NaN|undefined/);
     });
   });

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
+import useNavbarHeight from '../../hooks/useNavbarHeight';
 import {
   MdDashboard,
   MdMenuBook,
@@ -12,6 +13,7 @@ import {
   MdMenu,
   MdClose,
   MdSchool,
+  MdEmojiEvents,
 } from 'react-icons/md';
 import CampanaNotificaciones from '../CampanaNotificaciones';
 import './Navbar.css';
@@ -20,6 +22,8 @@ const Navbar = () => {
   const { user, isTeacher, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
+  useNavbarHeight(navRef);
 
   const handleLogout = () => {
     logout();
@@ -40,12 +44,13 @@ const Navbar = () => {
     { to: '/student/juegos', icon: <MdSportsEsports />, label: 'Zona de Juegos' },
     { to: '/student/evaluaciones', icon: <MdAssignment />, label: 'Mis Evaluaciones' },
     { to: '/student/progreso', icon: <MdBarChart />, label: 'Mi Progreso' },
+    { to: '/student/ranking', icon: <MdEmojiEvents />, label: 'Ranking del Grupo' },
   ];
 
   const links = isTeacher ? teacherLinks : studentLinks;
 
   return (
-    <nav className={`navbar ${isTeacher ? 'navbar-teacher' : 'navbar-student'}`}>
+    <nav ref={navRef} className={`navbar ${isTeacher ? 'navbar-teacher' : 'navbar-student'}`}>
       <div className="navbar-brand">
         <div className="navbar-logo">
           <MdSchool />

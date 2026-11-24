@@ -51,6 +51,21 @@ const entre = (min, max) => min + Math.floor(rnd() * (max - min + 1));
 const elegir = (lista) => lista[Math.floor(rnd() * lista.length)];
 const limitar = (n, min, max) => Math.max(min, Math.min(max, n));
 
+/**
+ * Elige una actividad respetando su `peso`. Los juegos y evaluaciones de peso
+ * alto reciben más intentos; las de peso 1 quedan con pocos datos a propósito
+ * (así el panel tiene un caso de "Pocos datos").
+ */
+const elegirPonderado = (lista) => {
+  const total = lista.reduce((acc, x) => acc + (x.peso || 1), 0);
+  let r = rnd() * total;
+  for (const x of lista) {
+    r -= x.peso || 1;
+    if (r <= 0) return x;
+  }
+  return lista[lista.length - 1];
+};
+
 const NOMBRES = [
   'Ana Sofía', 'Mateo', 'Valentina', 'Santiago', 'Isabella', 'Sebastián',
   'Camila', 'Nicolás', 'Mariana', 'David', 'Daniela', 'Andrés', 'Lucía', 'Tomás',
@@ -62,26 +77,136 @@ const APELLIDOS = [
   'Quintero', 'Rodríguez', 'Serna',
 ];
 
+// Actividades reales en lenguaje de quinto de primaria sobre hardware y Windows.
+// El panel de conceptos necesita detalle por respuesta, así que cada juego trae
+// su configuración (con el elemento "difícil" marcado) y cada evaluación sus
+// preguntas con la respuesta correcta y la opción que más se equivocan.
 const MODULOS = [
   {
     nombre: `${MATERIA} 101`,
     contenidos: [
-      ['Introducción a la computadora', 'texto'],
+      ['El computador y sus partes', 'texto'],
       ['Hardware y software', 'texto'],
-      ['Redes e internet', 'texto'],
+      ['Windows: el escritorio y las ventanas', 'texto'],
       ['Seguridad digital', 'texto'],
     ],
-    juegos: ['Crucigrama de Hardware', 'Memoria de Redes'],
-    evaluaciones: ['Evaluación Unidad 1', 'Evaluación Unidad 2'],
+    juegos: [
+      {
+        titulo: 'Crucigrama de Hardware',
+        tipo: 'crucigrama',
+        peso: 4,
+        config: {
+          pistas: [
+            { palabra: 'MOUSE', numero: 1, fila: 0, col: 0, orientacion: 'H', pista: 'Sirve para mover el puntero en la pantalla.', dificil: true, magnet: 'TECLADO' },
+            { palabra: 'TECLADO', numero: 2, fila: 2, col: 0, orientacion: 'H', pista: 'Tiene muchas teclas para escribir.' },
+            { palabra: 'PANTALLA', numero: 3, fila: 4, col: 0, orientacion: 'H', pista: 'Muestra las imágenes y los textos.' },
+            { palabra: 'IMPRESORA', numero: 4, fila: 6, col: 0, orientacion: 'H', pista: 'Imprime en papel lo que ves en el computador.' },
+            { palabra: 'PARLANTE', numero: 5, fila: 8, col: 0, orientacion: 'H', pista: 'Deja salir la música y los sonidos.' },
+          ],
+        },
+      },
+      {
+        titulo: 'Memoria de Partes',
+        tipo: 'memoria',
+        config: {
+          pares: [
+            { elemento1: 'Teclado', elemento2: 'Escribir' },
+            { elemento1: 'Mouse', elemento2: 'Mover el puntero' },
+            { elemento1: 'Pantalla', elemento2: 'Mostrar imágenes' },
+            { elemento1: 'Impresora', elemento2: 'Imprimir' },
+            { elemento1: 'Parlantes', elemento2: 'Reproducir sonido' },
+            { elemento1: 'Cámara web', elemento2: 'Grabar video' },
+          ],
+        },
+      },
+      {
+        titulo: 'Sopa de Windows',
+        tipo: 'sopa_de_letras',
+        peso: 4,
+        config: {
+          palabras: [
+            { palabra: 'VENTANA', pista: 'Recuadro donde se abre un programa.' },
+            { palabra: 'CARPETA', pista: 'Sirve para guardar archivos.' },
+            { palabra: 'ESCRITORIO', pista: 'Lo primero que ves al encender.' },
+            { palabra: 'ARCHIVO', pista: 'Un documento, una foto o un video.' },
+            { palabra: 'ANTIVIRUS', pista: 'Cuida el computador de los virus.', dificil: true },
+            { palabra: 'INTERNET', pista: 'Red que conecta millones de computadores.' },
+          ],
+          tablero: [],
+        },
+      },
+    ],
+    evaluaciones: [
+      {
+        titulo: 'Evaluación: El computador',
+        peso: 4,
+        preguntas: [
+          { pregunta: '¿Cuál de estos sirve para escribir en el computador?', a: 'El monitor', b: 'El teclado', c: 'Los parlantes', d: 'El mouse', correcta: 'B', subtema: 'Hardware: dispositivos' },
+          { pregunta: '¿Qué parte muestra las imágenes y el texto?', a: 'La pantalla', b: 'El teclado', c: 'El gabinete', d: 'El cable', correcta: 'A', subtema: 'Hardware: dispositivos' },
+          { pregunta: '¿Cuál es un dispositivo de salida?', a: 'El mouse', b: 'El teclado', c: 'Los parlantes', d: 'El escáner', correcta: 'C', subtema: 'Hardware: dispositivos' },
+          { pregunta: '¿Qué es el hardware?', a: 'Los programas', b: 'Las partes físicas del computador', c: 'Los juegos', d: 'Las páginas de Internet', correcta: 'B', magnet: 'A', dificil: true, subtema: 'Hardware y software' },
+          { pregunta: '¿Qué programa usamos para dibujar?', a: 'Paint', b: 'El monitor', c: 'El mouse', d: 'La carpeta', correcta: 'A', subtema: 'Software' },
+        ],
+      },
+      {
+        titulo: 'Evaluación: Windows',
+        preguntas: [
+          { pregunta: '¿Dónde guardas tus archivos para no perderlos?', a: 'En la papelera', b: 'En una carpeta', c: 'En el teclado', d: 'En la pantalla', correcta: 'B', subtema: 'Windows: archivos' },
+          { pregunta: '¿Qué es el escritorio de Windows?', a: 'La parte física', b: 'La primera pantalla que ves al encender', c: 'Un programa de dibujo', d: 'Una carpeta con Internet', correcta: 'B', subtema: 'Windows: escritorio' },
+          { pregunta: 'Si borras un archivo por error, ¿dónde lo buscas?', a: 'En la papelera de reciclaje', b: 'En el escritorio', c: 'En Mis documentos', d: 'En Internet', correcta: 'A', magnet: 'B', dificil: true, subtema: 'Windows: archivos' },
+          { pregunta: '¿Cómo se llama el botón para ver el menú de inicio?', a: 'El botón Inicio', b: 'El botón rojo', c: 'El mouse', d: 'La flecha', correcta: 'A', subtema: 'Windows: escritorio' },
+          { pregunta: '¿Qué tecla borra lo que escribes hacia la izquierda?', a: 'Enter', b: 'Retroceso', c: 'Shift', d: 'Espacio', correcta: 'B', subtema: 'Software' },
+        ],
+      },
+    ],
   },
   {
     nombre: `${MATERIA} 201`,
     contenidos: [
-      ['Bases de datos relacionales', 'texto'],
-      ['Consultas SQL básicas', 'texto'],
+      ['El escritorio de Windows', 'texto'],
+      ['Archivos y carpetas', 'texto'],
     ],
-    juegos: ['Desafío de Consultas'],
-    evaluaciones: ['Evaluación Bases de Datos'],
+    juegos: [
+      {
+        titulo: 'Relaciona Hardware',
+        tipo: 'relacionar',
+        config: {
+          pares: [
+            { columnaA: 'Teclado', columnaB: 'Escribir palabras' },
+            { columnaA: 'Mouse', columnaB: 'Señalar y hacer clic' },
+            { columnaA: 'Impresora', columnaB: 'Imprimir en papel' },
+            { columnaA: 'Parlantes', columnaB: 'Escuchar sonidos' },
+            { columnaA: 'Escáner', columnaB: 'Pasar un papel al computador', dificil: true, magnet: 'Imprimir en papel' },
+          ],
+        },
+      },
+      {
+        titulo: 'Adivinanza de Windows',
+        tipo: 'adivinanza',
+        config: {
+          adivinanza: 'Tengo muchas teclas, estoy sobre la mesa y me usas para escribir. ¿Qué soy?',
+          pista: 'Tiene letras y números.',
+          opcionA: 'El teclado',
+          opcionB: 'El mouse',
+          opcionC: 'La pantalla',
+          respuestaCorrecta: 'El teclado',
+          magnet: 'El mouse',
+        },
+      },
+    ],
+    evaluaciones: [
+      {
+        titulo: 'Evaluación: Seguridad digital',
+        peso: 4,
+        preguntas: [
+          { pregunta: '¿Cuál es una buena contraseña?', a: '123456', b: 'Tu nombre', c: 'Una mezcla de letras, números y símbolos', d: 'Tu fecha de nacimiento', correcta: 'C', magnet: 'D', dificil: true, subtema: 'Seguridad: contraseñas' },
+          { pregunta: '¿Qué haces si un desconocido te pide tus datos por Internet?', a: 'Se los das', b: 'Avisas a un adulto', c: 'Lo agregas como amigo', d: 'Le escribes en secreto', correcta: 'B', subtema: 'Seguridad: datos' },
+          { pregunta: '¿Qué significa navegar seguro?', a: 'Correr por el computador', b: 'Visitar páginas confiables', c: 'Apagar el computador', d: 'Desconectar el mouse', correcta: 'B', subtema: 'Seguridad en Internet' },
+          { pregunta: '¿Qué debes hacer al terminar de usar una página con tu cuenta?', a: 'Cerrar sesión', b: 'Dejarla abierta', c: 'Apagar la pantalla', d: 'Borrar el mouse', correcta: 'A', subtema: 'Seguridad en Internet' },
+          { pregunta: '¿Qué es un virus informático?', a: 'Un programa que daña o roba información', b: 'Un dolor de cabeza', c: 'Un tipo de mouse', d: 'Una carpeta', correcta: 'A', subtema: 'Seguridad: virus' },
+        ],
+      },
+    ],
   },
 ];
 
@@ -147,13 +272,21 @@ async function insertar(sql, valores) {
  * `?` de cada fila: se hace INSERT por lote porque el seed genera del orden de
  * ~1.000 filas de telemetría y fila por fila tarda muchísimo más.
  */
-async function insertarLote(tabla, columnas, filas) {
-  if (filas.length === 0) return;
-  const tuplas = filas.map(() => `(${columnas.map(() => '?').join(',')})`).join(',');
-  await sequelize.query(
-    `INSERT INTO \`${tabla}\` (${columnas.map((c) => `\`${c}\``).join(',')}) VALUES ${tuplas}`,
-    { replacements: filas.flat() }
-  );
+async function insertarLote(tabla, columnas, filas, tamanoLote = 800) {
+  if (filas.length === 0) return null;
+  let primerId = null;
+  for (let inicio = 0; inicio < filas.length; inicio += tamanoLote) {
+    const trozo = filas.slice(inicio, inicio + tamanoLote);
+    const tuplas = trozo.map(() => `(${columnas.map(() => '?').join(',')})`).join(',');
+    const r = await sequelize.query(
+      `INSERT INTO \`${tabla}\` (${columnas.map((c) => `\`${c}\``).join(',')}) VALUES ${tuplas}`,
+      { replacements: trozo.flat(), type: sequelize.QueryTypes.INSERT }
+    );
+    // Solo interesa el id de la primera fila: MySQL asigna ids consecutivos, así
+    // que la fila i del arreglo `filas` queda con `primerId + i`.
+    if (primerId == null) primerId = extraerInsertId(r);
+  }
+  return primerId;
 }
 
 async function borrarDemo(docenteId) {
@@ -181,6 +314,189 @@ async function borrarDemo(docenteId) {
   await sequelize.query("DELETE FROM juegos WHERE docente_id = ? AND modulo LIKE 'Informática%'", { replacements: [docenteId] });
   await sequelize.query("DELETE FROM evaluaciones WHERE docente_id = ? AND modulo LIKE 'Informática%'", { replacements: [docenteId] });
   return ids.length;
+}
+
+// ---------------------------------------------------------------------------
+// Detalle por respuesta (alimenta el panel de conceptos)
+// ---------------------------------------------------------------------------
+
+/**
+ * PRNG separado EXCLUSIVO para el detalle. No se toca el PRNG principal (`rnd`)
+ * para que los intentos, sesiones y medallas sigan siendo exactamente los
+ * mismos que antes de añadir el detalle: lo único que cambia es que ahora cada
+ * intento guarda también lo que el estudiante respondió.
+ */
+const rndDetalle = mulberry32(20260111);
+const elegirDetalle = (lista) => lista[Math.floor(rndDetalle() * lista.length)];
+
+/**
+ * Índices de los elementos que el estudiante falló, sesgando el fallo hacia el
+ * elemento marcado como "difícil" para que exista un patrón de error dominante.
+ */
+function indicesFallados(n, correctas, dificilIdx) {
+  const aFallar = Math.max(0, Math.min(n, n - correctas));
+  const orden = [...Array(n).keys()].map((i) => ({
+    i,
+    k: (i === dificilIdx ? -0.6 : 0) + rndDetalle(),
+  }));
+  orden.sort((a, b) => a.k - b.k);
+  return new Set(orden.slice(0, aFallar).map((o) => o.i));
+}
+
+/** Respuesta incorrecta de una evaluación, sesgada hacia la opción "magnet". */
+function opcionIncorrecta(q) {
+  const otras = q.opciones.filter((o) => o !== q.correcta);
+  if (q.magnet && otras.includes(q.magnet) && rndDetalle() < 0.55) return q.magnet;
+  return elegirDetalle(otras);
+}
+
+/** Filas de `evaluacion_intento_respuestas` de un intento. */
+function detalleEvaluacion(evalInfo, abandona, aciertos) {
+  const pregs = evalInfo.preguntas;
+  if (!abandona) {
+    const correctas = Math.max(0, Math.min(pregs.length, aciertos == null ? 0 : aciertos));
+    const dificilIdx = Math.max(0, pregs.findIndex((p) => p.dificil));
+    const fallan = indicesFallados(pregs.length, correctas, dificilIdx);
+    return pregs.map((q, i) => {
+      const ok = !fallan.has(i);
+      const letra = ok ? q.correcta : opcionIncorrecta(q);
+      return {
+        pregunta_id: q.id,
+        opcion_elegida: letra.toLowerCase(),
+        respuesta_enviada: letra,
+        es_correcta: ok ? 1 : 0,
+        respondida: 1,
+        tiempo_seg: 8 + Math.floor(rndDetalle() * 28),
+      };
+    });
+  }
+  // Abandonó: respondió solo algunas preguntas (el resto queda en blanco).
+  const respondidas = 1 + Math.floor(rndDetalle() * 3);
+  const filas = [];
+  for (let i = 0; i < respondidas; i += 1) {
+    const q = pregs[i];
+    const ok = rndDetalle() < 0.4;
+    const letra = ok ? q.correcta : opcionIncorrecta(q);
+    filas.push({
+      pregunta_id: q.id,
+      opcion_elegida: letra.toLowerCase(),
+      respuesta_enviada: letra,
+      es_correcta: ok ? 1 : 0,
+      respondida: 1,
+      tiempo_seg: 6 + Math.floor(rndDetalle() * 20),
+    });
+  }
+  return filas;
+}
+
+/**
+ * Filas de `juego_intento_elementos` de un intento, coherentes con el tipo real
+ * del juego y con lo ya simulado (abandonó o terminó, con tal nota).
+ */
+function detalleDeJuego(juego, abandona, nota) {
+  const config = juego.config;
+
+  if (juego.tipo === 'crucigrama') {
+    const pistas = config.pistas;
+    const dificilIdx = Math.max(0, pistas.findIndex((p) => p.dificil));
+    const correctas = abandona
+      ? Math.max(1, Math.floor(rndDetalle() * pistas.length))
+      : Math.round((nota / 100) * pistas.length);
+    const fallan = indicesFallados(pistas.length, correctas, dificilIdx);
+    return pistas.map((p, i) => {
+      const ok = !fallan.has(i);
+      const mala = p.magnet || elegirDetalle(pistas.map((x) => x.palabra).filter((w) => w !== p.palabra));
+      const dada = ok ? p.palabra : (rndDetalle() < 0.75 ? mala : null);
+      return {
+        elemento_clave: `pista_${p.numero}`,
+        elemento_tipo: 'pista',
+        esperado: p.palabra,
+        respuesta_dada: dada,
+        es_correcta: ok ? 1 : 0,
+        respondido: dada == null ? 0 : 1,
+        concepto: p.pista,
+      };
+    });
+  }
+
+  if (juego.tipo === 'sopa_de_letras') {
+    const palabras = config.palabras;
+    const dificilIdx = Math.max(0, palabras.findIndex((p) => p.dificil));
+    const correctas = abandona
+      ? Math.max(1, Math.floor(rndDetalle() * palabras.length))
+      : Math.round((nota / 100) * palabras.length);
+    const fallan = indicesFallados(palabras.length, correctas, dificilIdx);
+    return palabras.map((p, i) => {
+      const esperado = String(p.palabra).toUpperCase().replace(/\s/g, '');
+      const ok = !fallan.has(i);
+      return {
+        elemento_clave: `palabra_${i}`,
+        elemento_tipo: 'palabra',
+        esperado,
+        respuesta_dada: ok ? esperado : null,
+        es_correcta: ok ? 1 : 0,
+        // En la sopa, "no encontrarla" es un error (el estudiante sí buscó).
+        respondido: 1,
+        concepto: p.palabra,
+      };
+    });
+  }
+
+  if (juego.tipo === 'memoria') {
+    const nPares = config.pares.length;
+    const intentos = abandona
+      ? nPares + 2 + Math.floor(rndDetalle() * 6)
+      : nPares + Math.max(0, Math.round((100 - nota) / 8));
+    return [{
+      elemento_clave: 'memoria',
+      elemento_tipo: 'memoria',
+      esperado: String(nPares),
+      respuesta_dada: String(intentos),
+      es_correcta: intentos <= nPares ? 1 : 0,
+      respondido: 1,
+      concepto: 'Memotest',
+    }];
+  }
+
+  if (juego.tipo === 'relacionar') {
+    const pares = config.pares;
+    const dificilIdx = Math.max(0, pares.findIndex((p) => p.dificil));
+    const correctas = abandona
+      ? Math.max(1, Math.floor(rndDetalle() * pares.length))
+      : Math.round((nota / 100) * pares.length);
+    const fallan = indicesFallados(pares.length, correctas, dificilIdx);
+    return pares.map((p, i) => {
+      const ok = !fallan.has(i);
+      const mala = p.magnet || elegirDetalle(pares.filter((_, j) => j !== i).map((x) => x.columnaB));
+      const dada = ok ? p.columnaB : (rndDetalle() < 0.75 ? mala : null);
+      return {
+        elemento_clave: `par_${i}`,
+        elemento_tipo: 'relacion',
+        esperado: p.columnaB,
+        respuesta_dada: dada,
+        es_correcta: ok ? 1 : 0,
+        respondido: dada == null ? 0 : 1,
+        concepto: p.columnaA,
+      };
+    });
+  }
+
+  if (juego.tipo === 'adivinanza') {
+    const correcta = config.respuestaCorrecta;
+    const ok = !abandona && Math.round(nota / 100) >= 1;
+    const mala = config.magnet || elegirDetalle([config.opcionB, config.opcionC].filter(Boolean));
+    return [{
+      elemento_clave: 'adivinanza',
+      elemento_tipo: 'adivinanza',
+      esperado: correcta,
+      respuesta_dada: ok ? correcta : mala,
+      es_correcta: ok ? 1 : 0,
+      respondido: 1,
+      concepto: config.adivinanza,
+    }];
+  }
+
+  return [];
 }
 
 // ---------------------------------------------------------------------------
@@ -249,29 +565,37 @@ async function main() {
       );
       contenidos.push({ id: r.insertId, modulo: mod.nombre });
     }
-    for (const titulo of mod.juegos) {
+    for (const juego of mod.juegos) {
       const r = await insertar(
         `INSERT INTO juegos (titulo, tipo, modulo, descripcion, configuracion, docente_id, puntaje_max, publicado, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, 100, 1, NOW(), NOW())`,
-        [titulo, 'crucigrama', mod.nombre, 'Juego de demostración', '{}', docenteId]
+        [juego.titulo, juego.tipo, mod.nombre, 'Juego de demostración', JSON.stringify(juego.config), docenteId]
       );
-      juegos.push({ id: r.insertId, modulo: mod.nombre, max: 100 });
+      juegos.push({ id: r.insertId, modulo: mod.nombre, max: 100, tipo: juego.tipo, config: juego.config, peso: juego.peso || 1 });
     }
-    for (const titulo of mod.evaluaciones) {
+    for (const evaluacion of mod.evaluaciones) {
       const r = await insertar(
         `INSERT INTO evaluaciones (titulo, descripcion, modulo, docente_id, tiempoLimitado, publicado, requiere_contenido_apoyo, createdAt, updatedAt)
          VALUES (?, ?, ?, ?, 0, 1, 0, NOW(), NOW())`,
-        [titulo, 'Evaluación de demostración', mod.nombre, docenteId]
+        [evaluacion.titulo, 'Evaluación de demostración', mod.nombre, docenteId]
       );
       const evalId = r.insertId;
-      for (let p = 1; p <= 5; p += 1) {
-        await insertar(
-          `INSERT INTO preguntas (evaluacion_id, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta, retroalimentacion, createdAt, updatedAt)
-           VALUES (?, ?, 'A', 'B', 'C', 'D', 'A', 'Retroalimentación', NOW(), NOW())`,
-          [evalId, `Pregunta ${p} de ${titulo}`]
+      const preguntas = [];
+      for (const p of evaluacion.preguntas) {
+        const rp = await insertar(
+          `INSERT INTO preguntas (evaluacion_id, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta, retroalimentacion, subtema, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Revisa el tema en clase.', ?, NOW(), NOW())`,
+          [evalId, p.pregunta, p.a, p.b, p.c, p.d, p.correcta, p.subtema || null]
         );
+        preguntas.push({
+          id: rp.insertId,
+          correcta: String(p.correcta).toUpperCase(),
+          opciones: ['A', 'B', 'C', 'D'],
+          magnet: p.magnet ? String(p.magnet).toUpperCase() : null,
+          dificil: Boolean(p.dificil),
+        });
       }
-      evaluaciones.push({ id: evalId, modulo: mod.nombre, max: 100, preguntas: 5 });
+      evaluaciones.push({ id: evalId, modulo: mod.nombre, max: 100, preguntas, peso: evaluacion.peso || 1 });
     }
   }
   console.log(`Actividades: ${contenidos.length} contenidos, ${juegos.length} juegos, ${evaluaciones.length} evaluaciones`);
@@ -310,6 +634,10 @@ async function main() {
   const intentos = [];
   const sesiones = [];
   const medallas = [];
+  // Detalle por respuesta: cada entrada guarda el índice del intento dentro de
+  // `intentos` (para resolver su id real) y sus filas de detalle.
+  const detalleEval = [];
+  const detalleJuego = [];
   // `progreso_estudiante` es UNIQUE por (estudiante, actividad): la app hace
   // upsert en cada intento, así que una fila por intento reventaría con
   // "Duplicate entry". Se consolida en un mapa y al final se inserta una sola
@@ -363,26 +691,28 @@ async function main() {
       const nCont = limitar(Math.round(1 + rnd() * 3 * est.dedicacion), 1, 3);
       for (let k = 0; k < nCont; k += 1) {
         const c = elegir(contenidos);
-        const abandona = rnd() < 0.07;
-        const dur = abandona ? entre(20, 90) : entre(240, 780);
+        // Se conserva el consumo del PRNG (para no alterar el resto de la
+        // telemetría), pero los contenidos ya NO se abandonan: no tienen detalle
+        // por respuesta, así que no deben aparecer en "Conceptos con mayor error".
+        rnd();
+        const abandona = false;
+        const dur = entre(240, 780);
         const ini = new Date(cuando.getTime() + k * 13 * 60000);
         intentos.push([
           est.id, docenteId, est.grupo.id, 'contenido', c.id, c.modulo, 1,
-          null, null, null, null, null, dur, ini, abandona ? 0 : 1, abandona ? 1 : 0,
-          abandona ? null : new Date(ini.getTime() + dur * 1000),
+          null, null, null, null, null, dur, ini, 1, 0,
+          new Date(ini.getTime() + dur * 1000),
         ]);
-        if (!abandona) {
-          anotarProgreso(`${est.id}|c|${c.id}`,
-            [est.id, c.id, null, null, 1, 0, new Date(ini.getTime() + dur * 1000), 1, 1, null]);
-        }
+        anotarProgreso(`${est.id}|c|${c.id}`,
+          [est.id, c.id, null, null, 1, 0, new Date(ini.getTime() + dur * 1000), 1, 1, null]);
       }
 
       // Juegos y evaluaciones: sí llevan nota (puntaje_maximo = 100), que es lo
       // que alimenta el ranking y el KPI de promedio.
       for (const [lista, tipo] of [[juegos, 'juego'], [evaluaciones, 'evaluacion']]) {
-        if (rnd() > 0.72 * est.dedicacion + 0.15) continue;
-        const act = elegir(lista);
-        const abandona = rnd() < 0.12;
+        if (rnd() > 0.85 * est.dedicacion + 0.35) continue;
+        const act = elegirPonderado(lista);
+        const abandona = rnd() < 0.2;
         const dur = abandona ? entre(45, 180) : entre(150, 900);
         const ini = new Date(cuando.getTime() + 20 * 60000);
         // Nota: la habilidad manda, con algo de ruido. Solo los mejores sacan
@@ -390,15 +720,22 @@ async function main() {
         let nota = Math.round(est.habilidad * 100 + entre(-9, 9));
         if (!abandona && est.habilidad > 0.97 && rnd() < 0.15) nota = act.max;
         nota = limitar(nota, 0, act.max);
-        const aciertos = tipo === 'evaluacion' && !abandona
-          ? Math.round((nota / act.max) * act.preguntas)
+        const esEval = tipo === 'evaluacion';
+        const aciertos = esEval && !abandona
+          ? Math.round((nota / act.max) * act.preguntas.length)
           : null;
+        const idx = intentos.length;
         intentos.push([
           est.id, docenteId, est.grupo.id, tipo, act.id, act.modulo, 1,
-          abandona ? null : nota, act.max, aciertos, aciertos == null ? null : act.preguntas,
+          abandona ? null : nota, act.max, aciertos, aciertos == null ? null : act.preguntas.length,
           null, dur, ini, abandona ? 0 : 1, abandona ? 1 : 0,
           abandona ? null : new Date(ini.getTime() + dur * 1000),
         ]);
+        if (esEval) {
+          detalleEval.push({ idx, filas: detalleEvaluacion(act, abandona, aciertos) });
+        } else {
+          detalleJuego.push({ idx, filas: detalleDeJuego(act, abandona, nota) });
+        }
         if (!abandona) {
           anotarProgreso(`${est.id}|${tipo}|${act.id}`,
             [est.id, null, tipo === 'juego' ? act.id : null, tipo === 'evaluacion' ? act.id : null,
@@ -420,10 +757,38 @@ async function main() {
     }
     }
 
-  await insertarLote('actividad_intentos',
+  const primerIntentoId = await insertarLote('actividad_intentos',
     ['estudiante_id', 'docente_id', 'grupo_id', 'tipo', 'actividad_id', 'modulo', 'numero_intento',
      'puntaje_obtenido', 'puntaje_maximo', 'aciertos', 'preguntas_total', 'acierto_primer_intento',
      'duracion_seg', 'iniciado_en', 'completado', 'abandono', 'cerrado_en'], intentos);
+
+  // Detalle por respuesta: `primerIntentoId + idx` reconstruye el id del intento
+  // (MySQL asigna ids consecutivos al INSERT por lote).
+  const filasDetalleEval = [];
+  for (const { idx, filas } of detalleEval) {
+    for (const f of filas) {
+      filasDetalleEval.push([
+        primerIntentoId + idx, f.pregunta_id, f.opcion_elegida, f.respuesta_enviada,
+        f.es_correcta, f.respondida, f.tiempo_seg,
+      ]);
+    }
+  }
+  const filasDetalleJuego = [];
+  for (const { idx, filas } of detalleJuego) {
+    for (const f of filas) {
+      filasDetalleJuego.push([
+        primerIntentoId + idx, f.elemento_clave, f.elemento_tipo, f.esperado,
+        f.respuesta_dada, f.es_correcta, f.respondido, f.concepto,
+      ]);
+    }
+  }
+  await insertarLote('evaluacion_intento_respuestas',
+    ['intento_id', 'pregunta_id', 'opcion_elegida', 'respuesta_enviada', 'es_correcta', 'respondida', 'tiempo_seg'],
+    filasDetalleEval);
+  await insertarLote('juego_intento_elementos',
+    ['intento_id', 'elemento_clave', 'elemento_tipo', 'esperado', 'respuesta_dada', 'es_correcta', 'respondido', 'concepto'],
+    filasDetalleJuego);
+
   await insertarLote('estudiante_sesion',
     ['estudiante_id', 'docente_id', 'grupo_id', 'iniciado_en', 'ultimo_heartbeat', 'duracion_seg', 'activa', 'user_agent', 'cerrada_en'],
     sesiones);
@@ -434,6 +799,7 @@ async function main() {
     [...progreso.values()]);
 
   console.log(`Telemetría: ${intentos.length} intentos, ${sesiones.length} sesiones, ${medallas.length} medallas, ${progreso.size} progresos`);
+  console.log(`Detalle por respuesta: ${filasDetalleEval.length} respuestas de evaluación, ${filasDetalleJuego.length} elementos de juego`);
 
   // --- Resumen por semana, tal como lo verá el docente --------------------
   const res = await sequelize.query(

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 import CampanaNotificaciones from '../CampanaNotificaciones';
+import useNavbarHeight from '../../hooks/useNavbarHeight';
 import {
   MdSchool,
   MdDashboard,
@@ -42,6 +43,8 @@ const NavbarAnalitica = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
+  useNavbarHeight(navRef);
 
   const qs = location.search; // conserva ?grupoId=&semanas=&estudiante=
 
@@ -51,7 +54,7 @@ const NavbarAnalitica = () => {
   };
 
   return (
-    <nav className="analitica-navbar" aria-label="Panel de Analítica">
+    <nav ref={navRef} className="analitica-navbar" aria-label="Panel de Analítica">
       {/* ---------- Brand ---------- */}
       <div className="analitica-brand">
         <div className="analitica-logo">

@@ -160,6 +160,50 @@ class ContentService {
         contenido.grupo_ids = grupoIds;
       }
       if (datos.publicado === true && !estabaPublicado) {
+        // La despublicación desactiva en cascada los juegos/evaluaciones del
+        // módulo. Al republicar restauramos los que dependen directamente de
+        // este contenido (sin tocar borradores ajenos) y recalculamos su
+        // progreso, para que la nota del módulo no quede en cero.
+        const juegosWhere = { publicado: false, modulo_content_id: contenido.id };
+        const evaluacionesWhere = {
+          publicado: false,
+          [Op.or]: [
+            { modulo_content_id: contenido.id },
+            { contenido_apoyo_id: contenido.id }
+          ]
+        };
+
+        const juegosRelacionados = await Game.findAll({ where: juegosWhere, attributes: ['id', 'modulo'], raw: true });
+        const evaluacionesRelacionadas = await Evaluation.findAll({ where: evaluacionesWhere, attributes: ['id', 'modulo'], raw: true });
+
+        await Game.update({ publicado: true }, { where: juegosWhere });
+        await Evaluation.update({ publicado: true }, { where: evaluacionesWhere });
+
+        const modulosAfectados = new Set();
+        if (contenido.modulo) modulosAfectados.add(contenido.modulo);
+        for (const g of juegosRelacionados) if (g.modulo) modulosAfectados.add(g.modulo);
+        for (const e of evaluacionesRelacionadas) if (e.modulo) modulosAfectados.add(e.modulo);
+
+        const orCondiciones = [{ contenido_id: contenido.id }];
+        if (juegosRelacionados.length > 0) {
+          orCondiciones.push({ juego_id: { [Op.in]: juegosRelacionados.map(g => g.id) } });
+        }
+        if (evaluacionesRelacionadas.length > 0) {
+          orCondiciones.push({ evaluacion_id: { [Op.in]: evaluacionesRelacionadas.map(e => e.id) } });
+        }
+
+        const affectedStudents = await StudentProgress.findAll({
+          where: { [Op.or]: orCondiciones },
+          attributes: ['estudiante_id'],
+          group: ['estudiante_id'],
+          raw: true
+        });
+        for (const s of affectedStudents) {
+          for (const mod of modulosAfectados) {
+            await ProgressService.recalcularProgreso(s.estudiante_id, mod, null, contenido.docente_id);
+          }
+        }
+
         await NotificationService.notifyNewContent(contenido.docente_id, contenido.titulo, contenido.modulo, grupoIds).catch(e => {
           console.error('[Notificación] Error global en notifyNewContent (actualizarContenido):', e.message);
           console.error(e);

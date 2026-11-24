@@ -4,6 +4,7 @@ const StudentService = require('../services/student.service');
 const ProgressService = require('../services/progress.service');
 const GrupoService = require('../services/grupo.service');
 const TelemetriaService = require('../services/telemetria.service');
+const DetalleIntentoService = require('../services/detalleIntento.service');
 const Game = require('../models/game.model');
 const Evaluation = require('../models/evaluation.model');
 const Content = require('../models/content.model');
@@ -19,7 +20,10 @@ class RespuestasController {
    */
   static async _cerrarIntento(req, datos) {
     try {
-      await TelemetriaService.cerrarIntento({
+      // Se devuelve el intento cerrado para enlazar el detalle por pregunta o
+      // por elemento. Si la telemetría falla, se devuelve null y el intento
+      // queda como "sin detalle": nunca se fabrica información.
+      return await TelemetriaService.cerrarIntento({
         intentoId: req.body?.intento_id || null,
         estudianteId: req.user.id,
         docenteId: req.user.docente_id,
@@ -27,6 +31,7 @@ class RespuestasController {
       });
     } catch (error) {
       console.warn('[telemetría] No se pudo cerrar el intento:', error.message);
+      return null;
     }
   }
 
@@ -124,7 +129,7 @@ class RespuestasController {
 
       // Telemetría: un renglón por intento. Aciertos y total vienen del detalle
       // que ya calculaba EvaluationService; la duración se mide en el servidor.
-      await RespuestasController._cerrarIntento(req, {
+      const intento = await RespuestasController._cerrarIntento(req, {
         tipo: 'evaluacion',
         actividadId: Number(id),
         modulo: evaluacion.modulo || null,
@@ -134,6 +139,12 @@ class RespuestasController {
         preguntasTotal: resultado.total_preguntas,
         duracionSeg: typeof tiempo === 'number' ? tiempo : null,
       });
+
+      // Detalle por pregunta, enlazado al intento recién cerrado. Con esto el
+      // panel puede mostrar qué opción eligió cada estudiante y no solo el total.
+      if (intento) {
+        await DetalleIntentoService.registrarEvaluacion(intento.id, resultado.detalle);
+      }
 
       if (evaluacion.modulo) {
         await ProgressService.recalcularProgreso(estudianteId, evaluacion.modulo, null, req.user.docente_id);
@@ -189,7 +200,7 @@ class RespuestasController {
 
       // Telemetría: los juegos no tienen preguntas, así que `aciertos` se deja nulo
       // y el acierto se evalúa contra el puntaje máximo del propio juego.
-      await RespuestasController._cerrarIntento(req, {
+      const intento = await RespuestasController._cerrarIntento(req, {
         tipo: 'juego',
         actividadId: Number(id),
         modulo: juego.modulo || null,
@@ -199,6 +210,12 @@ class RespuestasController {
         preguntasTotal: null,
         duracionSeg: typeof datosIntento.tiempo === 'number' ? datosIntento.tiempo : null,
       });
+
+      // Detalle por elemento del juego (palabras no encontradas, pistas falladas,
+      // opción incorrecta, relaciones erróneas o intentos del memotest).
+      if (intento) {
+        await DetalleIntentoService.registrarJuego(intento.id, juego, datosIntento);
+      }
 
       if (juego.modulo) {
         await ProgressService.recalcularProgreso(estudianteId, juego.modulo, null, req.user.docente_id);

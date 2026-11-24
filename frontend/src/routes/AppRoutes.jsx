@@ -39,6 +39,7 @@ import StudentJuegoResolver from '../pages/Estudiantes/StudentJuegoResolver';
 import StudentEvaluaciones from '../pages/Estudiantes/StudentEvaluaciones';
 import StudentEvaluacionResolver from '../pages/Estudiantes/StudentEvaluacionResolver';
 import StudentProgreso from '../pages/Estudiantes/StudentProgreso';
+import StudentRanking from '../pages/Estudiantes/StudentRanking';
 import StudentMisionDigital from '../pages/Estudiantes/StudentMisionDigital';
 import MisionRequeridaGate from './MisionRequeridaGate';
 
@@ -312,6 +313,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <MisionRequeridaGate>
               <StudentProgreso />
+            </MisionRequeridaGate>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/ranking"
+        element={
+          <ProtectedRoute>
+            <MisionRequeridaGate>
+              <StudentRanking />
             </MisionRequeridaGate>
           </ProtectedRoute>
         }

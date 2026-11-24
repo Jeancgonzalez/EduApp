@@ -18,11 +18,15 @@ import './ProgresoIndividual.css';
  * URL.
  */
 
-/** Niveles en orden de mayor a menor exigencia; el color es el de la paleta. */
+/**
+ * Categorías en orden de mayor a menor exigencia; el color es el mismo que usa
+ * el Progreso de Estudiantes para que un estudiante se pinte igual en las dos
+ * vistas. Los cortes los define `NotaService` en el backend.
+ */
 export const NIVELES = [
-  { clave: 'Superior', texto: 'Superior', color: '#10b981' },
-  { clave: 'Alto', texto: 'Alto', color: '#3b82f6' },
-  { clave: 'Básico', texto: 'Básico', color: '#f59e0b' },
+  { clave: 'Excelente', texto: 'Excelente', color: '#10b981' },
+  { clave: 'Bueno', texto: 'Bueno', color: '#3b82f6' },
+  { clave: 'Regular', texto: 'Regular', color: '#f59e0b' },
   { clave: 'Bajo', texto: 'Bajo', color: '#ef4444' },
 ];
 

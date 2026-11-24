@@ -149,6 +149,17 @@ class GameService {
             await ProgressService.recalcularProgreso(s.estudiante_id, juego.modulo, null, juego.docente_id);
           }
         }
+        if (!wasPublished && datos.publicado && juego.modulo) {
+          const affectedStudents = await StudentProgress.findAll({
+            where: { juego_id: id },
+            attributes: ['estudiante_id'],
+            group: ['estudiante_id'],
+            raw: true
+          });
+          for (const s of affectedStudents) {
+            await ProgressService.recalcularProgreso(s.estudiante_id, juego.modulo, null, juego.docente_id);
+          }
+        }
         return juego;
       }
 
@@ -228,24 +239,45 @@ class GameService {
     }
   }
 
+  /**
+   * Convierte el avance que reporta el juego (siempre en escala 0-100) a los
+   * puntos reales del juego.
+   *
+   * Antes el avance se tomaba como puntos y solo se recortaba al máximo: en un
+   * juego de 80 puntos, acertar 8 de 9 daba 89 y se cortaba a 80, igual que
+   * acertar 9 de 9. Ahora los 80 se reparten entre las 9 respuestas:
+   * 8/9 → 89% → 71 puntos, 9/9 → 100% → 80 puntos.
+   *
+   * La estructura de la respuesta no cambia: siguen existiendo los mismos
+   * campos `puntaje_maximo`, `puntaje_obtenido` y `porcentaje_logro`.
+   */
+  static _puntajeDesdePorcentaje(porcentaje, maximo) {
+    const max = Number(maximo);
+    const pct = Number(porcentaje);
+    if (!Number.isFinite(max) || max <= 0) return 0;
+    if (!Number.isFinite(pct)) return 0;
+
+    const proporcion = Math.min(1, Math.max(0, pct / 100));
+    return Math.min(max, Math.round(proporcion * max));
+  }
+
   static async responderJuego(juegoId, datosIntento) {
     try {
       const juego = await Game.findByPk(juegoId);
       if (!juego) throw new Error('Juego no encontrado');
 
-      let puntajeFinal = 0;
-      if (datosIntento.puntaje_obtenido !== undefined) {
-        puntajeFinal = Number(datosIntento.puntaje_obtenido);
-        if (puntajeFinal > juego.puntaje_max) puntajeFinal = juego.puntaje_max;
-      }
+      const maximo = Number(juego.puntaje_max);
+      const puntajeFinal = datosIntento.puntaje_obtenido === undefined
+        ? 0
+        : this._puntajeDesdePorcentaje(datosIntento.puntaje_obtenido, maximo);
 
       return {
         juego_id: juego.id,
         titulo: juego.titulo,
         tipo: juego.tipo,
-        puntaje_maximo: juego.puntaje_max,
+        puntaje_maximo: maximo,
         puntaje_obtenido: puntajeFinal,
-        porcentaje_logro: Math.round((puntajeFinal / juego.puntaje_max) * 100),
+        porcentaje_logro: maximo > 0 ? Math.round((puntajeFinal / maximo) * 100) : 0,
         detalles: datosIntento
       };
     } catch (error) {

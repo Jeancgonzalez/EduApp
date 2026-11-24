@@ -208,14 +208,14 @@ const ProgresoIndividual = () => {
 
   const criterioRiesgo = useMemo(() => {
     if (!umbrales) return 'En riesgo';
-    const { min, basico } = umbrales.nota || {};
+    const { min, regular } = umbrales.nota || {};
     const dias = umbrales.riesgo?.dias_sin_ingresar;
     const partes = [];
-    if (basico != null) {
+    if (regular != null) {
       partes.push(
         min != null
-          ? `nivel Bajo (nota entre ${min.toFixed(1)} y ${(basico - 0.1).toFixed(1)})`
-          : `nivel Bajo (nota menor a ${basico.toFixed(1)})`
+          ? `nivel Bajo (nota entre ${min.toFixed(1)} y ${(regular - 0.1).toFixed(1)})`
+          : `nivel Bajo (nota menor a ${regular.toFixed(1)})`
       );
     }
     if (dias != null) partes.push(`${dias} días sin ingresar`);

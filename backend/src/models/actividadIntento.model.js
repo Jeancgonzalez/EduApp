@@ -8,7 +8,7 @@ const { sequelize } = require('../config/database');
  * estudiante x actividad: en cada reintento sobrescribe `fecha` y `respuestas`
  * y descarta los intentos anteriores. Aquí queda un registro por intento, lo que
  * habilita acierto en primer intento, abandono, tiempo de resolución,
- * participación semanal, mapa de calor y series temporales comparables.
+ * participación semanal, rankings y series temporales comparables.
  *
  * `iniciado_en` / `duracion_seg` / `acierto_primer_intento` cubren indicadores
  * que antes eran imposibles: el campo `tiempo` ya llegaba del frontend pero

@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import ConceptosError from '../../components/analitica/ConceptosError';
+import PanelConcepto from '../../components/analitica/PanelConcepto';
 import {
   MdGroups, MdTouchApp, MdTrendingUp, MdError, MdEmojiEvents, MdBarChart,
   MdOpenInNew, MdArrowUpward, MdArrowDownward, MdRemove,
 } from 'react-icons/md';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, LabelList,
 } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';
 import './DashboardDocenteAnalitica.css';
@@ -215,7 +216,6 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
   const [resumen, setResumen] = useState(null);
   const [temas, setTemas] = useState(null);
   const [ranking, setRanking] = useState(null);
-  const [conceptos, setConceptos] = useState(null);
 
   /** Error del refresco en vivo: no borra lo ya mostrado, solo avisa. */
   const [errorEnVivo, setErrorEnVivo] = useState('');
@@ -224,6 +224,7 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
 
   /** Claves de los temas que el docente ocultó al pulsar la leyenda. */
   const [temasOcultos, setTemasOcultos] = useState([]);
+  const [concepto, setConcepto] = useState(null);
   /** Contador de reintentos: relanza la carga inicial sin recargar la página. */
   const [intento, setIntento] = useState(0);
 
@@ -240,13 +241,7 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
     return p;
   }, [qs]);
 
-  const qsConceptos = useMemo(() => {
-    const p = new URLSearchParams(qs);
-    p.set('top', String(TOP_N));
-    return p;
-  }, [qs]);
-
-  /** Carga inicial de los cuatro bloques, en una sola tanda. */
+  /** Carga inicial de los tres bloques, en una sola tanda. */
   useEffect(() => {
     let vigente = true;
     setCargando(true);
@@ -257,14 +252,12 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
       api.get(`/dashboard/resumen?${qs.toString()}`),
       api.get(`/dashboard/progreso-por-tema?${qs.toString()}`),
       api.get(`/dashboard/ranking?${qsRanking.toString()}`),
-      api.get(`/dashboard/conceptos-error?${qsConceptos.toString()}`),
     ])
-      .then(([r, t, k, c]) => {
+      .then(([r, t, k]) => {
         if (!vigente) return;
         setResumen(r.data.data);
         setTemas(t.data.data);
         setRanking(k.data.data);
-        setConceptos(c.data.data);
         setActualizadoEn(Date.now());
       })
       .catch((err) => {
@@ -275,7 +268,7 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
       .finally(() => { if (vigente) setCargando(false); });
 
     return () => { vigente = false; };
-  }, [qs, qsRanking, qsConceptos, intento]);
+  }, [qs, qsRanking, intento]);
 
   /**
    * Refresco en vivo del Top 5.
@@ -377,7 +370,6 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
 
   const top = ranking?.top ?? [];
   const totalConNota = ranking?.total_estudiantes ?? 0;
-  const errores = conceptos?.top ?? [];
 
   /** "hace 12 s" / "hace 2 min", sin un temporizador propio corriendo. */
   const antiguedad = (() => {
@@ -608,101 +600,26 @@ const ResumenGeneral = ({ grupoId, semanas }) => {
         <div className="dash-panel">
           <h3><MdError /> Conceptos con mayor error</h3>
           <p className="dash-panel-sub">
-            Intentos no completados por actividad, en el período.
+            Pulsa una barra para abrir el diagnóstico: qué pregunta falla más, qué opción incorrecta se elige y qué estudiantes necesitan apoyo.
           </p>
 
-          {errores.length > 0 ? (
-            <>
-              <div className="dash-grafico">
-                <ResponsiveContainer width="100%" height={esMovil ? 220 : 260}>
-                  <BarChart
-                    data={errores}
-                    layout="vertical"
-                    margin={{ top: 4, right: esMovil ? 26 : 40, left: 4, bottom: 4 }}
-                    barCategoryGap="28%"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke={paleta.grid} horizontal={false} />
-                    <XAxis
-                      type="number"
-                      allowDecimals={false}
-                      tick={{ fontSize: 12, fill: paleta.tick }}
-                      axisLine={{ stroke: paleta.eje }}
-                      tickLine={false}
-                      label={{
-                        value: 'Intentos fallidos',
-                        position: 'insideBottom',
-                        offset: -2,
-                        fill: paleta.tick,
-                        fontSize: 11,
-                      }}
-                      height={40}
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="nombre"
-                      tick={{ fontSize: 12, fill: paleta.tick }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => (
-                        String(v).length > 22 ? `${String(v).slice(0, 21)}…` : v
-                      )}
-                      width={esMovil ? 108 : 190}
-                    />
-                    <Tooltip
-                      cursor={{ fill: paleta.grid, fillOpacity: 0.5 }}
-                      contentStyle={{
-                        background: paleta.tooltipFondo,
-                        border: `1px solid ${paleta.tooltipBorde}`,
-                        borderRadius: 10,
-                        color: paleta.tooltipTexto,
-                      }}
-                      labelStyle={{ color: paleta.tooltipTexto, fontWeight: 700 }}
-                      itemStyle={{ color: paleta.tooltipTexto }}
-                      formatter={(valor, _nombre, item) => [
-                        `${valor} fallidos · ${item.payload.errores} de ${item.payload.intentos} intentos (${item.payload.pct_error}%)`,
-                        'Errores',
-                      ]}
-                    />
-                    <Bar
-                      dataKey="errores"
-                      name="Errores"
-                      fill={paleta.error}
-                      radius={[0, 8, 8, 0]}
-                      maxBarSize={26}
-                    >
-                      <LabelList
-                        dataKey="errores"
-                        position="right"
-                        fill={paleta.tooltipTexto}
-                        fontSize={12}
-                        fontWeight={700}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="dash-panel-pie">
-                <button
-                  type="button"
-                  className="dash-enlace-boton"
-                  onClick={() => irA('/dashboard/analitica/contenidos', {
-                    tipo: errores[0].tipo,
-                    actividadId: errores[0].actividad_id,
-                  })}
-                >
-                  Ver detalle <MdOpenInNew aria-hidden="true" />
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="dash-vacio">
-              Sin errores registrados en el período. Cuando aparezca un intento sin
-              completar, el concepto se listará aquí.
-            </div>
-          )}
+          <ConceptosError
+            grupoId={grupoId}
+            semanas={semanas}
+            max={5}
+            onAbrir={(c) => setConcepto(c)}
+          />
         </div>
       </div>
+
+      {concepto && (
+        <PanelConcepto
+          concepto={concepto}
+          grupoId={grupoId}
+          semanas={semanas}
+          onClose={() => setConcepto(null)}
+        />
+      )}
     </div>
   );
 };

@@ -74,8 +74,16 @@ const StudentJuegoResolver = () => {
         const completados = lista.filter(j => j.completado).length;
         setResumenJuegos({ total, completados, pendientes: Math.max(0, total - completados) });
       } catch { }
-      const p = datos.puntaje_obtenido || 0;
-      Swal.fire({ icon: p >= 60 ? 'success' : 'info', title: p >= 60 ? '¡Buen trabajo!' : 'Sigue intentando', text: `Obtuviste ${p} puntos`, confirmButtonColor: '#0891b2' });
+      const datosResultado = res.data.data || {};
+      const pctResultado = Number(datosResultado.porcentaje_logro) || 0;
+      const puntosResultado = Number(datosResultado.puntaje_obtenido) || 0;
+      const maximoResultado = Number(datosResultado.puntaje_maximo) || 0;
+      Swal.fire({
+        icon: pctResultado >= 60 ? 'success' : 'info',
+        title: pctResultado >= 60 ? '¡Buen trabajo!' : 'Sigue intentando',
+        text: `Obtuviste ${puntosResultado} de ${maximoResultado} puntos (${pctResultado}%)`,
+        confirmButtonColor: '#0891b2'
+      });
     } catch (err) {
       Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Error al enviar respuesta' });
     } finally { setEnviando(false); }
@@ -114,7 +122,9 @@ const StudentJuegoResolver = () => {
 
       {resultado && (
         (() => {
-          const pctLogro = resultado.porcentaje_logro || Math.round((resultado.puntaje_obtenido / resultado.puntaje_maximo) * 100);
+          const pctLogro = resultado.porcentaje_logro ?? (resultado.puntaje_maximo > 0
+            ? Math.round((resultado.puntaje_obtenido / resultado.puntaje_maximo) * 100)
+            : 0);
           const estrellasIntento = estrellasDePorcentaje(pctLogro);
           const esUltimaActividad = resumenJuegos && resumenJuegos.total > 0 && resumenJuegos.pendientes <= 0;
           const mensajeJuego = estrellasIntento === 3
@@ -125,7 +135,7 @@ const StudentJuegoResolver = () => {
           return (
             <div className="resultado-card" style={{ marginTop: '2rem' }}>
               <MascotaEduApp
-                expression={resultado.puntaje_obtenido >= 60 ? 'celebrando' : 'animando'}
+                expression={pctLogro >= 60 ? 'celebrando' : 'animando'}
                 size={86}
                 className="mascota-resultado"
                 contexto="juegos"
@@ -134,8 +144,8 @@ const StudentJuegoResolver = () => {
                 completados={resumenJuegos?.completados}
                 mensaje={esUltimaActividad ? undefined : mensajeJuego}
               />
-              <div className="resultado-icono">{resultado.puntaje_obtenido >= 60 ? <MdCheckCircle style={{ color: '#059669' }} /> : <MdError style={{ color: '#dc2626' }} />}</div>
-              <h3>{resultado.puntaje_obtenido >= 60 ? '¡Excelente trabajo!' : 'Sigue practicando'}</h3>
+              <div className="resultado-icono">{pctLogro >= 60 ? <MdCheckCircle style={{ color: '#059669' }} /> : <MdError style={{ color: '#dc2626' }} />}</div>
+              <h3>{pctLogro >= 60 ? '¡Excelente trabajo!' : 'Sigue practicando'}</h3>
               <div className="resultado-puntaje"><MdStar style={{ color: '#f59e0b', verticalAlign: 'middle' }} /> {resultado.puntaje_obtenido} / {resultado.puntaje_maximo} puntos</div>
               <Estrellas estrellas={estrellasIntento} />
               <div className="progress-bar-container">

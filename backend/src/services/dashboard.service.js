@@ -20,31 +20,11 @@ const MAX_ALIASES_RIESGO = 50;
 /** Cuántos temas caben en la gráfica sin volverse ilegible. */
 const MAX_TEMAS_POR_DEFECTO = 6;
 const MAX_TEMAS_TOPE = 12;
-/** Columnas del mapa de calor (actividades) y su tope. */
-const MAPA_ACTIVIDADES_POR_DEFECTO = 12;
-const MAPA_ACTIVIDADES_TOPE = 20;
-/** Filas del mapa de calor (estudiantes). */
-const MAPA_ESTUDIANTES_TOPE = 100;
+/** Top del ranking del estudiante: 5 por defecto, 10 como máximo. */
+const RANKING_ESTUDIANTE_POR_DEFECTO = 5;
+const RANKING_ESTUDIANTE_TOPE = 10;
 
 const MS_DIA = 864e5;
-
-/**
- * Estados de una celda del mapa de calor.
- *
- * Se devuelven en la respuesta (`estados`) para que la leyenda de la interfaz
- * se construya con esto y no con un texto repetido en el JSX: si mañana "con
- * errores" pasa a significar "falló dos veces", se cambia aquí y la leyenda no
- * puede quedar diciendo la cosa vieja.
- *
- * El orden va de mejor a peor porque es el orden en que se leen los colores.
- */
-const ESTADOS_MAPA = [
-  { clave: 'completado', etiqueta: 'Completado' },
-  { clave: 'en_progreso', etiqueta: 'En progreso' },
-  { clave: 'con_errores', etiqueta: 'Con errores' },
-  { clave: 'pendiente', etiqueta: 'Pendiente' },
-];
-const CLAVES_ESTADO = new Set(ESTADOS_MAPA.map((e) => e.clave));
 
 /**
  * Rareza de una insignia, deducida de cuántos estudiantes del alcance la tienen.
@@ -166,6 +146,40 @@ class DashboardService {
   }
 
   /**
+   * Predicado SQL para que un intento de actividad siga contando en el panel.
+   *
+   * Despublicar un contenido, juego o evaluación no borra el historial: sus
+   * `actividad_intentos` siguen en la tabla. Pero para las gráficas del docente
+   * un recurso despublicado ya no forma parte de la clase, así que se excluye
+   * con `NOT EXISTS` sobre la fila que SÍ quedó marcada `publicado = 0`.
+   *
+   * Se usa `NOT EXISTS` (y no `EXISTS publicado = 1`) a propósito: una actividad
+   * que ya no tiene fila (borrada) NO se descarta, porque su historial sigue
+   * contando en el panel. Lo que se descarta es exactamente lo que el docente
+   * despublicó.
+   */
+  static _filtroPublicado(alias = 'i') {
+    return (
+      `NOT (EXISTS (SELECT 1 FROM contenidos _cp WHERE _cp.id = ${alias}.actividad_id AND ${alias}.tipo = 'contenido' AND _cp.publicado = 0)` +
+      ` OR EXISTS (SELECT 1 FROM juegos _jp WHERE _jp.id = ${alias}.actividad_id AND ${alias}.tipo = 'juego' AND _jp.publicado = 0)` +
+      ` OR EXISTS (SELECT 1 FROM evaluaciones _ep WHERE _ep.id = ${alias}.actividad_id AND ${alias}.tipo = 'evaluacion' AND _ep.publicado = 0))`
+    );
+  }
+
+  /**
+   * Igual que `_filtroPublicado`, pero para filas de `progreso_estudiante`, que
+   * referencian la actividad en tres columnas mutuamente excluyentes
+   * (`contenido_id`, `juego_id`, `evaluacion_id`) en vez de un par tipo/id.
+   */
+  static _filtroPublicadoProgreso(alias = 'pe') {
+    return (
+      `NOT (EXISTS (SELECT 1 FROM contenidos _ppc WHERE _ppc.id = ${alias}.contenido_id AND _ppc.publicado = 0)` +
+      ` OR EXISTS (SELECT 1 FROM juegos _ppj WHERE _ppj.id = ${alias}.juego_id AND _ppj.publicado = 0)` +
+      ` OR EXISTS (SELECT 1 FROM evaluaciones _ppe WHERE _ppe.id = ${alias}.evaluacion_id AND _ppe.publicado = 0))`
+    );
+  }
+
+  /**
    * Ventanas de comparación del resumen.
    *
    * El período actual es una ventana móvil de `semanas` semanas. El anterior es
@@ -222,6 +236,7 @@ class DashboardService {
          FROM actividad_intentos i
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?${tope}
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${marcadores})`,
       { replacements: args, type: sequelize.QueryTypes.SELECT }
     );
@@ -240,11 +255,12 @@ class DashboardService {
                  FROM actividad_intentos i
                 WHERE i.docente_id = ?
                   AND i.iniciado_en >= ?${tope}
-                  AND i.puntaje_maximo IS NOT NULL
-                  AND i.puntaje_maximo > 0
-                  AND i.estudiante_id IN (${marcadores})
-                GROUP BY i.estudiante_id, i.tipo, i.actividad_id
-             ) mejor_por_actividad
+                   AND i.puntaje_maximo IS NOT NULL
+                   AND i.puntaje_maximo > 0
+                   AND ${this._filtroPublicado('i')}
+                   AND i.estudiante_id IN (${marcadores})
+                 GROUP BY i.estudiante_id, i.tipo, i.actividad_id
+              ) mejor_por_actividad
             GROUP BY mejor_por_actividad.estudiante_id
          ) por_estudiante`,
       { replacements: args, type: sequelize.QueryTypes.SELECT }
@@ -289,6 +305,7 @@ class DashboardService {
            FROM actividad_intentos i
           WHERE i.docente_id = ?
             AND i.iniciado_en >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+            AND ${this._filtroPublicado('i')}
             AND i.estudiante_id IN (${marcadores})
          UNION
          SELECT DISTINCT s.estudiante_id
@@ -324,6 +341,7 @@ class DashboardService {
           WHERE i.docente_id = ?
             AND i.iniciado_en < DATE_SUB(NOW(), INTERVAL ? HOUR)
             AND i.iniciado_en >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+            AND ${this._filtroPublicado('i')}
             AND i.estudiante_id IN (${marcadores})
          UNION
          SELECT DISTINCT s.estudiante_id
@@ -417,6 +435,7 @@ class DashboardService {
             WHERE i.docente_id = ?${topeIntentos}
               AND i.puntaje_maximo IS NOT NULL
               AND i.puntaje_maximo > 0
+              AND ${this._filtroPublicado('i')}
             GROUP BY i.estudiante_id
          ) p ON p.estudiante_id = u.id
          LEFT JOIN (
@@ -497,6 +516,7 @@ class DashboardService {
          FROM actividad_intentos i
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.estudiante_id`,
       {
@@ -513,7 +533,7 @@ class DashboardService {
    *
    * `_calificaciones()` parte de `actividad_intentos`, asi que un estudiante
    * que solo abrio contenido, o que no intento nada, no aparece en ella. Sin
-   * este respaldo el ranking y el mapa de calor lo degradarian a `SIN_ALIAS`,
+   * este respaldo el ranking lo degradarian a `SIN_ALIAS`,
    * que es justo el estudiante que el docente necesita ver.
    */
   static async _nombresEstudiantes(ids) {
@@ -561,6 +581,7 @@ class DashboardService {
           AND i.iniciado_en >= ?
           AND i.puntaje_maximo IS NOT NULL
           AND i.puntaje_maximo > 0
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.estudiante_id, u.name`,
       {
@@ -593,6 +614,7 @@ class DashboardService {
               AND i.iniciado_en >= ?
               AND i.puntaje_maximo IS NOT NULL
               AND i.puntaje_maximo > 0
+              AND ${this._filtroPublicado('i')}
               AND i.estudiante_id IN (${this._marcadores(ids)})
             GROUP BY i.estudiante_id, i.tipo, i.actividad_id
          ) mejor_por_actividad
@@ -604,6 +626,33 @@ class DashboardService {
     );
 
     return new Map(filas.map((f) => [f.estudiante_id, Number(f.xp || 0)]));
+  }
+
+  /**
+   * Puntos TOTALES por estudiante, tal como los ve el alumno en su panel.
+   *
+   * `medals.service.js` suma el MEJOR puntaje de cada actividad guardado en
+   * `progreso_estudiante` (sin ventana de semanas) para mostrar `puntos_total`.
+   * El ranking del estudiante usa esa MISMA fuente: si el panel dice 600 puntos,
+   * el ranking tiene que decir 600 y ordenar con ese número. La telemetría de
+   * `actividad_intentos` queda para el porcentaje de acierto y el desempate.
+   */
+  static async _puntosPorEstudiante(ids) {
+    if (ids.length === 0) return new Map();
+
+    const filas = await sequelize.query(
+      `SELECT estudiante_id, SUM(COALESCE(puntaje, 0)) AS puntos
+         FROM progreso_estudiante
+        WHERE completado = 1
+          AND estudiante_id IN (${this._marcadores(ids)})
+        GROUP BY estudiante_id`,
+      {
+        replacements: ids,
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    return new Map(filas.map((f) => [f.estudiante_id, Number(f.puntos || 0)]));
   }
 
   /**
@@ -690,6 +739,7 @@ class DashboardService {
           AND i.iniciado_en >= ?
           AND i.puntaje_maximo IS NOT NULL
           AND i.puntaje_maximo > 0
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.estudiante_id, i.tipo`,
       {
@@ -733,10 +783,11 @@ class DashboardService {
            SELECT DATE_FORMAT(fecha, '%Y-%m') AS mes,
                   estudiante_id,
                   SUM(puntaje) AS total
-             FROM progreso_estudiante
-            WHERE estudiante_id IN (${this._marcadores(ids)})
-              AND puntaje > 0
-            GROUP BY mes, estudiante_id
+             FROM progreso_estudiante pe
+            WHERE pe.estudiante_id IN (${this._marcadores(ids)})
+              AND pe.puntaje > 0
+              AND ${this._filtroPublicadoProgreso('pe')}
+            GROUP BY mes, pe.estudiante_id
          ) por_estudiante
         GROUP BY mes
         ORDER BY mes DESC
@@ -1001,6 +1052,7 @@ class DashboardService {
           AND i.puntaje_maximo > 0
           AND i.modulo IS NOT NULL
           AND i.modulo <> ''
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.modulo, YEARWEEK(i.iniciado_en, 3)`,
       {
@@ -1086,6 +1138,7 @@ class DashboardService {
              FROM actividad_intentos i
             WHERE i.docente_id = ?
               AND i.iniciado_en >= ?
+              AND ${this._filtroPublicado('i')}
               AND i.estudiante_id IN (${this._marcadores(ids)})
             GROUP BY YEARWEEK(i.iniciado_en, 3)
             ORDER BY semana`,
@@ -1110,6 +1163,55 @@ class DashboardService {
       }),
       periodo: { semanas },
     };
+  }
+
+  /**
+   * Nombre visible en el ranking del estudiante: nombre de pila e inicial del
+   * apellido. El `users.name` completo viaja en el ranking del docente, pero
+   * aquí solo se expone lo justo para reconocer a un compañero: ni correo, ni
+   * ids, ni el apellido completo.
+   */
+  static _aliasPrivado(nombre) {
+    const limpio = String(nombre || '')
+      .split('@')[0]
+      .trim()
+      .replace(/\s+/g, ' ');
+    if (!limpio) return 'Compañero';
+    const partes = limpio.split(' ');
+    if (partes.length === 1) return partes[0];
+    return `${partes[0]} ${partes[partes.length - 1].charAt(0).toUpperCase()}.`;
+  }
+
+  /**
+   * Grupo del estudiante dentro del alcance de su docente.
+   *
+   * Un estudiante puede pertenecer a varios grupos; sin `grupoId` se elige el
+   * primero por id para que la respuesta sea estable entre recargas. Con
+   * `grupoId` se exige que sea uno de los suyos, así que un id manipulado en la
+   * URL no permite consultar el ranking de otro grupo.
+   */
+  static async _grupoDelEstudiante(estudianteId, docenteId, grupoId = null) {
+    const filas = await sequelize.query(
+      `SELECT g.id, g.nombre, g.materia
+         FROM grupo_estudiantes ge
+        INNER JOIN grupos g ON g.id = ge.grupo_id
+        WHERE ge.estudiante_id = :estudianteId
+          AND g.docente_id = :docenteId
+          AND (:grupoId IS NULL OR g.id = :grupoId)
+        ORDER BY g.id
+        LIMIT 1`,
+      {
+        replacements: {
+          estudianteId: Number(estudianteId),
+          docenteId,
+          grupoId: grupoId ? Number(grupoId) : null,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    return filas[0]
+      ? { id: Number(filas[0].id), nombre: filas[0].nombre, materia: filas[0].materia }
+      : null;
   }
 
   /**
@@ -1146,6 +1248,108 @@ class DashboardService {
       total_estudiantes: ordenados.length,
       actualizado_en: new Date().toISOString(),
     };
+  }
+
+  /**
+   * Ranking del grupo de un estudiante, ordenado por PUNTOS.
+   *
+   * A diferencia del ranking del docente (que ordena por % de acierto en la
+   * ventana), aquí manda lo que el alumno ve como "Puntos totales" en su panel:
+   * el mejor puntaje de cada actividad en `progreso_estudiante`. Eso hace que la
+   * posición se mueva en cuanto el alumno suma puntos, y que el número de la
+   * fila coincida con el de su dashboard.
+   *
+   * El porcentaje de acierto de la ventana queda como desempate, junto con la
+   * constancia (intentos) y el alias. La salida sigue siendo privada: alias
+   * acortado, sin correos ni ids, y una fila `actual` aunque quede fuera del top.
+   */
+  static async rankingEstudiante(
+    estudianteId,
+    docenteId,
+    { grupoId = null, limite = RANKING_ESTUDIANTE_POR_DEFECTO, semanas = 8 } = {}
+  ) {
+    const grupo = await this._grupoDelEstudiante(estudianteId, docenteId, grupoId);
+    const { desde } = this._ventanas(semanas);
+    const tope = Number(limite) === RANKING_ESTUDIANTE_TOPE
+      ? RANKING_ESTUDIANTE_TOPE
+      : RANKING_ESTUDIANTE_POR_DEFECTO;
+    const grupoPublico = grupo
+      ? { nombre: grupo.nombre, materia: grupo.materia }
+      : null;
+    const base = {
+      grupo: grupoPublico,
+      top: [],
+      actual: null,
+      total_estudiantes: 0,
+      limite: tope,
+      criterio: 'puntos',
+      periodo: this._periodo(semanas, desde),
+      actualizado_en: new Date().toISOString(),
+    };
+
+    if (!grupo) return base;
+
+    const ids = await this._estudiantesDocente(docenteId, grupo.id);
+    const [filas, puntosPorEstudiante] = await Promise.all([
+      this._filasEstudiante(docenteId, ids, desde),
+      this._puntosPorEstudiante(ids),
+    ]);
+    const propioId = Number(estudianteId);
+
+    // Se clasifica a quien tiene puntos O nota reciente: un alumno con 600
+    // puntos de actividades anteriores no debe desaparecer del podio solo porque
+    // no haya intentado nada en las últimas 8 semanas.
+    const enriquecidas = filas.map((f) => ({
+      ...f,
+      puntos: puntosPorEstudiante.get(f.estudiante_id) || 0,
+    }));
+    const clasificadas = enriquecidas.filter((f) => f.puntos > 0 || f.pct != null);
+    const ordenadas = this._ordenarPorPuntos(clasificadas)
+      .map((f, idx) => ({
+        posicion: idx + 1,
+        alias: this._aliasPrivado(f.alias),
+        puntos: f.puntos,
+        esActual: f.estudiante_id === propioId,
+      }));
+
+    const top = ordenadas.slice(0, tope);
+    const enTop = top.find((f) => f.esActual) ?? null;
+    const fueraDelTop = ordenadas.find((f) => f.esActual) ?? null;
+    const sinPuntos = enriquecidas.find(
+      (f) => f.estudiante_id === propioId && f.puntos === 0 && f.pct == null
+    );
+
+    return {
+      ...base,
+      top,
+      actual: enTop ?? fueraDelTop ?? (sinPuntos
+        ? {
+            posicion: null,
+            alias: this._aliasPrivado(sinPuntos.alias),
+            puntos: 0,
+            esActual: true,
+            sinNota: true,
+          }
+        : null),
+      total_estudiantes: clasificadas.length,
+      sin_nota: filas.length - clasificadas.length,
+    };
+  }
+
+  /**
+   * Orden estable del ranking del estudiante: PUNTOS → acierto → constancia → alias.
+   *
+   * Los puntos son el criterio principal porque son los que el alumno ve en su
+   * panel; el porcentaje solo desempata. Se extrae como método puro para poder
+   * probar la precedencia sin depender de la base de datos.
+   */
+  static _ordenarPorPuntos(filas) {
+    return [...filas].sort((a, b) =>
+      b.puntos - a.puntos
+      || (b.pct ?? -1) - (a.pct ?? -1)
+      || b.intentos - a.intentos
+      || a.alias.localeCompare(b.alias)
+    );
   }
 
   /**
@@ -1288,200 +1492,6 @@ class DashboardService {
   }
 
   /**
-   * Mapa de calor estudiantes × actividades.
-   *
-   * Las columnas son las actividades PUBLICADAS del docente más las que
-   * aparecen en los intentos del grupo (por si algo se despublicó después):
-   * una matriz de lo que el grupo tiene que hacer, no solo de lo que ya hizo.
-   * Las filas son todos los estudiantes del alcance, alias incluido y nunca el
-   * correo.
-   *
-   * Cuando hay muchas actividades se muestran las de más movimiento y se
-   * devuelve cuántas quedaron fuera, en vez de recortar en silencio: un mapa
-   * que aparenta ser el grupo entero y no lo es hace planning sobre datos que
-   * no se están viendo.
-   */
-  static async mapaCalor(
-    docenteId,
-    { grupoId = null, semanas = 8, limite = MAPA_ACTIVIDADES_POR_DEFECTO } = {}
-  ) {
-    const ids = await this._estudiantesDocente(docenteId, grupoId);
-    const { desde } = this._ventanas(semanas);
-    const base = {
-      estados: ESTADOS_MAPA,
-      periodo: this._periodo(semanas, desde),
-      alcance: { estudiantes: ids.length, actividades: 0 },
-    };
-
-    if (ids.length === 0) {
-      return { ...base, estudiantes: [], actividades: [], celdas: [], ocultos: { actividades: 0, estudiantes: 0 } };
-    }
-
-    const marcadores = this._marcadores(ids);
-    const tope = Math.max(1, Math.min(Number(limite) || MAPA_ACTIVIDADES_POR_DEFECTO, MAPA_ACTIVIDADES_TOPE));
-
-    // El mismo `UNION` de Attempt y las tres tablas de actividades del docente.
-    // `MAX(u.nombre)` es lo que hace aparecer el titulo real: sin agrupar, MySQL
-    // devuelve el `nombre` de la primera fila del `UNION ALL`, y como la rama de
-    // intentos lo trae a NULL el encabezado salia como "Contenido #1741". El
-    // placeholder de la cabecera cubre la actividad borrada tras el intento.
-    const actividades = await sequelize.query(
-      `SELECT u.tipo, u.actividad_id, MAX(u.nombre) AS nombre
-         FROM (
-           SELECT i.tipo, i.actividad_id, NULL AS nombre
-             FROM actividad_intentos i
-            WHERE i.docente_id = ?
-              AND i.iniciado_en >= ?
-              AND i.estudiante_id IN (${marcadores})
-            GROUP BY i.tipo, i.actividad_id
-           UNION ALL
-           SELECT 'contenido', c.id, c.titulo
-             FROM contenidos c
-            WHERE c.docente_id = ? AND c.publicado = 1
-           UNION ALL
-           SELECT 'juego', j.id, j.titulo
-             FROM juegos j
-            WHERE j.docente_id = ? AND j.publicado = 1
-           UNION ALL
-           SELECT 'evaluacion', e.id, e.titulo
-             FROM evaluaciones e
-            WHERE e.docente_id = ? AND e.publicado = 1
-         ) u
-        GROUP BY u.tipo, u.actividad_id
-        ORDER BY u.tipo, u.actividad_id`,
-      {
-        replacements: [docenteId, desde, ...ids, docenteId, docenteId, docenteId, docenteId],
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
-
-    if (actividades.length === 0) {
-      return {
-        ...base,
-        estudiantes: [],
-        actividades: [],
-        celdas: [],
-        ocultos: { actividades: 0, estudiantes: 0 },
-      };
-    }
-
-    const filas = await sequelize.query(
-      `SELECT i.estudiante_id,
-              i.tipo,
-              i.actividad_id,
-              MAX(i.completado) AS completado,
-              SUM(CASE WHEN i.puntaje_maximo IS NOT NULL AND i.puntaje_maximo > 0
-                       THEN 1 ELSE 0 END) AS con_nota,
-              MAX(100.0 * i.puntaje_obtenido / NULLIF(i.puntaje_maximo, 0)) AS pct
-         FROM actividad_intentos i
-        WHERE i.docente_id = ?
-          AND i.iniciado_en >= ?
-          AND i.estudiante_id IN (${marcadores})
-        GROUP BY i.estudiante_id, i.tipo, i.actividad_id`,
-      {
-        replacements: [docenteId, desde, ...ids],
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
-
-    // Una fila por estudiante, ordenada por alias (se escanea de arriba abajo) y
-    // con las columnas de menor a mayor nivel. El `estudiante_id` real viaja en
-    // la fila interna porque hace falta para cruzar los intentos.
-        // `_filasEstudiante` ya trae alias, pct y nivel de todo el alcance,
-    // incluidos los que no tienen nota: se reutiliza en vez de volver a
-    // derivarlos de `_calificaciones`, que solo ve a quien fue puntuado.
-    const todosEstudiantes = (await this._filasEstudiante(docenteId, ids, desde))
-      .sort((a, b) => a.alias.localeCompare(b.alias) || a.estudiante_id - b.estudiante_id);
-
-    // Prioridad de columnas: primero las que la clase más movió, y a igualdad
-    // alfabética. El criterio es "más movimiento" y no "más nota" porque una
-    // actividad que nadie tocó es justamente la que el docente tiene que ver, y
-    // tampoco puede ir siempre al final: en un grupo de 40 se quedaría fuera con
-    // el tope. El desempate alfabético mantiene la cabecera estable entre
-    // consultas, que es lo que permite que celda→columna siga siendo válido.
-    const actividadPorClave = new Map(
-      actividades.map((a) => [`${a.tipo}:${a.actividad_id}`, a])
-    );
-    const movimiento = new Map();
-    for (const f of filas) {
-      const clave = `${f.tipo}:${f.actividad_id}`;
-      movimiento.set(clave, (movimiento.get(clave) || 0) + 1);
-    }
-
-    const tipoLabels = { contenido: 'Contenido', juego: 'Juego', evaluacion: 'Evaluación' };
-    // El encabezado y el desempate tienen que salir de la MISMA etiqueta: si el
-    // orden usara el nombre crudo, la actividad borrada (nombre null) se
-    // comparaba como cadena vacia y se colaba de primera, mientras el docente la
-    // leia como "Evaluación #700999". Ordenar por lo que se muestra es lo unico
-    // que deja la cabecera estable entre consultas.
-    const etiquetaDe = (a) => a.nombre || `${tipoLabels[a.tipo] || 'Actividad'} #${a.actividad_id}`;
-
-    const ordenadas = [...actividadPorClave.entries()]
-      .sort(
-        (a, b) =>
-          (movimiento.get(b[0]) || 0) - (movimiento.get(a[0]) || 0)
-          || etiquetaDe(a[1]).localeCompare(etiquetaDe(b[1]))
-          || a[1].actividad_id - b[1].actividad_id
-      )
-      .slice(0, tope)
-      .map(([clave, a], idx) => ({
-        clave: `a${idx + 1}`,
-        // El id crudo viaja en la fila: el cruce de celdas busca
-        // `estudiante:tipo:actividad_id` y sin el cada celda salia `pendiente`.
-        tipo: a.tipo,
-        actividad_id: a.actividad_id,
-        nombre: etiquetaDe(a),
-      }));
-
-    const visibles = todosEstudiantes.slice(0, MAPA_ESTUDIANTES_TOPE);
-    const estudiantes = visibles.map((e, idx) => ({
-      clave: `e${idx + 1}`,
-      alias: e.alias,
-      pct: e.pct,
-      nivel: e.nivel,
-    }));
-
-    // Índice `estudiante:tipo:actividad` de los intentos, para resolver cada
-    // celda en O(1). Son miles de combinaciones y una búsqueda lineal por celda
-    // sería cuadrática.
-    const porIntento = new Map(
-      filas.map((f) => [`${f.estudiante_id}:${f.tipo}:${f.actividad_id}`, f])
-    );
-
-    // Solo se emiten las celdas con estado. Las vacías son `pendiente` por
-    // definición: una matriz de 40 × 12 con 480 celdas "pendiente" en el JSON es
-    // peso muerto, y el constructor de la interfaz rellena el hueco. El estado
-    // se valida contra `CLAVES_ESTADO` para que un estado nuevo no se cuele en la
-    // leyenda sin color.
-    const celdas = [];
-    for (const [indice, e] of visibles.entries()) {
-      for (const a of ordenadas) {
-        const f = porIntento.get(`${e.estudiante_id}:${a.tipo}:${a.actividad_id}`);
-        const estado = f ? this.estadoDeCelda(f) : 'pendiente';
-        if (!CLAVES_ESTADO.has(estado)) continue;
-        celdas.push({
-          e: estudiantes[indice].clave,
-          a: a.clave,
-          estado,
-          pct: f && f.pct != null ? Math.round(Number(f.pct)) : null,
-        });
-      }
-    }
-
-    return {
-      ...base,
-      alcance: { estudiantes: estudiantes.length, actividades: ordenadas.length },
-      estudiantes,
-      actividades: ordenadas,
-      celdas,
-      ocultos: {
-        actividades: actividadPorClave.size - ordenadas.length,
-        estudiantes: todosEstudiantes.length - visibles.length,
-      },
-    };
-  }
-
-  /**
    * Participación semanal (activos ÷ matriculados) y brecha de calificaciones.
    *
    * Dos medidas distintas sobre la misma serie semanal:
@@ -1537,6 +1547,7 @@ class DashboardService {
          FROM actividad_intentos i
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY YEARWEEK(i.iniciado_en, 3)`,
       {
@@ -1666,19 +1677,6 @@ class DashboardService {
   }
 
   /**
-   * Estado de una celda del mapa de calor.
-   *
-   * El orden importa: "en progreso" solo puede caer cuando el estudiante tocó la
-   * actividad y no la terminó, así que la ausencia de intento tiene que ganar
-   * antes de que cualquier otra regla la pise.
-   */
-  static estadoDeCelda(f) {
-    if (Number(f.completado || 0) === 1) return 'completado';
-    if (Number(f.con_nota || 0) > 0) return 'con_errores';
-    return 'en_progreso';
-  }
-
-  /**
    * Top N conceptos (contenidos/evaluaciones/juegos) con mayor número de errores.
    *
    * Un "error" se cuenta como un intento que no quedó completado (`completado = 0`).
@@ -1714,8 +1712,9 @@ class DashboardService {
          LEFT JOIN contenidos   c ON i.tipo = 'contenido'  AND c.id = i.actividad_id
          LEFT JOIN juegos       j ON i.tipo = 'juego'      AND j.id = i.actividad_id
          LEFT JOIN evaluaciones e ON i.tipo = 'evaluacion' AND e.id = i.actividad_id
-        WHERE i.docente_id = ?
+         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
+          AND ${DashboardService._filtroPublicado('i')}
           AND i.estudiante_id IN (${DashboardService._marcadores(ids)})
         GROUP BY i.actividad_id, i.tipo, nombre_real
         HAVING errores > 0
@@ -1967,6 +1966,7 @@ class DashboardService {
          FROM actividad_intentos i
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.estudiante_id`,
       {
@@ -2232,6 +2232,7 @@ class DashboardService {
          FROM actividad_intentos i
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})
         GROUP BY i.tipo, i.actividad_id`,
       {
@@ -2255,6 +2256,7 @@ class DashboardService {
         WHERE i.docente_id = ?
           AND i.iniciado_en >= ?
           AND i.duracion_seg > 0
+          AND ${this._filtroPublicado('i')}
           AND i.estudiante_id IN (${this._marcadores(ids)})`,
       {
         replacements: [docenteId, desde, ...ids],
