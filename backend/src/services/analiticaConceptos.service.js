@@ -92,6 +92,7 @@ class AnaliticaConceptosService {
           id: item.actividad_id,
           actividad_id: item.actividad_id,
           tipo: item.tipo,
+          tipo_juego: item.tipo_juego || null,
           concepto: item.nombre,
           nombre: item.nombre,
           errores: item.errores,
@@ -505,6 +506,13 @@ class AnaliticaConceptosService {
     let total = 0;
     let correctas = 0;
     const intentos = new Map();
+    // En el memotest `respuesta_dada` es la cantidad de intentos de la partida.
+    // Se promedia sobre partidas con dato numérico; nunca se inventa un valor
+    // para las que no lo registraron.
+    let sumaIntentos = 0;
+    let partidasConDato = 0;
+    let intentosMin = null;
+    let intentosMax = null;
 
     for (const f of filas) {
       const n = Number(f.n);
@@ -512,15 +520,27 @@ class AnaliticaConceptosService {
       if (Number(f.es_correcta) === 1) correctas += n;
       const texto = f.respuesta_dada == null ? 'sin dato' : String(f.respuesta_dada);
       intentos.set(texto, (intentos.get(texto) || 0) + n);
+
+      const cantidad = Number(texto);
+      if (Number.isFinite(cantidad) && cantidad > 0) {
+        sumaIntentos += cantidad * n;
+        partidasConDato += n;
+        intentosMin = intentosMin == null ? cantidad : Math.min(intentosMin, cantidad);
+        intentosMax = intentosMax == null ? cantidad : Math.max(intentosMax, cantidad);
+      }
     }
 
     const distribucion = [...intentos.entries()]
       .map(([texto, cantidad]) => ({
-        texto: `${texto} intento${texto === '1' ? '' : 's'}`,
+        texto: /^\d+$/.test(texto)
+          ? `${texto} intento${texto === '1' ? '' : 's'}`
+          : texto,
         cantidad,
         pct: pct(cantidad, total),
       }))
       .sort((a, b) => b.cantidad - a.cantidad);
+
+    const promedio = partidasConDato ? Math.round((sumaIntentos / partidasConDato) * 10) / 10 : null;
 
     return [{
       clave: 'memoria',
@@ -532,6 +552,12 @@ class AnaliticaConceptosService {
       errores: total - correctas,
       sin_responder: 0,
       pct_error: pct(total - correctas, total),
+      // Métrica legible para el panel: la dificultad del memotest no es una
+      // "palabra fallada", sino cuántos intentos necesitó cada partida.
+      promedio_intentos: promedio,
+      partidas_con_dato: partidasConDato,
+      intentos_min: intentosMin,
+      intentos_max: intentosMax,
       error_dominante: distribucion[0] || null,
       otras_incorrectas: distribucion,
       distribucion_intentos: distribucion,

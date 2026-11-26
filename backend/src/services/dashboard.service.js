@@ -1707,7 +1707,8 @@ class DashboardService {
               COUNT(*) AS intentos,
               SUM(CASE WHEN i.completado = 0 THEN 1 ELSE 0 END) AS errores,
               -- ↓↓↓ Ajusta tablas/columnas si tu esquema es distinto ↓↓↓
-              COALESCE(c.titulo, j.titulo, e.titulo) AS nombre_real
+              COALESCE(c.titulo, j.titulo, e.titulo) AS nombre_real,
+              j.tipo AS tipo_juego
          FROM actividad_intentos i
          LEFT JOIN contenidos   c ON i.tipo = 'contenido'  AND c.id = i.actividad_id
          LEFT JOIN juegos       j ON i.tipo = 'juego'      AND j.id = i.actividad_id
@@ -1716,7 +1717,7 @@ class DashboardService {
           AND i.iniciado_en >= ?
           AND ${DashboardService._filtroPublicado('i')}
           AND i.estudiante_id IN (${DashboardService._marcadores(ids)})
-        GROUP BY i.actividad_id, i.tipo, nombre_real
+        GROUP BY i.actividad_id, i.tipo, nombre_real, tipo_juego
         HAVING errores > 0
         ORDER BY errores DESC, intentos DESC
         LIMIT ${limite}`,
@@ -1738,6 +1739,9 @@ class DashboardService {
           // Si el JOIN no encontró el título (actividad borrada), caemos al
           // placeholder para no mostrar "null" en la UI.
           nombre: f.nombre_real || `${tipoLabels[f.tipo] || 'Actividad'} #${f.actividad_id}`,
+          // El tipo de juego permite al diagnóstico adaptar las tarjetas
+          // (memotest y sopa de letras no se leen como una pregunta).
+          tipo_juego: f.tipo === 'juego' ? (f.tipo_juego || null) : null,
           errores,
           intentos,
           pct_error: intentos ? Math.round((errores / intentos) * 100) : 0,

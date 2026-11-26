@@ -40,6 +40,10 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
   const [ordenEstudiantes, setOrdenEstudiantes] = useState('errores');
   const [mostrarTodas, setMostrarTodas] = useState(false);
 
+  const esJuego = concepto?.tipo === 'juego';
+  const esMemotest = esJuego && concepto?.tipo_juego === 'memoria';
+  const esSopaLetras = esJuego && concepto?.tipo_juego === 'sopa_de_letras';
+
   const baseQs = useMemo(() => {
     const p = new URLSearchParams();
     p.set('tipo', concepto.tipo);
@@ -54,18 +58,25 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
     let vigente = true;
     setCargando(true);
     setError('');
+    setEstudiantes(null);
     const qs = baseQs.toString();
 
-    Promise.all([
+    // El memotest no tiene un mapa estudiantes x elemento coherente: cada
+    // partida se resume en un número de intentos, no en respuestas por palabra.
+    const peticiones = [
       api.get(`/analitica/conceptos/${concepto.actividad_id}/preguntas?${qs}`),
       api.get(`/analitica/conceptos/${concepto.actividad_id}/confusiones?${qs}`),
-      api.get(`/analitica/conceptos/${concepto.actividad_id}/estudiantes?${qs}`),
-    ])
+    ];
+    if (!esMemotest) {
+      peticiones.push(api.get(`/analitica/conceptos/${concepto.actividad_id}/estudiantes?${qs}`));
+    }
+
+    Promise.all(peticiones)
       .then(([pq, cf, es]) => {
         if (!vigente) return;
         setPreguntas(pq.data.data);
         setConfusiones(cf.data.data);
-        setEstudiantes(es.data.data);
+        setEstudiantes(es ? es.data.data : null);
       })
       .catch((err) => {
         if (!vigente) return;
@@ -75,7 +86,7 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
       .finally(() => { if (vigente) setCargando(false); });
 
     return () => { vigente = false; };
-  }, [concepto.actividad_id, baseQs]);
+  }, [concepto.actividad_id, baseQs, esMemotest]);
 
   useEffect(() => {
     const alTeclear = (e) => { if (e.key === 'Escape') onClose(); };
@@ -109,33 +120,57 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
     return filas;
   }, [estudiantes, ordenEstudiantes]);
 
-  // Puntos críticos: elemento más fallado, su error dominante y la confusión más
-  // frecuente (si el tipo de actividad produce mapa de confusión).
+  // Puntos críticos adaptados al tipo de juego. El memotest se mide por los
+  // intentos que necesitó cada partida; en la sopa el error dominante siempre es
+  // "No encontrada", así que duplica la tarjeta de la palabra más difícil.
   const criticos = useMemo(() => {
     const tarjetas = [];
+
+    if (esMemotest) {
+      const memoria = items[0];
+      if (memoria?.promedio_intentos != null) {
+        const partidas = num(memoria.partidas_con_dato);
+        tarjetas.push({
+          clave: 'promedio_memoria',
+          tono: 'info',
+          etiqueta: 'Intentos promedio',
+          texto: `${memoria.promedio_intentos} intentos por partida`,
+          dato: partidas
+            ? `promedio de ${partidas} partidas con detalle`
+            : 'sin partidas con detalle',
+        });
+      }
+      return tarjetas;
+    }
+
     const top = ordenados[0];
     // Con un filtro de grupo activo puede haber menos de `minRespuestas` fallos.
     // En vez de dejar el panel vacío, mostramos el elemento más fallado con
     // etiqueta de "pocos datos": es información real, no una estimación.
     if (top) {
       const pocosDatos = num(top.errores) < minRespuestas;
+      const etiquetaBase = esSopaLetras
+        ? 'Palabra más difícil de encontrar'
+        : 'Lo más fallado';
       tarjetas.push({
         clave: 'top',
         tono: pocosDatos ? 'pocos' : 'error',
-        etiqueta: pocosDatos ? 'Lo más fallado · pocos datos' : 'Lo más fallado',
+        etiqueta: pocosDatos ? `${etiquetaBase} · pocos datos` : etiquetaBase,
         texto: top.etiqueta || top.enunciado || `Elemento ${top.clave}`,
         dato: `${num(top.errores)} fallos de ${num(top.total)} respuestas (${top.pct_error}%)`,
       });
     }
-    const dom = top ? textoDominante(top.error_dominante) : null;
-    if (dom) {
-      tarjetas.push({
-        clave: 'dominante',
-        tono: 'error',
-        etiqueta: 'Error más elegido',
-        texto: dom,
-        dato: `elegido ${num(top.error_dominante.cantidad)} veces en esa pregunta`,
-      });
+    if (!esSopaLetras) {
+      const dom = top ? textoDominante(top.error_dominante) : null;
+      if (dom) {
+        tarjetas.push({
+          clave: 'dominante',
+          tono: 'error',
+          etiqueta: 'Error más elegido',
+          texto: dom,
+          dato: `elegido ${num(top.error_dominante.cantidad)} veces en esa pregunta`,
+        });
+      }
     }
     const celdas = confusiones && confusiones.soportado ? (confusiones.celdas || []) : [];
     const confusion = [...celdas]
@@ -151,9 +186,12 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
       });
     }
     return tarjetas.slice(0, 3);
-  }, [ordenados, confusiones, minRespuestas]);
+  }, [items, ordenados, confusiones, minRespuestas, esMemotest, esSopaLetras]);
 
   const pctError = concepto?.pct_error != null ? concepto.pct_error : null;
+  const mensajeSinCriticos = esMemotest
+    ? 'Sin partidas con intentos registrados en el período.'
+    : 'Sin errores suficientes para señalar puntos críticos en el período.';
 
   return (
     <div className="acp-overlay" onClick={onClose} role="presentation">
@@ -217,7 +255,7 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
               <section>
                 <h3 className="acp-titulo-bloque"><MdWarningAmber aria-hidden="true" /> Puntos críticos</h3>
                 {criticos.length === 0 ? (
-                  <div className="acp-vacio">Sin errores suficientes para señalar puntos críticos en el período.</div>
+                  <div className="acp-vacio">{mensajeSinCriticos}</div>
                 ) : (
                   <div className="acp-criticos">
                     {criticos.map((c) => (
@@ -231,7 +269,9 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
                 )}
               </section>
 
-              {/* Estudiantes afectados (heatmap estudiantes x elementos) */}
+              {/* El memotest no tiene un mapa estudiantes x elemento coherente:
+                  su único dato útil es el promedio de intentos por partida. */}
+              {!esMemotest && (
               <section>
                 <h3 className="acp-titulo-bloque"><MdGroups aria-hidden="true" /> Estudiantes afectados</h3>
                 {!estudiantes ? (
@@ -304,6 +344,7 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
                   </>
                 )}
               </section>
+              )}
 
               {/* Preguntas de la evaluación (solo para evaluaciones) */}
               {esEvaluacion && (
