@@ -114,11 +114,15 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
   const criticos = useMemo(() => {
     const tarjetas = [];
     const top = ordenados[0];
-    if (top && num(top.errores) >= minRespuestas) {
+    // Con un filtro de grupo activo puede haber menos de `minRespuestas` fallos.
+    // En vez de dejar el panel vacío, mostramos el elemento más fallado con
+    // etiqueta de "pocos datos": es información real, no una estimación.
+    if (top) {
+      const pocosDatos = num(top.errores) < minRespuestas;
       tarjetas.push({
         clave: 'top',
-        tono: 'error',
-        etiqueta: 'Lo más fallado',
+        tono: pocosDatos ? 'pocos' : 'error',
+        etiqueta: pocosDatos ? 'Lo más fallado · pocos datos' : 'Lo más fallado',
         texto: top.etiqueta || top.enunciado || `Elemento ${top.clave}`,
         dato: `${num(top.errores)} fallos de ${num(top.total)} respuestas (${top.pct_error}%)`,
       });

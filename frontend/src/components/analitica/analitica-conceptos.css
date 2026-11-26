@@ -267,6 +267,7 @@
 
 .acp-critico[data-tono='error'] { border-left-color: #dc2626; }
 .acp-critico[data-tono='confusion'] { border-left-color: #d97706; }
+.acp-critico[data-tono='pocos'] { border-left-color: #64748b; }
 
 .acp-critico-etiqueta {
   font-size: 0.7rem;
