@@ -101,10 +101,6 @@ const ConceptosError = ({ grupoId, semanas, tipo, onAbrir, max = 5 }) => {
                 <strong>{c.errores}</strong> {c.errores === 1 ? 'intento fallido' : 'intentos fallidos'}
                 {' '}de {c.intentos} ({c.pct_error}%)
               </span>
-              <span>
-                <strong>{c.estudiantes_afectados}</strong>{' '}
-                {c.estudiantes_afectados === 1 ? 'estudiante afectado' : 'estudiantes afectados'}
-              </span>
               {c.cobertura?.sin_detalle > 0 && (
                 <span className="acx-sin-detalle">
                   {c.cobertura.sin_detalle} sin detalle

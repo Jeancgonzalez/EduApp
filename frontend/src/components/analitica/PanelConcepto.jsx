@@ -182,9 +182,6 @@ const PanelConcepto = ({ concepto, grupoId, semanas, onClose }) => {
           </div>
           <p className="acp-metricas">
             {pctError != null && <span><strong>{pctError}%</strong> de intentos fallidos</span>}
-            {concepto?.estudiantes_afectados != null && (
-              <span><strong>{concepto.estudiantes_afectados}</strong> estudiantes afectados</span>
-            )}
             {concepto?.cobertura && (
               <span>
                 <strong>{concepto.cobertura.con_detalle}</strong> de {concepto.cobertura.intentos} intentos con detalle
